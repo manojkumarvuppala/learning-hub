@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elemental Match - Periodic Table Game</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts for ultra-modern science look -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .mono {
+      font-family: 'Share Tech Mono', monospace;
+    }
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.4);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.2);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.4);
+    }
+    
+    /* Subtle custom borders */
+    .border-slate-850 {
+      border-color: rgba(30, 41, 59, 0.7);
+    }
+    
+    /* Shake animation for wrong placement */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-4px); }
+      40%, 80% { transform: translateX(4px); }
+    }
+    .shake {
+      animation: shake 0.4s ease-in-out;
+    }
+
+    /* Pop animation for correct placement */
+    @keyframes popIn {
+      0% { transform: scale(0.92); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .pop-in {
+      animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-300 min-h-screen overflow-x-hidden flex flex-col selection:bg-blue-900 selection:text-white">
+
+  <!-- Calmed Background Ambient Lights (Glare-free) -->
+  <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-950/5 blur-[120px] pointer-events-none"></div>
+  <div class="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-950/5 blur-[120px] pointer-events-none"></div>
+
+  <!-- Sound Toggle & Toast Notification Overlay -->
+  <div id="toast-container" class="fixed top-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+  <!-- Header Section -->
+  <header class="border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40 px-4 py-3 sm:px-6">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      
+      <!-- Logo Title -->
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center shadow-md">
+          <i data-lucide="beaker" class="w-5 h-5 text-indigo-400"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-extrabold tracking-tight bg-gradient-to-r from-slate-200 via-slate-100 to-indigo-300 bg-clip-text text-transparent">
+            ELEMENTAL MATCH
+          </h1>
+          <p class="text-[10px] text-slate-500 font-medium tracking-wide">Interactive Periodic Table Academy</p>
+        </div>
+      </div>
+
+      <!-- Live Stats Panel (Low contrast, dark UI) -->
+      <div class="flex items-center gap-4 sm:gap-6 bg-slate-900/40 px-4 py-2 rounded-xl border border-slate-900 shadow-inner">
+        <div class="text-center px-2">
+          <div class="text-[9px] text-slate-500 font-semibold tracking-widest uppercase">Score</div>
+          <div id="score" class="text-base font-bold text-slate-300 mono">0000</div>
+        </div>
+        <div class="h-6 w-px bg-slate-850"></div>
+        <div class="text-center px-2">
+          <div class="text-[9px] text-slate-500 font-semibold tracking-widest uppercase">Streak</div>
+          <div id="streak-panel" class="text-base font-bold text-indigo-400 flex items-center gap-1">
+            <span id="streak" class="mono">0</span>
+            <i data-lucide="zap" class="w-3.5 h-3.5 fill-indigo-500 text-indigo-400"></i>
+          </div>
+        </div>
+        <div class="h-6 w-px bg-slate-850"></div>
+        <div class="text-center px-2">
+          <div class="text-[9px] text-slate-500 font-semibold tracking-widest uppercase">Accuracy</div>
+          <div id="accuracy" class="text-base font-bold text-slate-400 mono">100%</div>
+        </div>
+      </div>
+
+      <!-- Action Utilities -->
+      <div class="flex items-center gap-2">
+        <button id="sound-toggle" class="p-2 rounded-xl bg-slate-900 border border-slate-850 text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition-all" title="Toggle Sound">
+          <i id="sound-icon" data-lucide="volume-2" class="w-4.5 h-4.5"></i>
+        </button>
+        <button id="btn-restart" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 border border-slate-850 text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition-all font-semibold text-xs">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+        </button>
+      </div>
+      
+    </div>
+  </header>
+
+  <!-- Setup/Welcome Banner & Mode Selectors -->
+  <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col gap-4">
+
+    <!-- Config Bar -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center bg-slate-900/20 p-4 rounded-2xl border border-slate-900">
+      
+      <!-- Dual Filter Dropdown -->
+      <div class="md:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+            <i data-lucide="filter" class="w-3 h-3 text-slate-400"></i> Element Set Challenge
+          </label>
+          <select id="select-difficulty" class="w-full bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-1.5 text-xs focus:ring-1 focus:ring-indigo-900 transition-all outline-none">
+            <optgroup label="Standard Sets" class="bg-slate-950 text-slate-300">
+              <option value="noble">Halogens & Noble Gases</option>
+              <option value="full" selected>Full Periodic Table (All 118 Elements!)</option>
+            </optgroup>
+            <optgroup label="Blocks Wise Selection" class="bg-slate-950 text-slate-300">
+              <option value="block-s">Block S (s-orbital elements)</option>
+              <option value="block-p">Block P (p-orbital elements)</option>
+              <option value="block-d">Block D (d-orbital / Transitions)</option>
+              <option value="block-f">Block F (f-orbital / Lanthanides & Actinides)</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1" id="label-subgroup">
+            <i data-lucide="layers" class="w-3 h-3 text-slate-400"></i> Specific Group / Series
+          </label>
+          <select id="select-group" class="w-full bg-slate-950/50 border border-slate-900 text-slate-600 rounded-xl px-3 py-1.5 text-xs cursor-not-allowed outline-none" disabled>
+            <option value="none">N/A - Standard Challenge</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Mode Selector Tabs -->
+      <div class="md:col-span-3 flex flex-col gap-1">
+        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+          <i data-lucide="gamepad-2" class="w-3 h-3 text-slate-400"></i> Gameplay Mode
+        </label>
+        <div class="grid grid-cols-2 bg-slate-950 p-1 rounded-xl border border-slate-900">
+          <button id="mode-deck" class="py-1 px-2.5 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center gap-1 bg-slate-900 text-slate-200 border border-slate-800">
+            <i data-lucide="sparkles" class="w-3 h-3 text-indigo-400"></i> Quest
+          </button>
+          <button id="mode-sandbox" class="py-1 px-2.5 rounded-lg text-[10px] font-bold text-slate-500 hover:text-slate-300 transition-all flex items-center justify-center gap-1">
+            <i data-lucide="layout-grid" class="w-3 h-3"></i> Sandbox
+          </button>
+        </div>
+      </div>
+
+      <!-- Hint Controls -->
+      <div class="md:col-span-3 flex items-center justify-end h-full">
+        <div class="bg-slate-950/60 border border-slate-900 rounded-xl px-3 py-2 w-full flex flex-col gap-1">
+          <div class="text-[9px] font-bold text-slate-500 tracking-wider uppercase flex items-center gap-1 select-none">
+            <i data-lucide="eye-off" class="w-3 h-3"></i> Display Clues
+          </div>
+          <div class="flex flex-col gap-0.5">
+            <label class="flex items-center gap-2 cursor-pointer text-[10px] text-slate-400 hover:text-slate-200 select-none">
+              <input type="checkbox" id="check-show-number" class="w-3 h-3 rounded bg-slate-900 border-slate-800 text-indigo-600 focus:ring-0 accent-indigo-650">
+              <span>Show Atomic Number</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer text-[10px] text-slate-400 hover:text-slate-200 select-none">
+              <input type="checkbox" id="check-show-mass" class="w-3 h-3 rounded bg-slate-900 border-slate-800 text-indigo-600 focus:ring-0 accent-indigo-650">
+              <span>Show Atomic Mass</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Inline Victory Congratulations Banner (Low glare slate styled, hidden by default) -->
+    <div id="victory-banner" class="hidden bg-slate-900/30 border border-emerald-950 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 pop-in">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-slate-950 border border-emerald-900/40 flex items-center justify-center shadow-md">
+          <i data-lucide="award" class="w-5 h-5 text-emerald-400 animate-bounce"></i>
+        </div>
+        <div>
+          <h2 class="text-sm font-extrabold tracking-tight text-emerald-400 uppercase">
+            Experiment Complete &bull; Chemistry Grandmaster!
+          </h2>
+          <p class="text-[11px] text-slate-400">
+            Fantastic job! You matched all target elements into their places on the Periodic Table.
+          </p>
+        </div>
+      </div>
+      <!-- Stats & Quick Reset Replay -->
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="flex items-center gap-3 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-900 divide-x divide-slate-900">
+          <div class="px-2">
+            <span class="text-[8px] text-slate-500 font-bold uppercase block">Final Score</span>
+            <span id="final-score" class="text-xs font-bold text-slate-300 mono">0000</span>
+          </div>
+          <div class="px-2">
+            <span class="text-[8px] text-slate-500 font-bold uppercase block">Accuracy</span>
+            <span id="final-accuracy" class="text-xs font-bold text-slate-350 mono">100%</span>
+          </div>
+          <div class="px-2">
+            <span class="text-[8px] text-slate-500 font-bold uppercase block">Max Streak</span>
+            <span id="final-streak" class="text-xs font-bold text-indigo-400 mono">0</span>
+          </div>
+        </div>
+        <button id="btn-victory-replay" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-950 border border-slate-850 hover:bg-slate-900 text-slate-300 hover:text-white transition-all rounded-xl text-xs font-bold shadow-md">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Run Another Experiment
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN INTERACTIVE WORKSPACE (Side-by-Side Split View) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      
+      <!-- LEFT SECTION: Periodic Table (Spans 9/12ths of width) -->
+      <div class="lg:col-span-9 overflow-x-auto lg:overflow-hidden rounded-2xl border border-slate-900 bg-slate-950/20 p-3.5 backdrop-blur-sm shadow-sm relative w-full">
+        <div class="absolute top-2 left-2 text-[10px] text-slate-600 font-semibold tracking-wider flex items-center gap-1.5 pointer-events-none select-none lg:hidden">
+          <i data-lucide="arrow-left-right" class="w-3 h-3"></i> Scroll horizontally if table exceeds screen
+        </div>
+        
+        <!-- Interactive High-Density Periodic Grid (Aspect ratio optimized to prevent scrollbars) -->
+        <div id="periodic-grid" class="grid gap-1 relative w-full mt-2" style="grid-template-columns: repeat(18, minmax(0, 1fr));">
+          <!-- Cells dynamically generated in JS -->
+        </div>
+      </div>
+
+      <!-- RIGHT SECTION: Integrated Game Mode Sidebar (Spans 3/12ths of width) -->
+      <div class="lg:col-span-3 flex flex-col gap-4">
+        
+        <!-- SIDEBAR VIEW 1: QUEST MODE CONTROLS -->
+        <div id="quest-sidebar" class="bg-slate-900/20 p-4 rounded-2xl border border-slate-900 flex flex-col gap-3 shadow-md">
+          
+          <div class="flex items-center justify-between border-b border-slate-850 pb-2">
+            <span class="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1">
+              <span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span> Active Quest
+            </span>
+            <button id="btn-skip" class="text-[10px] text-slate-500 hover:text-slate-355 transition-all flex items-center gap-0.5 hover:underline">
+              Skip <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            </button>
+          </div>
+
+          <!-- Compact Active Card View (Glare-free minimal slate container) -->
+          <div class="flex flex-col items-center justify-center py-1">
+            <div id="active-card-box" class="h-24 w-24 rounded-xl bg-slate-950 border border-slate-850 flex flex-col items-center justify-between p-2.5 transition-all duration-300 select-none relative overflow-hidden">
+              <!-- Top bar containing number and mass -->
+              <div class="flex justify-between w-full items-center">
+                <span id="deck-card-number" class="text-[8px] text-slate-500 font-semibold mono leading-none hidden">#1</span>
+                <span id="deck-card-weight" class="text-[8px] text-slate-500 font-semibold mono leading-none hidden ml-auto">1.008</span>
+              </div>
+              <!-- Symbol -->
+              <div id="deck-card-symbol" class="text-2xl font-extrabold text-slate-200">H</div>
+              <!-- Name -->
+              <div id="deck-card-name" class="text-[9px] font-bold text-slate-400 truncate w-full text-center leading-none mt-1">Hydrogen</div>
+            </div>
+          </div>
+
+          <!-- Scientific Fact Box -->
+          <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-850 min-h-[70px] flex flex-col gap-1 justify-center">
+            <div class="text-[9px] text-slate-500 font-bold tracking-wider uppercase flex items-center gap-1">
+              <i data-lucide="brain-circuit" class="w-3 h-3 text-slate-500"></i> Fact Sheet
+            </div>
+            <p id="element-fun-fact" class="text-[10px] sm:text-[11px] text-slate-450 italic leading-snug">
+              Hydrogen is the most abundant chemical substance in the Universe.
+            </p>
+          </div>
+
+          <!-- Progress widget inside quest sidebar -->
+          <div class="bg-slate-950/20 p-2.5 rounded-xl border border-slate-900/60 flex flex-col gap-1.5">
+            <div class="flex items-center justify-between text-[11px] text-slate-500 font-medium">
+              <span id="placed-ratio">0 / 118 Set</span>
+              <span id="percent-complete" class="mono font-bold text-slate-400">0%</span>
+            </div>
+            <div class="w-full bg-slate-950 rounded-full h-1.5 border border-slate-900 overflow-hidden relative">
+              <div id="progress-bar" class="bg-indigo-650 h-full w-[0%] rounded-full transition-all duration-500"></div>
+            </div>
+          </div>
+
+          <!-- Hint actions -->
+          <button id="btn-hint" class="w-full py-1.5 rounded-lg bg-slate-950 border border-slate-850 hover:bg-slate-900 hover:border-slate-800 transition-all font-semibold text-[10px] flex items-center justify-center gap-1 text-slate-400">
+            <i data-lucide="help-circle" class="w-3.5 h-3.5 text-slate-500"></i> Hint (<span id="hints-left">3</span> left)
+          </button>
+        </div>
+
+        <!-- SIDEBAR VIEW 2: SANDBOX DECK PANEL -->
+        <div id="sandbox-sidebar" class="hidden bg-slate-900/20 border border-slate-900 p-4 rounded-2xl flex flex-col gap-3 shadow-md">
+          <div class="border-b border-slate-850 pb-2">
+            <h3 class="text-xs font-bold text-slate-450 flex items-center gap-1.5">
+              <i data-lucide="box" class="w-4 h-4 text-indigo-400"></i> Element Deck Shelf
+            </h3>
+            
+            <!-- Live Hover Indicator Area to see Names (Controlled dynamically) -->
+            <div id="sandbox-hover-info" class="text-[10px] text-indigo-450 font-semibold tracking-wide h-6 text-left mt-2 truncate bg-slate-950/40 px-2 py-0.5 rounded border border-slate-900 flex items-center gap-1">
+              <i data-lucide="info" class="w-3 h-3 text-indigo-500"></i> Hover a card to display name
+            </div>
+          </div>
+
+          <!-- Dynamic 4-Column Square Grid for Deck Shelf elements -->
+          <div id="sandbox-dock-container" class="grid grid-cols-4 gap-1.5 overflow-y-auto max-h-[290px] p-2 bg-slate-950/80 border border-slate-850 rounded-xl min-h-[200px] scrollbar-thin">
+            <!-- Shuffled square cards appended dynamically -->
+          </div>
+
+          <!-- Color category guides -->
+          <div class="bg-slate-950/20 p-2 rounded-lg border border-slate-900 flex flex-col gap-1 text-[9px] text-slate-500">
+            <div class="font-bold uppercase text-[8px] tracking-wide text-slate-650 mb-0.5">Legends:</div>
+            <div class="grid grid-cols-2 gap-1.5">
+              <span class="flex items-center gap-1"><span class="h-2 w-2 rounded bg-slate-950 border border-cyan-500/70"></span>Non-metals</span>
+              <span class="flex items-center gap-1"><span class="h-2 w-2 rounded bg-slate-950 border border-rose-500/70"></span>Alkali</span>
+              <span class="flex items-center gap-1"><span class="h-2 w-2 rounded bg-slate-950 border border-yellow-500/70"></span>Transition</span>
+              <span class="flex items-center gap-1"><span class="h-2 w-2 rounded bg-slate-950 border border-fuchsia-500/70"></span>Nobles</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer class="text-center py-4 text-xs text-slate-700 border-t border-slate-900 mt-auto bg-slate-950/40">
+    Elemental Match Academy &bull; Empowering chemistry learning through science
+  </footer>
+
+  <!-- Script logic containing full Periodic Table Element data, sound engines, modes and actions -->
+  <script>
+    // Full periodic table data up to 118 elements
+    const elementsData = [
+      { number: 1, symbol: "H", name: "Hydrogen", mass: 1.008, category: "nonmetal", row: 1, col: 1, fact: "The most abundant chemical substance in the universe." },
+      { number: 2, symbol: "He", name: "Helium", mass: 4.0026, category: "noble-gas", row: 1, col: 18, fact: "So light that Earth's gravity cannot hold it; it leaks into space." },
+      { number: 3, symbol: "Li", name: "Lithium", mass: 6.94, category: "alkali", row: 2, col: 1, fact: "The lightest of all metals and floats on water." },
+      { number: 4, symbol: "Be", name: "Beryllium", mass: 9.0122, category: "alkaline", row: 2, col: 2, fact: "Used in NASA's James Webb Space Telescope mirrors due to strength & weight." },
+      { number: 5, symbol: "B", name: "Boron", mass: 10.81, category: "metalloid", row: 2, col: 13, fact: "Crucial element used to make heavy-duty fiberglass and ceramics." },
+      { number: 6, symbol: "C", name: "Carbon", mass: 12.011, category: "nonmetal", row: 2, col: 14, fact: "The chemical basis for all known organic life on Earth." },
+      { number: 7, symbol: "N", name: "Nitrogen", mass: 14.007, category: "nonmetal", row: 2, col: 15, fact: "Makes up roughly 78% of Earth's atmospheric gases." },
+      { number: 8, symbol: "O", name: "Oxygen", mass: 15.999, category: "nonmetal", row: 2, col: 16, fact: "Extremely reactive gas vital for the respiration of living cells." },
+      { number: 9, symbol: "F", name: "Fluorine", mass: 18.998, category: "halogen", row: 2, col: 17, fact: "The most chemically reactive and electronegative of all elements." },
+      { number: 10, symbol: "Ne", name: "Neon", mass: 20.180, category: "noble-gas", row: 2, col: 18, fact: "Glows with a fiery reddish-orange light when ionized in vacuum tubes." },
+      { number: 11, symbol: "Na", name: "Sodium", mass: 22.990, category: "alkali", row: 3, col: 1, fact: "Extremely soft alkali metal that reacts violently with water." },
+      { number: 12, symbol: "Mg", name: "Magnesium", mass: 24.305, category: "alkaline", row: 3, col: 2, fact: "Burns with an incredibly brilliant, blinding white flame." },
+      { number: 13, symbol: "Al", name: "Aluminium", mass: 26.982, category: "post-transition", row: 3, col: 13, fact: "Highly abundant metal prized for its low density and corrosion resistance." },
+      { number: 14, symbol: "Si", name: "Silicon", mass: 28.085, category: "metalloid", row: 3, col: 14, fact: "The backbone of modern microchip technology and computing." },
+      { number: 15, symbol: "P", name: "Phosphorus", mass: 30.974, category: "nonmetal", row: 3, col: 15, fact: "Derived from the Greek word meaning 'Light-Bringer' because it glows." },
+      { number: 16, symbol: "S", name: "Sulfur", mass: 32.06, category: "nonmetal", row: 3, col: 16, fact: "An abundant nonmetal known for its distinctive yellow hue." },
+      { number: 17, symbol: "Cl", name: "Chlorine", mass: 35.45, category: "halogen", row: 3, col: 17, fact: "Used extensively to disinfect swimming pools and purify drinking water." },
+      { number: 18, symbol: "Ar", name: "Argon", mass: 39.948, category: "noble-gas", row: 3, col: 18, fact: "Commonly used in double-glazed windows to insulate heat." },
+      { number: 19, symbol: "K", name: "Potassium", mass: 39.098, category: "alkali", row: 4, col: 1, fact: "Bananas are rich in Potassium, meaning they are slightly radioactive!" },
+      { number: 20, symbol: "Ca", name: "Calcium", mass: 40.078, category: "alkaline", row: 4, col: 2, fact: "Essential alkaline earth metal that builds skeletal bone density." },
+      { number: 21, symbol: "Sc", name: "Scandium", mass: 44.956, category: "transition", row: 4, col: 3, fact: "Scandium is lighter than steel but has a remarkably high melting point." },
+      { number: 22, symbol: "Ti", name: "Titanium", mass: 47.867, category: "transition", row: 4, col: 4, fact: "As strong as steel but 45% lighter, making it highly robust." },
+      { number: 23, symbol: "V", name: "Vanadium", mass: 50.942, category: "transition", row: 4, col: 5, fact: "Primarily used as a steel additive to form exceptionally tough tools." },
+      { number: 24, symbol: "Cr", name: "Chromium", mass: 51.996, category: "transition", row: 4, col: 6, fact: "Gives rubies their deep red colour and stainless steel its shine." },
+      { number: 25, symbol: "Mn", name: "Manganese", mass: 54.938, category: "transition", row: 4, col: 7, fact: "Vital for human bone growth and photosynthetic enzymes in plants." },
+      { number: 26, symbol: "Fe", name: "Iron", mass: 55.845, category: "transition", row: 4, col: 8, fact: "Forms the dense, molten magnetic core of our entire planet Earth." },
+      { number: 27, symbol: "Co", name: "Cobalt", mass: 58.933, category: "transition", row: 4, col: 9, fact: "Used to produce blue pigments for ceramics and high-energy batteries." },
+      { number: 28, symbol: "Ni", name: "Nickel", mass: 58.693, category: "transition", row: 4, col: 10, fact: "A ferromagnetic metal crucial to stainless steel manufacturing." },
+      { number: 29, symbol: "Cu", name: "Copper", mass: 63.546, category: "transition", row: 4, col: 11, fact: "Excellent electric conductor, making up wiring in electronics." },
+      { number: 30, symbol: "Zn", name: "Zinc", mass: 65.38, category: "transition", row: 4, col: 12, fact: "Used to galvanize steel to shield it from environmental rusting." },
+      { number: 31, symbol: "Ga", name: "Gallium", mass: 69.723, category: "post-transition", row: 4, col: 13, fact: "Liquid metal that melts easily in the palm of your warm hand." },
+      { number: 32, symbol: "Ge", name: "Germanium", mass: 72.63, category: "metalloid", row: 4, col: 14, fact: "Critical component in wide-angle infrared optics and fiber optics." },
+      { number: 33, symbol: "As", name: "Arsenic", mass: 74.922, category: "metalloid", row: 4, col: 15, fact: "Infamous metalloid well known historically as a lethal poison." },
+      { number: 34, symbol: "Se", name: "Selenium", mass: 78.971, category: "nonmetal", row: 4, col: 16, fact: "Conducts electricity much better when light shines directly on it." },
+      { number: 35, symbol: "Br", name: "Bromine", mass: 79.904, category: "halogen", row: 4, col: 17, fact: "One of only two elements that are liquid at room temperature." },
+      { number: 36, symbol: "Kr", name: "Krypton", mass: 83.798, category: "noble-gas", row: 4, col: 18, fact: "Named from the Greek word meaning 'hidden one'." },
+      { number: 37, symbol: "Rb", name: "Rubidium", mass: 85.468, category: "alkali", row: 5, col: 1, fact: "Used to establish key research baselines for laser coolings." },
+      { number: 38, symbol: "Sr", name: "Strontium", mass: 87.62, category: "alkaline", row: 5, col: 2, fact: "Turns fireworks a brilliant, fiery crimson red colour." },
+      { number: 39, symbol: "Y", name: "Yttrium", mass: 88.906, category: "transition", row: 5, col: 3, fact: "Crucial element used to build superconductors and lasers." },
+      { number: 40, symbol: "Zr", name: "Zirconium", mass: 91.224, category: "transition", row: 5, col: 4, fact: "Highly corrosion-resistant, perfect for nuclear reactor cladding." },
+      { number: 41, symbol: "Nb", name: "Niobium", mass: 92.906, category: "transition", row: 5, col: 5, fact: "Used in superalloys for jet engines and particle accelerators." },
+      { number: 42, symbol: "Mo", name: "Molybdenum", mass: 95.95, category: "transition", row: 5, col: 6, fact: "Possesses one of the highest melting points among all metals." },
+      { number: 43, symbol: "Tc", name: "Technetium", mass: 98, category: "transition", row: 5, col: 7, fact: "The very first element to be produced artificially by scientists." },
+      { number: 44, symbol: "Ru", name: "Ruthenium", mass: 101.07, category: "transition", row: 5, col: 8, fact: "Very rare transition metal commonly used in wear-resistant electrical contacts." },
+      { number: 45, symbol: "Rh", name: "Rhodium", mass: 102.91, category: "transition", row: 5, col: 9, fact: "One of the rarest, most expensive and valuable precious metals in the world." },
+      { number: 46, symbol: "Pd", name: "Palladium", mass: 106.42, category: "transition", row: 5, col: 10, fact: "Can absorb up to 900 times its own volume of hydrogen gas." },
+      { number: 47, symbol: "Ag", name: "Silver", mass: 107.87, category: "transition", row: 5, col: 11, fact: "Has the absolute highest electrical conductivity of any element." },
+      { number: 48, symbol: "Cd", name: "Cadmium", mass: 112.41, category: "transition", row: 5, col: 12, fact: "Commonly used in heavy industrial rechargeable batteries." },
+      { number: 49, symbol: "In", name: "Indium", mass: 114.82, category: "post-transition", row: 5, col: 13, fact: "Squeals with a crying sound when bent due to crystal shifting." },
+      { number: 50, symbol: "Sn", name: "Tin", mass: 118.71, category: "post-transition", row: 5, col: 14, fact: "Alloyed with copper to create Bronze, sparking a historical human age." },
+      { number: 51, symbol: "Sb", name: "Antimony", mass: 121.76, category: "metalloid", row: 5, col: 15, fact: "A toxic, brittle metalloid used to strengthen lead alloys." },
+      { number: 52, symbol: "Te", name: "Tellurium", mass: 127.60, category: "metalloid", row: 5, col: 16, fact: "Extremely rare; exposure can give humans an extreme garlic-like breath." },
+      { number: 53, symbol: "I", name: "Iodine", mass: 126.90, category: "halogen", row: 5, col: 17, fact: "Sublimes directly into a gorgeous, glowing violet gas when heated." },
+      { number: 54, symbol: "Xe", name: "Xenon", mass: 131.29, category: "noble-gas", row: 5, col: 18, fact: "Used in powerful high-intensity flashes and ion thrusters for spacecraft." },
+      { number: 55, symbol: "Cs", name: "Caesium", mass: 132.91, category: "alkali", row: 6, col: 1, fact: "Its atomic vibration defines the standard, exact length of one second." },
+      { number: 56, symbol: "Ba", name: "Barium", mass: 137.33, category: "alkaline", row: 6, col: 2, fact: "Its compounds are highly visible on medical X-rays." },
+      { number: 57, symbol: "La", name: "Lanthanum", mass: 138.91, category: "lanthanide", row: 9, col: 4, fact: "The prototype element of the Lanthanide series of elements." },
+      { number: 58, symbol: "Ce", name: "Cerium", mass: 140.12, category: "lanthanide", row: 9, col: 5, fact: "Oxidizes rapidly in air, creating hot sparks when scraped." },
+      { number: 59, symbol: "Pr", name: "Praseodymium", mass: 140.91, category: "lanthanide", row: 9, col: 6, fact: "Gives high-power magnets unique thermal properties." },
+      { number: 60, symbol: "Nd", name: "Neodymium", mass: 144.24, category: "lanthanide", row: 9, col: 7, fact: "The core ingredient for the world's strongest permanent magnets." },
+      { number: 61, symbol: "Pm", name: "Promethium", mass: 145, category: "lanthanide", row: 9, col: 8, fact: "Extremely rare radio-luminescent material used in nuclear batteries." },
+      { number: 62, symbol: "Sm", name: "Samarium", mass: 150.36, category: "lanthanide", row: 9, col: 9, fact: "Resistant to demagnetization, perfect for precision electronics." },
+      { number: 63, symbol: "Eu", name: "Europium", mass: 151.96, category: "lanthanide", row: 9, col: 10, fact: "Creates the vibrant red phosphors used in modern high-def screens." },
+      { number: 64, symbol: "Gd", name: "Gadolinium", mass: 157.25, category: "lanthanide", row: 9, col: 11, fact: "Used as an injection contrast agent in MRI medical scanning." },
+      { number: 65, symbol: "Tb", name: "Terbium", mass: 158.93, category: "lanthanide", row: 9, col: 12, fact: "Can change shape when exposed to magnetic fields." },
+      { number: 66, symbol: "Dy", name: "Dysprosium", mass: 162.50, category: "lanthanide", row: 9, col: 13, fact: "Its name is derived from Greek meaning 'hard to get'." },
+      { number: 67, symbol: "Ho", name: "Holmium", mass: 164.93, category: "lanthanide", row: 9, col: 14, fact: "Possesses the highest magnetic strength of any element." },
+      { number: 68, symbol: "Er", name: "Erbium", mass: 167.26, category: "lanthanide", row: 9, col: 15, fact: "Acts as a signal amplifier in transoceanic fiber-optic lines." },
+      { number: 69, symbol: "Tm", name: "Thulium", mass: 168.93, category: "lanthanide", row: 9, col: 16, fact: "The rarest of all stable lanthanides on planet Earth." },
+      { number: 70, symbol: "Yb", name: "Ytterbium", mass: 173.05, category: "lanthanide", row: 9, col: 17, fact: "Its stability is heavily used in super-precise atomic clocks." },
+      { number: 71, symbol: "Lu", name: "Lutetium", mass: 174.97, category: "lanthanide", row: 9, col: 18, fact: "Used in advanced cancer radiotherapy to destroy cancer tumors." },
+      { number: 72, symbol: "Hf", name: "Hafnium", mass: 178.49, category: "transition", row: 6, col: 4, fact: "Commonly used in submarine nuclear control rods." },
+      { number: 73, symbol: "Ta", name: "Tantalum", mass: 180.95, category: "transition", row: 6, col: 5, fact: "Highly resistant to biological attack, widely used in joint implants." },
+      { number: 74, symbol: "W", name: "Tungsten", mass: 183.84, category: "transition", row: 6, col: 6, fact: "Has the highest melting point of any metal in the universe." },
+      { number: 75, symbol: "Re", name: "Rhenium", mass: 186.21, category: "transition", row: 6, col: 7, fact: "Added to nickel-based superalloys for high-temp combustion engines." },
+      { number: 76, symbol: "Os", name: "Osmium", mass: 190.23, category: "transition", row: 6, col: 8, fact: "The naturally densest element in existence, twice as dense as lead." },
+      { number: 77, symbol: "Ir", name: "Iridium", mass: 192.22, category: "transition", row: 6, col: 9, fact: "Extremely high concentration in asteroids, marking the dinosaur extinction." },
+      { number: 78, symbol: "Pt", name: "Platinum", mass: 195.08, category: "transition", row: 6, col: 10, fact: "So unreactive that it does not oxidize in air at any temperature." },
+      { number: 79, symbol: "Au", name: "Gold", mass: 196.97, category: "transition", row: 6, col: 11, fact: "The most malleable metal; 1 gram can be hammered into a 1 square meter sheet." },
+      { number: 80, symbol: "Hg", name: "Mercury", mass: 200.59, category: "transition", row: 6, col: 12, fact: "Known historically as 'quicksilver' because it's liquid at room temp." },
+      { number: 81, symbol: "Tl", name: "Thallium", mass: 204.38, category: "post-transition", row: 6, col: 13, fact: "Extremely toxic element that was once widely used in rat poison." },
+      { number: 82, symbol: "Pb", name: "Lead", mass: 207.2, category: "post-transition", row: 6, col: 14, fact: "Highly effective radiation shield, often used in radiology suites." },
+      { number: 83, symbol: "Bi", name: "Bismuth", mass: 208.98, category: "post-transition", row: 6, col: 15, fact: "The main ingredient in soothing pink stomach medicines like Pepto-Bismol." },
+      { number: 84, symbol: "Po", name: "Polonium", mass: 209, category: "metalloid", row: 6, col: 16, fact: "Highly radioactive element discovered by legendary scientist Marie Curie." },
+      { number: 85, symbol: "At", name: "Astatine", mass: 210, category: "halogen", row: 6, col: 17, fact: "The absolute rarest naturally occurring element on entire Earth." },
+      { number: 86, symbol: "Rn", name: "Radon", mass: 222, category: "noble-gas", row: 6, col: 18, fact: "Radioactive noble gas that can accumulate dangerously inside basements." },
+      { number: 87, symbol: "Fr", name: "Francium", mass: 223, category: "alkali", row: 7, col: 1, fact: "The second rarest element, heavily unstable with rapid decay." },
+      { number: 88, symbol: "Ra", name: "Radium", mass: 226, category: "alkaline", row: 7, col: 2, fact: "Discovered by Marie Curie, it once powered glow-in-the-dark watch dials." },
+      { number: 89, symbol: "Ac", name: "Actinium", mass: 227, category: "actinide", row: 10, col: 4, fact: "So intensely radioactive that it glows with a brilliant blue light." },
+      { number: 90, symbol: "Th", name: "Thorium", mass: 232.04, category: "actinide", row: 10, col: 5, fact: "Investigated heavily as a safer, cleaner alternative fuel for nuclear power." },
+      { number: 91, symbol: "Pa", name: "Protactinium", mass: 231.04, category: "actinide", row: 10, col: 6, fact: "An extremely rare, highly toxic and radioactive actinide." },
+      { number: 92, symbol: "U", name: "Uranium", mass: 238.03, category: "actinide", row: 10, col: 7, fact: "The primary fuel source utilized for nuclear reactors and weapons." },
+      { number: 93, symbol: "Np", name: "Neptunium", mass: 237, category: "actinide", row: 10, col: 8, fact: "The first transuranic element ever synthesized by humans." },
+      { number: 94, symbol: "Pu", name: "Plutonium", mass: 244, category: "actinide", row: 10, col: 9, fact: "Fueled the historic spacecraft probes Voyager 1 & Voyager 2." },
+      { number: 95, symbol: "Am", name: "Americium", mass: 243, category: "actinide", row: 10, col: 10, fact: "Commonly used inside everyday home smoke detectors." },
+      { number: 96, symbol: "Cm", name: "Curium", mass: 247, category: "actinide", row: 10, col: 11, fact: "Named in joint honor of pioneers Marie and Pierre Curie." },
+      { number: 97, symbol: "Bk", name: "Berkelium", mass: 247, category: "actinide", row: 10, col: 12, fact: "Discovered in Berkeley, California in the late 1940s." },
+      { number: 98, symbol: "Cf", name: "Californium", mass: 251, category: "actinide", row: 10, col: 13, fact: "One of the few transuranics that can release neutrons easily." },
+      { number: 99, symbol: "Es", name: "Einsteinium", mass: 252, category: "actinide", row: 10, col: 14, fact: "Discovered inside the radioactive debris of the first H-Bomb test." },
+      { number: 100, symbol: "Fm", name: "Fermium", mass: 257, category: "actinide", row: 10, col: 15, fact: "Named in deep honor of pioneer physicist Enrico Fermi." },
+      { number: 101, symbol: "Md", name: "Mendelevium", mass: 258, category: "actinide", row: 10, col: 16, fact: "Named after Dmitri Mendeleev, the creator of the Periodic Table!" },
+      { number: 102, symbol: "No", name: "Nobelium", mass: 259, category: "actinide", row: 10, col: 17, fact: "Synthesized in Sweden and named in honor of Alfred Nobel." },
+      { number: 103, symbol: "Lr", name: "Lawrencium", mass: 262, category: "actinide", row: 10, col: 18, fact: "Named in honor of Ernest Lawrence, inventor of the cyclotron." },
+      { number: 104, symbol: "Rf", name: "Rutherfordium", mass: 267, category: "transition", row: 7, col: 4, fact: "A highly synthetic radioactive element named after Ernest Rutherford." },
+      { number: 105, symbol: "Db", name: "Dubnium", mass: 268, category: "transition", row: 7, col: 5, fact: "Jointly named after the famous Russian research center Dubna." },
+      { number: 106, symbol: "Sg", name: "Seaborgium", mass: 271, category: "transition", row: 7, col: 6, fact: "The first element named after a living person (Glenn Seaborg)." },
+      { number: 107, symbol: "Bh", name: "Bohrium", mass: 270, category: "transition", row: 7, col: 7, fact: "Named in honor of Niels Bohr, father of the atomic orbit model." },
+      { number: 108, symbol: "Hs", name: "Hassium", mass: 277, category: "transition", row: 7, col: 8, fact: "Synthesized in Germany and named after the state of Hesse." },
+      { number: 109, symbol: "Mt", name: "Meitnerium", mass: 278, category: "transition", row: 7, col: 9, fact: "Named in honor of physicist Lise Meitner, discoverer of nuclear fission." },
+      { number: 110, symbol: "Ds", name: "Darmstadtium", mass: 281, category: "transition", row: 7, col: 10, fact: "First created in Darmstadt, Germany in the mid 1990s." },
+      { number: 111, symbol: "Rg", name: "Roentgenium", mass: 282, category: "transition", row: 7, col: 11, fact: "Named in honor of Wilhelm Röntgen, discoverer of medical X-rays." },
+      { number: 112, symbol: "Cn", name: "Copernicium", mass: 285, category: "transition", row: 7, col: 12, fact: "Named to honor legendary astronomer Nicolaus Copernicus." },
+      { number: 113, symbol: "Nh", name: "Nihonium", mass: 286, category: "post-transition", row: 7, col: 13, fact: "The very first element discovered and named by scientists in Japan." },
+      { number: 114, symbol: "Fl", name: "Flerovium", mass: 289, category: "post-transition", row: 7, col: 14, fact: "Named in honor of Flerov Laboratory of Nuclear Reactions." },
+      { number: 115, symbol: "Mc", name: "Moscovium", mass: 290, category: "post-transition", row: 7, col: 15, fact: "Synthesized near Moscow by collaborative US-Russian teams." },
+      { number: 116, symbol: "Lv", name: "Livermorium", mass: 293, category: "post-transition", row: 7, col: 16, fact: "Named in honor of Lawrence Livermore National Lab in California." },
+      { number: 117, symbol: "Ts", name: "Tennessine", mass: 294, category: "halogen", row: 7, col: 17, fact: "Discovered and named in honor of the US state of Tennessee." },
+      { number: 118, symbol: "Og", name: "Oganesson", mass: 294, category: "noble-gas", row: 7, col: 18, fact: "The heaviest element on the periodic table; named after Yuri Oganessian." }
+    ];
+
+    // Audio Engine using Web Audio API (Synthesized)
+    class AudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      }
+
+      playCorrect() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const freqs = [392.00, 523.25, 659.25, 783.99, 1046.50]; // Bright upbeat scale sequence
+        
+        freqs.forEach((freq, idx) => {
+          const delay = idx * 0.06;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + delay);
+          
+          gain.gain.setValueAtTime(0.08, now + delay);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.35);
+          
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          
+          osc.start(now + delay);
+          osc.stop(now + delay + 0.4);
+        });
+      }
+
+      playIncorrect() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc1.type = 'sawtooth';
+        osc2.type = 'sawtooth';
+        
+        osc1.frequency.setValueAtTime(110, now);
+        osc1.frequency.linearRampToValueAtTime(75, now + 0.35);
+        
+        osc2.frequency.setValueAtTime(113, now);
+        osc2.frequency.linearRampToValueAtTime(78, now + 0.35);
+        
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc1.start(now);
+        osc2.start(now);
+        
+        osc1.stop(now + 0.4);
+        osc2.stop(now + 0.4);
+      }
+
+      playLevelComplete() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50]; // Triumph melody
+        
+        notes.forEach((freq, idx) => {
+          const delay = idx * 0.12;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + delay);
+          
+          gain.gain.setValueAtTime(0.1, now + delay);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.5);
+          
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          
+          osc.start(now + delay);
+          osc.stop(now + delay + 0.6);
+        });
+      }
+    }
+
+    const sound = new AudioEngine();
+
+    // App State Management
+    const state = {
+      score: 0,
+      streak: 0,
+      maxStreak: 0,
+      accuracyAttempts: 0,
+      accuracyCorrect: 0,
+      gameMode: 'deck', // 'deck' or 'sandbox'
+      difficulty: 'full', // Default set: full
+      subGroup: 'none', // all, g1, g2, lanthanides, actinides etc.
+      placedElements: new Set(), // Correctly matched element atomic numbers
+      activeDeckElement: null, // Active flashcard element in Deck Mode
+      selectedDockElement: null, // Selected sandbox element from bottom shelf
+      hintsRemaining: 3,
+      showNumberHint: false, // Defaulting hidden
+      showMassHint: false // Defaulting hidden
+    };
+
+    // DOM Elements
+    const elements = {
+      grid: document.getElementById('periodic-grid'),
+      score: document.getElementById('score'),
+      streak: document.getElementById('streak'),
+      accuracy: document.getElementById('accuracy'),
+      soundToggle: document.getElementById('sound-toggle'),
+      soundIcon: document.getElementById('sound-icon'),
+      btnRestart: document.getElementById('btn-restart'),
+      selectDifficulty: document.getElementById('select-difficulty'),
+      selectGroup: document.getElementById('select-group'),
+      modeDeck: document.getElementById('mode-deck'),
+      modeSandbox: document.getElementById('mode-sandbox'),
+      deckDashboard: document.getElementById('quest-sidebar'), 
+      sandboxPanel: document.getElementById('sandbox-sidebar'), 
+      sandboxContainer: document.getElementById('sandbox-dock-container'),
+      deckCardWeight: document.getElementById('deck-card-weight'),
+      deckCardSymbol: document.getElementById('deck-card-symbol'),
+      deckCardName: document.getElementById('deck-card-name'),
+      elementFunFact: document.getElementById('element-fun-fact'),
+      btnSkip: document.getElementById('btn-skip'),
+      btnHint: document.getElementById('btn-hint'),
+      hintsLeft: document.getElementById('hints-left'),
+      progressBar: document.getElementById('progress-bar'),
+      placedRatio: document.getElementById('placed-ratio'),
+      percentComplete: document.getElementById('percent-complete'),
+      toastContainer: document.getElementById('toast-container'),
+      victoryBanner: document.getElementById('victory-banner'),
+      finalScore: document.getElementById('final-score'),
+      finalAccuracy: document.getElementById('final-accuracy'),
+      finalStreak: document.getElementById('final-streak'),
+      btnVictoryReplay: document.getElementById('btn-victory-replay'),
+      activeCardBox: document.getElementById('active-card-box')
+    };
+
+    // Unplaced card style mapping (Desaturated, eye-friendly borders)
+    const categoryStyles = {
+      "nonmetal": "bg-slate-950/40 border-sky-900/60 text-sky-400/90 hover:border-sky-500 hover:text-sky-300",
+      "alkali": "bg-slate-950/40 border-rose-900/60 text-rose-400/90 hover:border-rose-500 hover:text-rose-300",
+      "alkaline": "bg-slate-950/40 border-amber-900/60 text-amber-400/90 hover:border-amber-500 hover:text-amber-300",
+      "transition": "bg-slate-950/40 border-yellow-900/60 text-yellow-400/90 hover:border-yellow-500 hover:text-yellow-300",
+      "lanthanide": "bg-slate-950/40 border-pink-900/60 text-pink-400/90 hover:border-pink-500 hover:text-pink-300",
+      "actinide": "bg-slate-950/40 border-purple-900/60 text-purple-400/90 hover:border-purple-500 hover:text-purple-300",
+      "post-transition": "bg-slate-950/40 border-emerald-900/60 text-emerald-400/90 hover:border-emerald-500 hover:text-emerald-300",
+      "metalloid": "bg-slate-950/40 border-teal-900/60 text-teal-400/90 hover:border-teal-500 hover:text-teal-300",
+      "halogen": "bg-slate-950/40 border-indigo-900/60 text-indigo-400/90 hover:border-indigo-500 hover:text-indigo-300",
+      "noble-gas": "bg-slate-950/40 border-fuchsia-900/60 text-fuchsia-400/90 hover:border-fuchsia-500 hover:text-fuchsia-300"
+    };
+
+    // Placed elements style mapping - Overhauled for Crystal Clear HD view (matches Image 1 perfectly)
+    const activeCategoryStyles = {
+      "nonmetal": "bg-slate-950/90 border-2 border-cyan-500 text-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.15)] font-bold",
+      "alkali": "bg-slate-950/90 border-2 border-rose-500 text-rose-300 shadow-[0_0_8px_rgba(244,63,94,0.15)] font-bold",
+      "alkaline": "bg-slate-950/90 border-2 border-amber-500 text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.15)] font-bold",
+      "transition": "bg-slate-950/90 border-2 border-yellow-500 text-yellow-300 shadow-[0_0_8px_rgba(234,179,8,0.15)] font-bold",
+      "lanthanide": "bg-slate-950/90 border-2 border-pink-500 text-pink-300 shadow-[0_0_8px_rgba(236,72,153,0.15)] font-bold",
+      "actinide": "bg-slate-950/90 border-2 border-purple-500 text-purple-300 shadow-[0_0_8px_rgba(168,85,247,0.15)] font-bold",
+      "post-transition": "bg-slate-950/90 border-2 border-emerald-500 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.15)] font-bold",
+      "metalloid": "bg-slate-950/90 border-2 border-teal-500 text-teal-300 shadow-[0_0_8px_rgba(20,184,166,0.15)] font-bold",
+      "halogen": "bg-slate-950/90 border-2 border-indigo-500 text-indigo-300 shadow-[0_0_8px_rgba(99,102,241,0.15)] font-bold",
+      "noble-gas": "bg-slate-950/90 border-2 border-fuchsia-500 text-fuchsia-300 shadow-[0_0_8px_rgba(217,70,239,0.15)] font-bold"
+    };
+
+    // Category Dot Indicators (Top-right corner indicator dots from Image 1)
+    const categoryDotStyles = {
+      "nonmetal": "bg-cyan-400 shadow-[0_0_5px_#22d3ee]",
+      "alkali": "bg-rose-400 shadow-[0_0_5px_#f43f5e]",
+      "alkaline": "bg-amber-400 shadow-[0_0_5px_#f59e0b]",
+      "transition": "bg-yellow-400 shadow-[0_0_5px_#eab308]",
+      "lanthanide": "bg-pink-400 shadow-[0_0_5px_#ec4899]",
+      "actinide": "bg-purple-400 shadow-[0_0_5px_#a855f7]",
+      "post-transition": "bg-emerald-400 shadow-[0_0_5px_#10b981]",
+      "metalloid": "bg-teal-400 shadow-[0_0_5px_#14b8a6]",
+      "halogen": "bg-indigo-400 shadow-[0_0_5px_#6366f1]",
+      "noble-gas": "bg-fuchsia-400 shadow-[0_0_5px_#d946ef]"
+    };
+
+    // Determine the chemical block and group mapping of any element
+    function getElementSpecs(elem) {
+      let block = "";
+      let group = elem.col;
+
+      // Lanthanides & Actinides are inner transition Block F
+      if ((elem.number >= 57 && elem.number <= 71) || (elem.number >= 89 && elem.number <= 103)) {
+        block = "f";
+        group = elem.number >= 57 && elem.number <= 71 ? "lanthanide" : "actinide";
+      } else if (elem.col === 1 || elem.col === 2 || elem.number === 2) {
+        block = "s";
+      } else if (elem.col >= 13 && elem.col <= 18) {
+        block = "p";
+      } else if (elem.col >= 3 && elem.col <= 12) {
+        block = "d";
+      }
+      return { block, group };
+    }
+
+    // Dynamic set selector based on filters
+    function getActiveSet() {
+      const mainCat = state.difficulty;
+      const subGroup = state.subGroup;
+
+      if (mainCat.startsWith('block-')) {
+        const targetBlock = mainCat.split('-')[1]; // s, p, d, f
+        
+        return elementsData.filter(elem => {
+          const specs = getElementSpecs(elem);
+          if (specs.block !== targetBlock) return false;
+          
+          if (subGroup === 'all' || subGroup === 'none') return true;
+
+          // Block S grouping
+          if (targetBlock === 's') {
+            if (subGroup === 'g1') return elem.col === 1 || elem.number === 1; // Alkali + H
+            if (subGroup === 'g2') return elem.col === 2; // Alkaline Earth
+          }
+          // Block P grouping
+          if (targetBlock === 'p') {
+            const grpNum = parseInt(subGroup.replace('g', ''));
+            return elem.col === grpNum && elem.number !== 2; // Exclude He
+          }
+          // Block D grouping (Support for groups and periods)
+          if (targetBlock === 'd') {
+            if (subGroup.startsWith('period')) {
+              const periodNum = parseInt(subGroup.replace('period', ''));
+              return elem.row === periodNum;
+            } else {
+              const grpNum = parseInt(subGroup.replace('g', ''));
+              return elem.col === grpNum;
+            }
+          }
+          // Block F grouping
+          if (targetBlock === 'f') {
+            if (subGroup === 'lanthanides') return specs.group === 'lanthanide';
+            if (subGroup === 'actinides') return specs.group === 'actinide';
+          }
+          return false;
+        });
+      }
+
+      switch(mainCat) {
+        case 'noble':
+          return elementsData.filter(e => e.category === 'halogen' || e.category === 'noble-gas');
+        case 'full':
+        default:
+          return elementsData;
+      }
+    }
+
+    // Generate dynamic options in the Group Select dropdown based on Block Selection
+    function updateSubGroupDropdown() {
+      const mainCat = elements.selectDifficulty.value;
+      const subSelect = elements.selectGroup;
+      
+      subSelect.innerHTML = '';
+      
+      if (!mainCat.startsWith('block-')) {
+        subSelect.disabled = true;
+        subSelect.className = "w-full bg-slate-950/50 border border-slate-900 text-slate-650 rounded-xl px-3 py-1.5 text-xs cursor-not-allowed outline-none";
+        
+        const opt = document.createElement('option');
+        opt.value = 'none';
+        opt.textContent = 'N/A - Standard Challenge';
+        subSelect.appendChild(opt);
+        state.subGroup = 'none';
+        return;
+      }
+      
+      subSelect.disabled = false;
+      subSelect.className = "w-full bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-1.5 text-xs focus:ring-1 focus:ring-indigo-900 transition-all outline-none cursor-pointer";
+      
+      const targetBlock = mainCat.split('-')[1]; // s, p, d, f
+      
+      const allOpt = document.createElement('option');
+      allOpt.value = 'all';
+      allOpt.textContent = `All Block ${targetBlock.toUpperCase()} Elements`;
+      subSelect.appendChild(allOpt);
+      
+      if (targetBlock === 's') {
+        const groups = [
+          { val: 'g1', text: 'Group 1 (Alkali Metals + H)' },
+          { val: 'g2', text: 'Group 2 (Alkaline Earth Metals)' }
+        ];
+        groups.forEach(g => {
+          const opt = document.createElement('option');
+          opt.value = g.val;
+          opt.textContent = g.text;
+          subSelect.appendChild(opt);
+        });
+      } else if (targetBlock === 'p') {
+        const groups = [
+          { val: 'g13', text: 'Group 13 (Boron Group)' },
+          { val: 'g14', text: 'Group 14 (Carbon Group)' },
+          { val: 'g15', text: 'Group 15 (Pnictogens)' },
+          { val: 'g16', text: 'Group 16 (Chalcogens)' },
+          { val: 'g17', text: 'Group 17 (Halogens)' },
+          { val: 'g18', text: 'Group 18 (Noble Gases)' }
+        ];
+        groups.forEach(g => {
+          const opt = document.createElement('option');
+          opt.value = g.val;
+          opt.textContent = g.text;
+          subSelect.appendChild(opt);
+        });
+      } else if (targetBlock === 'd') {
+        // Add optgroup for periods
+        const periodsGroup = document.createElement('optgroup');
+        periodsGroup.label = "By Period (Transition Series)";
+        const periodList = [
+          { val: 'period4', text: 'Period 4 (3d Series - Sc to Zn)' },
+          { val: 'period5', text: 'Period 5 (4d Series - Y to Cd)' },
+          { val: 'period6', text: 'Period 6 (5d Series - Hf to Hg)' },
+          { val: 'period7', text: 'Period 7 (6d Series - Rf to Cn)' }
+        ];
+        periodList.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.val;
+          opt.textContent = p.text;
+          periodsGroup.appendChild(opt);
+        });
+        subSelect.appendChild(periodsGroup);
+
+        // Add optgroup for groups
+        const groupsGroup = document.createElement('optgroup');
+        groupsGroup.label = "By Group";
+        for (let i = 3; i <= 12; i++) {
+          const opt = document.createElement('option');
+          opt.value = `g${i}`;
+          opt.textContent = `Group ${i}`;
+          groupsGroup.appendChild(opt);
+        }
+        subSelect.appendChild(groupsGroup);
+      } else if (targetBlock === 'f') {
+        const groups = [
+          { val: 'lanthanides', text: 'Lanthanides (Elements 57-71)' },
+          { val: 'actinides', text: 'Actinides (Elements 89-103)' }
+        ];
+        groups.forEach(g => {
+          const opt = document.createElement('option');
+          opt.value = g.val;
+          opt.textContent = g.text;
+          subSelect.appendChild(opt);
+        });
+      }
+      
+      state.subGroup = subSelect.value;
+    }
+
+    // Interactive Toast Creator
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl border backdrop-blur-md shadow-lg transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto max-w-sm ${
+        type === 'success' 
+          ? 'bg-slate-900 border-slate-800 text-slate-300' 
+          : 'bg-red-950/60 border-red-900 text-red-300'
+      }`;
+      
+      const icon = type === 'success' ? 'check-circle' : 'alert-triangle';
+      toast.innerHTML = `
+        <i data-lucide="${icon}" class="w-5 h-5 flex-shrink-0"></i>
+        <div class="text-xs font-semibold">${message}</div>
+      `;
+      
+      elements.toastContainer.appendChild(toast);
+      lucide.createIcons();
+      
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3550);
+    }
+
+    // Sparkle Particle Animation Generator inside Element cells
+    function createConfetti(targetCell) {
+      if (!targetCell) return;
+      const rect = targetCell.getBoundingClientRect();
+      const parentRect = targetCell.offsetParent.getBoundingClientRect();
+      const left = rect.left - parentRect.left + rect.width / 2;
+      const top = rect.top - parentRect.top + rect.height / 2;
+
+      for (let i = 0; i < 12; i++) {
+        const particle = document.createElement('div');
+        particle.className = `absolute h-1.5 w-1.5 rounded-full pointer-events-none bg-indigo-500 z-30 transition-all duration-700 ease-out`;
+        particle.style.left = `${left}px`;
+        particle.style.top = `${top}px`;
+        
+        targetCell.offsetParent.appendChild(particle);
+
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 10 + Math.random() * 20;
+        const tx = Math.cos(angle) * speed;
+        const ty = Math.sin(angle) * speed;
+
+        setTimeout(() => {
+          particle.style.transform = `translate(${tx}px, ${ty}px) scale(0)`;
+          particle.style.opacity = '0';
+        }, 10);
+
+        setTimeout(() => particle.remove(), 750);
+      }
+    }
+
+    // Drag Drop Guide Lines Helper
+    function highlightDropTarget(targetNum) {
+      const cells = [...elements.grid.children];
+      cells.forEach(cell => {
+        if (Number(cell.dataset.number) === targetNum) {
+          cell.classList.add('ring-1', 'ring-indigo-500/80', 'ring-offset-1', 'ring-offset-slate-950', 'bg-slate-900/50');
+        }
+      });
+    }
+
+    function removeHighlightDropTarget() {
+      const cells = [...elements.grid.children];
+      cells.forEach(cell => {
+        cell.classList.remove('ring-1', 'ring-indigo-500/80', 'ring-offset-1', 'ring-offset-slate-950', 'bg-slate-900/50');
+      });
+    }
+
+    // Dynamic visibility toggles based on configuration checkboxes
+    function updateHintDisplays() {
+      // Quest Mode Number hint display
+      const numberElement = document.getElementById('deck-card-number');
+      if (numberElement) {
+        if (state.showNumberHint && state.activeDeckElement) {
+          numberElement.textContent = `#${state.activeDeckElement.number}`;
+          numberElement.classList.remove('hidden');
+        } else {
+          numberElement.classList.add('hidden');
+        }
+      }
+
+      // Quest Mode Mass/Weight hint display
+      const weightElement = document.getElementById('deck-card-weight');
+      if (weightElement) {
+        if (state.showMassHint && state.activeDeckElement) {
+          weightElement.textContent = state.activeDeckElement.mass.toFixed(3);
+          weightElement.classList.remove('hidden');
+        } else {
+          weightElement.classList.add('hidden');
+        }
+      }
+
+      // Sandbox Shelf Rerender if sandbox is active
+      if (state.gameMode === 'sandbox') {
+        renderSandboxDock();
+      }
+    }
+
+    // Render Periodic Table Grid (Crystal clear HD outlines, category status indicator dots from Image 1)
+    function renderTable() {
+      elements.grid.innerHTML = '';
+      const activeSetNumbers = new Set(getActiveSet().map(e => e.number));
+
+      for (let r = 1; r <= 10; r++) {
+        for (let c = 1; c <= 18; c++) {
+          
+          if (r === 8) {
+            const spacer = document.createElement('div');
+            spacer.className = "col-span-1 h-3 pointer-events-none";
+            elements.grid.appendChild(spacer);
+            continue;
+          }
+
+          if ((r === 9 || r === 10) && c < 4) {
+            if (c === 3) {
+              const spacerLabel = document.createElement('div');
+              spacerLabel.className = "col-span-1 flex items-center justify-center text-[8px] sm:text-[9px] font-bold text-slate-650 select-none border border-slate-900 rounded-lg bg-slate-950/20 w-full aspect-square";
+              spacerLabel.textContent = r === 9 ? "57-71" : "89-103";
+              elements.grid.appendChild(spacerLabel);
+            } else {
+              const spacer = document.createElement('div');
+              spacer.className = "col-span-1 pointer-events-none w-full aspect-square";
+              elements.grid.appendChild(spacer);
+            }
+            continue;
+          }
+
+          const element = elementsData.find(e => e.row === r && e.col === c);
+
+          if (element) {
+            const cell = document.createElement('div');
+            cell.dataset.number = element.number;
+            cell.dataset.category = element.category;
+            
+            const isTarget = activeSetNumbers.has(element.number);
+            const isPlaced = state.placedElements.has(element.number);
+
+            cell.className = `w-full aspect-square rounded-lg border flex flex-col justify-between p-1 transition-all duration-300 relative cursor-pointer select-none overflow-hidden`;
+
+            // Setup Drag & Drop Receivers for Sandbox Mode
+            if (isTarget && !isPlaced) {
+              cell.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                cell.classList.add('bg-slate-900', 'border-indigo-500/55', 'scale-[1.03]');
+              });
+              cell.addEventListener('dragleave', () => {
+                cell.classList.remove('bg-slate-900', 'border-indigo-500/55', 'scale-[1.03]');
+              });
+              cell.addEventListener('drop', (e) => {
+                e.preventDefault();
+                cell.classList.remove('bg-slate-900', 'border-indigo-500/55', 'scale-[1.03]');
+                const atomicNum = parseInt(e.dataTransfer.getData('text/plain'));
+                
+                // Process placement logic
+                state.accuracyAttempts++;
+                if (atomicNum === element.number) {
+                  handleCorrectPlacement(element.number, cell);
+                  state.selectedDockElement = null;
+                  renderSandboxDock();
+                } else {
+                  handleIncorrectPlacement(cell);
+                }
+              });
+            }
+
+            if (isPlaced) {
+              // Complete structural recreation of Image 1 cards:
+              // 1. Double thickness premium borders matching categories
+              // 2. High density centered typography
+              // 3. Glowing indicator status category dot in the top-right corner
+              cell.classList.add(...activeCategoryStyles[element.category].split(' '), 'pop-in');
+              
+              const indicatorDotHtml = `<span class="absolute top-1 right-1 h-1.5 w-1.5 rounded-full ${categoryDotStyles[element.category]}"></span>`;
+              
+              cell.innerHTML = `
+                <div class="text-[7px] sm:text-[8px] font-bold tracking-tight mono leading-none text-slate-400 select-none">${element.number}</div>
+                ${indicatorDotHtml}
+                <div class="text-xs sm:text-sm md:text-base font-extrabold tracking-tight text-center leading-none select-none my-0.5">${element.symbol}</div>
+                <div class="text-[5px] sm:text-[6.5px] font-bold tracking-tight truncate text-center leading-none mt-auto select-none opacity-90">${element.name}</div>
+              `;
+            } else if (isTarget) {
+              cell.className += ` border-slate-900 hover:border-slate-800 bg-slate-950/40 text-slate-500 hover:text-slate-355 flex items-center justify-center shadow-inner hover:bg-slate-900/30 duration-200`;
+              cell.innerHTML = `
+                <div class="text-[9px] sm:text-xs font-bold mono select-none leading-none">${element.number}</div>
+              `;
+            } else {
+              cell.className += ` border-slate-950 bg-slate-950/5 text-slate-800 pointer-events-none border-dashed opacity-20`;
+              cell.innerHTML = `
+                <div class="text-[6px] sm:text-[7px] font-bold tracking-tight mono leading-none">${element.number}</div>
+                <div class="text-[8px] sm:text-[9px] font-semibold text-center mt-0.5 leading-none select-none">${element.symbol}</div>
+              `;
+            }
+
+            cell.addEventListener('click', () => handleCellClick(element.number, cell));
+            elements.grid.appendChild(cell);
+
+          } else {
+            const gap = document.createElement('div');
+            gap.className = "col-span-1 w-full aspect-square pointer-events-none";
+            elements.grid.appendChild(gap);
+          }
+        }
+      }
+    }
+
+    // Generate elements for sandbox mode deck (Compact square boxes with symbols only - glare free)
+    function renderSandboxDock() {
+      elements.sandboxContainer.innerHTML = '';
+      const activeSet = getActiveSet();
+      const unplaced = activeSet.filter(e => !state.placedElements.has(e.number));
+
+      const shuffled = [...unplaced].sort(() => Math.random() - 0.5);
+
+      if (shuffled.length === 0) {
+        elements.sandboxContainer.innerHTML = `
+          <div class="text-xs font-semibold text-slate-500 flex flex-col items-center justify-center py-6 text-center gap-1.5 w-full col-span-4">
+            <i data-lucide="check-circle2" class="w-5 h-5 text-slate-650"></i> All Set!
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      shuffled.forEach(elem => {
+        const item = document.createElement('div');
+        const catStyle = categoryStyles[elem.category] || "border-slate-800 bg-slate-950";
+        
+        // Square layout with only symbol in it
+        item.className = `w-full aspect-square rounded-lg border flex items-center justify-center cursor-grab active:cursor-grabbing transition-all duration-200 select-none ${catStyle} hover:scale-105 active:scale-95`;
+        
+        // Setup Draggable attributes
+        item.setAttribute('draggable', 'true');
+        
+        // Interactive selection border
+        if (state.selectedDockElement?.number === elem.number) {
+          item.className += " ring-1 ring-indigo-500 ring-offset-1 ring-offset-slate-950";
+        }
+
+        // Build dynamic native tooltip based on clue checkbox selection
+        let titleText = elem.name;
+        let detailsList = [];
+        if (state.showNumberHint) {
+          detailsList.push(`Atomic #${elem.number}`);
+        }
+        if (state.showMassHint) {
+          detailsList.push(`Weight: ${elem.mass.toFixed(2)}`);
+        }
+        if (detailsList.length > 0) {
+          titleText += ` (${detailsList.join(', ')})`;
+        }
+        item.setAttribute('title', titleText);
+
+        // Display only Symbol
+        item.innerHTML = `<div class="text-sm sm:text-base font-extrabold select-none">${elem.symbol}</div>`;
+
+        // Dynamic Mouse Hover Event Listener: updates preview status bar using checked cues only
+        item.addEventListener('mouseenter', () => {
+          const hoverInfo = document.getElementById('sandbox-hover-info');
+          let labelText = elem.name;
+          let labelDetails = [];
+          if (state.showNumberHint) {
+            labelDetails.push(`#${elem.number}`);
+          }
+          if (state.showMassHint) {
+            labelDetails.push(`${elem.mass.toFixed(2)}`);
+          }
+          if (labelDetails.length > 0) {
+            labelText += ` (${labelDetails.join(', ')})`;
+          }
+          hoverInfo.innerHTML = `<i data-lucide="help-circle" class="w-3 h-3 text-indigo-400"></i> ${labelText}`;
+          lucide.createIcons();
+        });
+
+        item.addEventListener('mouseleave', () => {
+          const hoverInfo = document.getElementById('sandbox-hover-info');
+          hoverInfo.innerHTML = `<i data-lucide="info" class="w-3 h-3 text-slate-500"></i> Hover a card to display name`;
+          lucide.createIcons();
+        });
+
+        // Click selection backup handler
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectDockElement(elem);
+        });
+
+        // HTML5 Draggable handling
+        item.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', elem.number);
+          state.selectedDockElement = elem;
+          highlightDropTarget(elem.number);
+        });
+
+        item.addEventListener('dragend', () => {
+          removeHighlightDropTarget();
+        });
+
+        elements.sandboxContainer.appendChild(item);
+      });
+    }
+
+    // Select sandbox deck item
+    function selectDockElement(elem) {
+      state.selectedDockElement = elem;
+      renderSandboxDock();
+      showToast(`Selected ${elem.name} (${elem.symbol}). Tap its correct box on the periodic table grid!`, 'success');
+    }
+
+    // Interaction click handling
+    function handleCellClick(atomicNumber, cellElement) {
+      if (state.placedElements.has(atomicNumber)) {
+        const elem = elementsData.find(e => e.number === atomicNumber);
+        if (elem) {
+          showToast(`Element Fact: ${elem.fact}`, 'success');
+        }
+        return;
+      }
+
+      if (state.gameMode === 'deck') {
+        if (!state.activeDeckElement) return;
+
+        state.accuracyAttempts++;
+        if (state.activeDeckElement.number === atomicNumber) {
+          handleCorrectPlacement(atomicNumber, cellElement);
+        } else {
+          handleIncorrectPlacement(cellElement);
+        }
+      } else {
+        if (!state.selectedDockElement) {
+          showToast("Tap or drag an element from the right-hand shelf deck first!", "error");
+          return;
+        }
+
+        state.accuracyAttempts++;
+        if (state.selectedDockElement.number === atomicNumber) {
+          handleCorrectPlacement(atomicNumber, cellElement);
+          state.selectedDockElement = null;
+          renderSandboxDock();
+        } else {
+          handleIncorrectPlacement(cellElement);
+        }
+      }
+    }
+
+    // Actions on Correct element placement
+    function handleCorrectPlacement(atomicNumber, cellElement) {
+      state.placedElements.add(atomicNumber);
+      state.accuracyCorrect++;
+      
+      state.streak++;
+      if (state.streak > state.maxStreak) {
+        state.maxStreak = state.streak;
+      }
+      const basePoints = 100;
+      const streakBonus = Math.min(500, (state.streak - 1) * 20);
+      state.score += (basePoints + streakBonus);
+
+      sound.playCorrect();
+      createConfetti(cellElement);
+
+      const elem = elementsData.find(e => e.number === atomicNumber);
+      showToast(`Correct! Added ${elem.name} (${elem.symbol}) &bull; +${basePoints + streakBonus} XP!`, 'success');
+
+      updateScores();
+      renderTable();
+
+      const activeSetLength = getActiveSet().length;
+      if (state.placedElements.size >= activeSetLength) {
+        triggerVictory();
+        return;
+      }
+
+      if (state.gameMode === 'deck') {
+        pickNextDeckElement();
+      }
+    }
+
+    // Actions on Incorrect element placement
+    function handleIncorrectPlacement(cellElement) {
+      state.streak = 0;
+      sound.playIncorrect();
+
+      cellElement.classList.add('shake', 'border-red-900', 'text-red-400');
+      setTimeout(() => {
+        cellElement.classList.remove('shake', 'border-red-900', 'text-red-400');
+      }, 400);
+
+      showToast("Incorrect position! Match the atomic numbers carefully.", "error");
+
+      if (state.gameMode === 'deck') {
+        elements.activeCardBox.classList.add('shake', 'border-red-950');
+        setTimeout(() => {
+          elements.activeCardBox.classList.remove('shake', 'border-red-950');
+        }, 400);
+      }
+
+      updateScores();
+    }
+
+    // Deck mode element selectors
+    function pickNextDeckElement() {
+      const activeSet = getActiveSet();
+      const unplaced = activeSet.filter(e => !state.placedElements.has(e.number));
+
+      if (unplaced.length === 0) {
+        state.activeDeckElement = null;
+        return;
+      }
+
+      const nextIndex = Math.floor(Math.random() * unplaced.length);
+      state.activeDeckElement = unplaced[nextIndex];
+
+      elements.deckCardWeight.textContent = state.activeDeckElement.mass.toFixed(3);
+      elements.deckCardSymbol.textContent = state.activeDeckElement.symbol;
+      elements.deckCardName.textContent = state.activeDeckElement.name;
+      elements.elementFunFact.textContent = state.activeDeckElement.fact;
+
+      const numberElement = document.getElementById('deck-card-number');
+      if (numberElement) {
+        numberElement.textContent = `#${state.activeDeckElement.number}`;
+      }
+
+      elements.activeCardBox.className = `h-24 w-24 rounded-xl bg-slate-950 border border-slate-850 flex flex-col items-center justify-between p-2.5 transition-all duration-300 select-none relative overflow-hidden group`;
+      
+      // Update values with preferences applied
+      updateHintDisplays();
+    }
+
+    // Skip deck element
+    elements.btnSkip.addEventListener('click', () => {
+      pickNextDeckElement();
+      state.streak = 0;
+      updateScores();
+      showToast("Element card skipped. Streak reset!", "error");
+    });
+
+    // Scoreboard indicators
+    function updateScores() {
+      elements.score.textContent = String(state.score).padStart(4, '0');
+      elements.streak.textContent = state.streak;
+
+      const acc = state.accuracyAttempts > 0 
+        ? Math.round((state.accuracyCorrect / state.accuracyAttempts) * 100) 
+        : 100;
+      elements.accuracy.textContent = `${acc}%`;
+
+      if (state.streak >= 5) {
+        document.getElementById('streak-panel').className = "text-base font-bold text-indigo-300 flex items-center gap-1 scale-105 transition-all duration-300";
+      } else {
+        document.getElementById('streak-panel').className = "text-base font-bold text-indigo-400 flex items-center gap-1 transition-all duration-300";
+      }
+
+      const activeSet = getActiveSet();
+      const progressPercent = activeSet.length > 0 ? (state.placedElements.size / activeSet.length) * 100 : 0;
+      elements.progressBar.style.width = `${progressPercent}%`;
+      elements.placedRatio.textContent = `${state.placedElements.size} / ${activeSet.length} Completed`;
+      elements.percentComplete.textContent = `${Math.round(progressPercent)}%`;
+    }
+
+    // Hint Actions
+    elements.btnHint.addEventListener('click', () => {
+      if (state.hintsRemaining <= 0) {
+        showToast("No hints remaining! Rely on your chemical knowledge.", "error");
+        return;
+      }
+
+      let activeNumber = null;
+      if (state.gameMode === 'deck' && state.activeDeckElement) {
+        activeNumber = state.activeDeckElement.number;
+      } else if (state.gameMode === 'sandbox' && state.selectedDockElement) {
+        activeNumber = state.selectedDockElement.number;
+      }
+
+      if (!activeNumber) {
+        showToast("Choose or select an active element first to show hints!", "error");
+        return;
+      }
+
+      state.hintsRemaining--;
+      elements.hintsLeft.textContent = state.hintsRemaining;
+
+      const targetCell = [...elements.grid.children].find(c => Number(c.dataset.number) === activeNumber);
+      if (targetCell) {
+        targetCell.classList.add('glow-blue', 'scale-105', 'bg-slate-900', 'border-indigo-500');
+        showToast(`Locate matching spot numbered ${activeNumber}!`, 'success');
+        setTimeout(() => {
+          targetCell.classList.remove('glow-blue', 'scale-105', 'bg-slate-900', 'border-indigo-500');
+        }, 3000);
+      }
+    });
+
+    // Reset Core gameplay cycle (Hides celebration banner inline cleanly)
+    function resetGame() {
+      state.score = 0;
+      state.streak = 0;
+      state.accuracyAttempts = 0;
+      state.accuracyCorrect = 0;
+      state.placedElements.clear();
+      state.selectedDockElement = null;
+      state.hintsRemaining = 3;
+      elements.hintsLeft.textContent = state.hintsRemaining;
+
+      elements.victoryBanner.classList.add('hidden');
+
+      updateScores();
+      renderTable();
+
+      if (state.gameMode === 'deck') {
+        elements.deckDashboard.classList.remove('hidden');
+        elements.sandboxPanel.classList.add('hidden');
+        pickNextDeckElement();
+      } else {
+        elements.deckDashboard.classList.add('hidden');
+        elements.sandboxPanel.classList.remove('hidden');
+        renderSandboxDock();
+      }
+
+      showToast("New chemical experiment initiated. Good luck!", "success");
+    }
+
+    // Trigger Victory Sequence
+    function triggerVictory() {
+      sound.playLevelComplete();
+      
+      elements.finalScore.textContent = state.score;
+      const acc = state.accuracyAttempts > 0 
+        ? Math.round((state.accuracyCorrect / state.accuracyAttempts) * 100) 
+        : 100;
+      elements.finalAccuracy.textContent = `${acc}%`;
+      elements.finalStreak.textContent = state.maxStreak;
+
+      // Reveal the congratulations banner inline at the top, leaving elements intact
+      elements.victoryBanner.classList.remove('hidden');
+    }
+
+    // Toggle sound states
+    elements.soundToggle.addEventListener('click', () => {
+      sound.init();
+      sound.enabled = !sound.enabled;
+      if (sound.enabled) {
+        elements.soundIcon.setAttribute('data-lucide', 'volume-2');
+        showToast("Audio synthesizer enabled!", 'success');
+      } else {
+        elements.soundIcon.setAttribute('data-lucide', 'volume-x');
+        showToast("Audio synthesizer muted.", 'error');
+      }
+      lucide.createIcons();
+    });
+
+    // Option Config Handlers
+    elements.selectDifficulty.addEventListener('change', (e) => {
+      state.difficulty = e.target.value;
+      updateSubGroupDropdown();
+      resetGame();
+    });
+
+    elements.selectGroup.addEventListener('change', (e) => {
+      state.subGroup = e.target.value;
+      resetGame();
+    });
+
+    elements.modeDeck.addEventListener('click', () => {
+      state.gameMode = 'deck';
+      elements.modeDeck.className = "py-1.5 px-3 rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1 bg-slate-900 text-slate-200 border border-slate-800";
+      elements.modeSandbox.className = "py-1.5 px-3 rounded-lg text-[11px] font-bold text-slate-500 hover:text-slate-355 transition-all flex items-center justify-center gap-1";
+      resetGame();
+    });
+
+    elements.modeSandbox.addEventListener('click', () => {
+      state.gameMode = 'sandbox';
+      elements.modeSandbox.className = "py-1.5 px-3 rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1 bg-slate-900 text-slate-200 border border-slate-800";
+      elements.modeDeck.className = "py-1.5 px-3 rounded-lg text-[11px] font-bold text-slate-500 hover:text-slate-355 transition-all flex items-center justify-center gap-1";
+      resetGame();
+    });
+
+    elements.btnRestart.addEventListener('click', resetGame);
+    elements.btnVictoryReplay.addEventListener('click', resetGame);
+
+    // Document Ready - Initialize Game Grid & UI Assets
+    window.addEventListener('DOMContentLoaded', () => {
+      updateSubGroupDropdown();
+      lucide.createIcons();
+      
+      // Bind event listeners to hint configuration checkboxes
+      const checkShowNumber = document.getElementById('check-show-number');
+      const checkShowMass = document.getElementById('check-show-mass');
+
+      checkShowNumber.addEventListener('change', (e) => {
+        state.showNumberHint = e.target.checked;
+        updateHintDisplays();
+      });
+
+      checkShowMass.addEventListener('change', (e) => {
+        state.showMassHint = e.target.checked;
+        updateHintDisplays();
+      });
+
+      // Strict enforcement of defaults on load
+      checkShowNumber.checked = state.showNumberHint;
+      checkShowMass.checked = state.showMassHint;
+
+      resetGame();
+    });
+  </script>
+</body>
+</html>
