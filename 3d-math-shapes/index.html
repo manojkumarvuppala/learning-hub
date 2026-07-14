@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JEE 3D Geometric Space & Formula Analyzer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            950: '#030712',
+                            900: '#0f172a',
+                            800: '#1e293b',
+                            700: '#334155'
+                        },
+                        cyan: {
+                            400: '#22d3ee',
+                            500: '#06b6d4',
+                            600: '#0891b2'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- KaTeX for elegant Math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <!-- Three.js & OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .glass-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glow-cyan:hover {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
+        }
+        /* Custom styled range slider */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: #1e293b;
+            height: 6px;
+            border-radius: 9999px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #06b6d4;
+            cursor: pointer;
+            transition: all 0.1s ease-in-out;
+            box-shadow: 0 0 8px rgba(6, 182, 212, 0.5);
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+            background: #22d3ee;
+        }
+        /* Hidden scrollbar */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col overflow-x-hidden antialiased">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur sticky top-0 z-40 px-4 py-3 lg:px-8 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl text-white shadow-lg shadow-cyan-950/55">
+                    <i data-lucide="shapes" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tight bg-gradient-to-r from-white via-slate-100 to-cyan-400 bg-clip-text text-transparent">
+                        JEE 3D Geometric Space & Formula Analyzer
+                    </h1>
+                    <p class="text-xs text-slate-400 font-semibold tracking-wide">Dynamic Diagram Annotation • Interactive Handbooks • Real-time Metrics</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 bg-slate-800 border border-slate-700/60 text-cyan-400 font-mono text-[11px] rounded-full flex items-center gap-1.5 shadow">
+                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span> Screen-Space Overlay Pinned
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation Ribbon (All 7 Shapes) -->
+    <nav class="bg-slate-900 border-b border-slate-800/70 overflow-x-auto no-scrollbar sticky top-[69px] z-30 px-4 py-2">
+        <div class="max-w-7xl mx-auto flex gap-2 min-w-max">
+            <button onclick="setActiveTab('cube')" id="tab-cube" class="tab-btn px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 bg-cyan-600 text-white shadow-md shadow-cyan-950/50">
+                <i data-lucide="box" class="w-4 h-4"></i> CUBE
+            </button>
+            <button onclick="setActiveTab('cuboid')" id="tab-cuboid" class="tab-btn px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 hover:bg-slate-800 text-slate-400">
+                <i data-lucide="package" class="w-4 h-4"></i> CUBOID
+            </button>
+            <button onclick="setActiveTab('sphere')" id="tab-sphere" class="tab-btn px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 hover:bg-slate-800 text-slate-400">
+                <i data-lucide="globe" class="w-4 h-4"></i> SPHERE & HEMISPHERE
+            </button>
+            <button onclick="setActiveTab('cylinder')" id="tab-cylinder" class="tab-btn px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 hover:bg-slate-800 text-slate-400">
+                <i data-lucide="database" class="w-4 h-4"></i> CYLINDER
+            </button>
+            <button onclick="setActiveTab('cone')" id="tab-cone" class="tab-btn px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 hover:bg-slate-800 text-slate-400">
+                <i data-lucide="cone" class="w-4 h-4"></i> CONE & FRUSTUM
+            </button>
+            <button onclick="setActiveTab('parallelepiped')" id="tab-parallelepiped" class="tab-btn px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 hover:bg-slate-800 text-slate-400">
+                <i data-lucide="move" class="w-4 h-4"></i> PARALLELEPIPED
+            </button>
+            <button onclick="setActiveTab('tetrahedron')" id="tab-tetrahedron" class="tab-btn px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 hover:bg-slate-800 text-slate-400">
+                <i data-lucide="triangle" class="w-4 h-4"></i> TETRAHEDRON
+            </button>
+        </div>
+    </nav>
+
+    <!-- Master Layout Splitter -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- LEFT PANE: Visualizer Engine & Parameter Controllers (5 cols) -->
+        <section class="lg:col-span-5 flex flex-col gap-4">
+            
+            <!-- ThreeJS WebGL Simulator with absolute overlay for 3D Pinned Labels -->
+            <div class="glass-card rounded-2xl overflow-hidden relative border border-slate-800/80 shadow-xl h-[380px] md:h-[420px] flex flex-col">
+                <div id="canvas-container" class="w-full h-full relative cursor-grab active:cursor-grabbing"></div>
+                
+                <!-- Dynamic 3D projected HTML Labels Container -->
+                <div id="labels-overlay-container" class="absolute inset-0 pointer-events-none overflow-hidden">
+                    <!-- Dynamic absolute HTML labels injected here by render loop -->
+                </div>
+                
+                <!-- Floating Canvas Controls Overlay -->
+                <div class="absolute top-3 left-3 right-3 flex flex-wrap gap-2 pointer-events-none justify-between items-start">
+                    <div class="flex flex-wrap gap-1.5 pointer-events-auto">
+                        <button onclick="toggleGrid()" title="Toggle Floor Grid" class="p-2 bg-slate-900/90 border border-slate-700/60 rounded-lg hover:bg-slate-800 text-slate-300 transition-all flex items-center justify-center glow-cyan">
+                            <i id="icon-grid" data-lucide="grid-3x3" class="w-4 h-4 text-cyan-400"></i>
+                        </button>
+                        <button onclick="toggleAxes()" title="Toggle X-Y-Z Coordinate Axes Helper" class="p-2 bg-slate-900/90 border border-slate-700/60 rounded-lg hover:bg-slate-800 text-slate-300 transition-all flex items-center justify-center glow-cyan">
+                            <i id="icon-axes" data-lucide="compass" class="w-4 h-4 text-cyan-400"></i>
+                        </button>
+                        <button onclick="toggleRotation()" title="Toggle Idle Spin Animation" class="p-2 bg-slate-900/90 border border-slate-700/60 rounded-lg hover:bg-slate-800 text-slate-300 transition-all flex items-center justify-center glow-cyan">
+                            <i id="icon-rotation" data-lucide="refresh-cw" class="w-4 h-4 text-cyan-400 animate-spin" style="animation-duration: 8s;"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Dynamic extras (Inscribed sphere toggles, etc.) -->
+                    <div id="canvas-extras-box" class="pointer-events-auto"></div>
+                </div>
+
+                <!-- Live Dimension Guides Legend -->
+                <div class="absolute bottom-2.5 left-2.5 bg-slate-900/90 border border-slate-800/80 px-2.5 py-1.5 rounded-lg text-[10px] pointer-events-none flex flex-wrap gap-x-3 gap-y-1">
+                    <span class="flex items-center gap-1 font-bold text-rose-400"><span class="w-2 h-2 rounded-full bg-rose-500"></span> X-Axis / Width</span>
+                    <span class="flex items-center gap-1 font-bold text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Y-Axis / Height</span>
+                    <span class="flex items-center gap-1 font-bold text-yellow-400"><span class="w-2 h-2 rounded-full bg-yellow-500"></span> Radius</span>
+                    <span class="flex items-center gap-1 font-bold text-purple-400"><span class="w-2 h-2 rounded-full bg-purple-500"></span> Slant / Vectors</span>
+                </div>
+
+                <div class="absolute bottom-2.5 right-2.5 bg-slate-900/95 border border-slate-800/80 text-[10px] text-slate-400 font-mono px-2 py-1 rounded-md pointer-events-none flex items-center gap-1.5">
+                    <i data-lucide="mouse-pointer" class="w-3 h-3 text-cyan-500"></i> Drag: Rotate
+                </div>
+            </div>
+
+            <!-- Parameters Sliders -->
+            <div class="glass-card rounded-2xl p-4 border border-slate-800/80 shadow-md">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2.5 mb-3.5">
+                    <h3 class="text-xs font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
+                        <i data-lucide="sliders" class="w-4 h-4 text-cyan-500"></i> Variable Dimension Sliders
+                    </h3>
+                    <span id="active-slider-tag" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-cyan-400 font-semibold border border-slate-700">Cube Params</span>
+                </div>
+                
+                <div id="sliders-box" class="grid grid-cols-1 gap-3.5">
+                    <!-- Sliders dynamically injected via JS based on selected tab -->
+                </div>
+            </div>
+
+            <!-- Live Value Calculator Panel -->
+            <div class="glass-card rounded-2xl p-4 border border-slate-800/80 shadow-md">
+                <h3 class="text-xs font-black tracking-wider text-slate-400 uppercase flex items-center gap-1.5 border-b border-slate-800 pb-2 mb-3">
+                    <i data-lucide="calculator" class="w-4 h-4 text-emerald-400"></i> Real-time Numerical Calculator
+                </h3>
+                <div id="dynamic-calculations" class="space-y-2.5 text-xs">
+                    <!-- Dynamic KaTeX formulas filled and calculated in real-time -->
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT PANE: The Core Mathematical & Analytical Formula Handbook (7 cols) -->
+        <section class="lg:col-span-7 flex flex-col gap-4">
+            
+            <!-- Handbook Navigation Tabs -->
+            <div class="flex border border-slate-800/80 bg-slate-900/40 rounded-xl overflow-hidden p-1 gap-1">
+                <button onclick="setInfoTab('formulas')" id="handbook-tab-formulas" class="flex-1 text-center py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all bg-slate-800 text-cyan-400 border border-slate-700/60">
+                    Standard Formulae
+                </button>
+                <button onclick="setInfoTab('jee-advanced')" id="handbook-tab-jee-advanced" class="flex-1 text-center py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all text-slate-400 hover:text-slate-200">
+                    JEE Advanced Key Aspects
+                </button>
+                <button onclick="setInfoTab('cheat-sheet')" id="handbook-tab-cheat-sheet" class="flex-1 text-center py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all text-slate-400 hover:text-slate-200">
+                    All-in-One Cheat Sheet
+                </button>
+            </div>
+
+            <!-- Handbook Content Pane -->
+            <div class="glass-card rounded-2xl p-5 md:p-6 border border-slate-800/80 shadow-xl overflow-y-auto max-h-[720px] flex-grow leading-relaxed">
+                <div id="handbook-content" class="space-y-4">
+                    <!-- Content populated by JavaScript dynamically depending on selected tab -->
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900/90 bg-slate-950/80 text-center py-4 text-xs text-slate-500 mt-auto">
+        <p>© 2026 JEE Advanced 3D Geometric Space Master Dashboard. Built for precise mathematical concept visualization.</p>
+    </footer>
+
+    <!-- JS Application Logic -->
+    <script>
+        let activeShape = 'cube';
+        let activeHandbookTab = 'formulas';
+        let scene, camera, renderer, controls;
+        let activeMeshGroup = null;
+        let gridHelper, axesHelper;
+
+        let isRotationActive = true;
+        let isGridEnabled = true;
+        let isAxesEnabled = true;
+
+        // Custom extra parameters
+        let showInscribedSphere = false;
+        let showCircumscribedSphere = false;
+        let vectorLockRegularTetra = false;
+        let sphereToggleMode = 'sphere'; 
+        let coneToggleMode = 'cone'; 
+
+        // Active array of labels projected into 3D screen space
+        // Structure: { pos: THREE.Vector3, text: HTMLString, colorClass: String }
+        let projectedLabels = [];
+
+        const shapeParams = {
+            cube: { a: 4.0 },
+            cuboid: { l: 5.0, w: 3.5, h: 2.5 },
+            sphere: { r: 3.0 },
+            cylinder: { r: 2.2, h: 5.0 },
+            cone: { rTop: 1.2, rBottom: 2.5, h: 5.0 },
+            parallelepiped: {
+                ax: 4.0, ay: 0.0, az: 0.0,
+                bx: 1.0, by: 3.5, bz: 0.0,
+                cx: 1.0, cy: 1.5, cz: 3.2
+            },
+            tetrahedron: {
+                ax: 4.0, ay: 0.0, az: 0.0,
+                bx: 2.0, by: 3.5, bz: 0.0,
+                cx: 2.0, cy: 1.15, cz: 3.26
+            }
+        };
+
+        const vectorMath = {
+            cross: (u, v) => ({
+                x: u.y * v.z - u.z * v.y,
+                y: u.z * v.x - u.x * v.z,
+                z: u.x * v.y - u.y * v.x
+            }),
+            dot: (u, v) => u.x * v.x + u.y * v.y + u.z * v.z,
+            mag: (u) => Math.sqrt(u.x * u.x + u.y * u.y + u.z * u.z),
+            stp: (a, b, c) => {
+                const b_cross_c = vectorMath.cross(b, c);
+                return vectorMath.dot(a, b_cross_c);
+            }
+        };
+
+        // Standard translucent materials for shapes to allow seeing dimension guides inside
+        const materials = {
+            mainMesh: new THREE.MeshStandardMaterial({
+                color: 0x0ea5e9,
+                transparent: true,
+                opacity: 0.35, // High transparency to easily see coordinate guides inside
+                roughness: 0.15,
+                metalness: 0.1,
+                side: THREE.DoubleSide
+            }),
+            solidMesh: new THREE.MeshStandardMaterial({
+                color: 0x0ea5e9,
+                transparent: true,
+                opacity: 0.5,
+                roughness: 0.2,
+                side: THREE.DoubleSide
+            }),
+            wireframeLine: new THREE.LineBasicMaterial({
+                color: 0x22d3ee,
+                linewidth: 2
+            }),
+            outerSphere: new THREE.MeshBasicMaterial({
+                color: 0xf43f5e,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.15
+            }),
+            innerSphere: new THREE.MeshBasicMaterial({
+                color: 0x10b981,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.15
+            }),
+            // Colorful materials for Dimension Lines
+            dimensionX: new THREE.LineBasicMaterial({ color: 0xf43f5e, linewidth: 3 }), // Rose
+            dimensionY: new THREE.LineBasicMaterial({ color: 0x10b981, linewidth: 3 }), // Emerald
+            dimensionRadius: new THREE.LineBasicMaterial({ color: 0xeab308, linewidth: 3 }), // Yellow
+            dimensionSlant: new THREE.LineBasicMaterial({ color: 0xa855f7, linewidth: 3 }) // Purple
+        };
+
+        // Helper to draw clean guides with thickness (using small cylinder or lines)
+        function createDimensionLine(p1, p2, material) {
+            const points = [p1, p2];
+            const geom = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geom, material);
+            return line;
+        }
+
+        // Initialize WebGL Scene
+        function initWebGL() {
+            const container = document.getElementById('canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x030712);
+
+            camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+            camera.position.set(7, 8, 10);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxDistance = 25;
+            controls.minDistance = 3;
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.85);
+            dirLight1.position.set(10, 15, 8);
+            scene.add(dirLight1);
+
+            const dirLight2 = new THREE.DirectionalLight(0x06b6d4, 0.45);
+            dirLight2.position.set(-8, -5, -8);
+            scene.add(dirLight2);
+
+            gridHelper = new THREE.GridHelper(20, 20, 0x334155, 0x1e293b);
+            gridHelper.position.y = -2.5; 
+            scene.add(gridHelper);
+
+            axesHelper = new THREE.AxesHelper(5);
+            axesHelper.position.set(-4.5, -2.45, -4.5);
+            scene.add(axesHelper);
+
+            activeMeshGroup = new THREE.Group();
+            scene.add(activeMeshGroup);
+
+            animate();
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        }
+
+        // 3D Screen Space projection engine
+        function updateProjectedLabels() {
+            const overlayContainer = document.getElementById('labels-overlay-container');
+            
+            // Rebuild HTML nodes inside the overlay
+            overlayContainer.innerHTML = '';
+
+            const container = document.getElementById('canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            projectedLabels.forEach((labelSpec, idx) => {
+                // Clone and apply group matrix transformation to coordinate point
+                const vec = labelSpec.pos.clone();
+                // Apply group rotation/scaling
+                vec.applyMatrix4(activeMeshGroup.matrixWorld);
+
+                // Project into normalized device coordinates (NDC)
+                vec.project(camera);
+
+                // Don't display labels behind camera perspective
+                if (vec.z > 1) return;
+
+                // Scale to absolute container space
+                const x = (vec.x * .5 + .5) * width;
+                const y = (-(vec.y * .5) + .5) * height;
+
+                // Generate element
+                const el = document.createElement('div');
+                el.className = `absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none px-2 py-0.5 rounded-md text-xs font-black shadow-lg font-mono bg-slate-950/90 border border-slate-800 ${labelSpec.colorClass}`;
+                el.style.left = `${x}px`;
+                el.style.top = `${y}px`;
+                el.innerHTML = labelSpec.text;
+
+                overlayContainer.appendChild(el);
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (isRotationActive && activeMeshGroup) {
+                activeMeshGroup.rotation.y += 0.004;
+            }
+            controls.update();
+            renderer.render(scene, camera);
+
+            // Project annotations onto 2D screen coordinate overlay
+            updateProjectedLabels();
+        }
+
+        // Toggles for visual helpers
+        function toggleGrid() {
+            isGridEnabled = !isGridEnabled;
+            gridHelper.visible = isGridEnabled;
+            document.getElementById('icon-grid').className = isGridEnabled ? "w-4 h-4 text-cyan-400" : "w-4 h-4 text-slate-500";
+        }
+
+        function toggleAxes() {
+            isAxesEnabled = !isAxesEnabled;
+            axesHelper.visible = isAxesEnabled;
+            document.getElementById('icon-axes').className = isAxesEnabled ? "w-4 h-4 text-cyan-400" : "w-4 h-4 text-slate-500";
+        }
+
+        function toggleRotation() {
+            isRotationActive = !isRotationActive;
+            const icon = document.getElementById('icon-rotation');
+            if (isRotationActive) {
+                icon.className = "w-4 h-4 text-cyan-400 animate-spin";
+            } else {
+                icon.className = "w-4 h-4 text-slate-500";
+            }
+        }
+
+        function resetCamera() {
+            camera.position.set(7, 8, 10);
+            controls.target.set(0, 0, 0);
+            controls.update();
+        }
+
+        // --- 3D SCENE REBUILDERS ---
+        function clearActiveMeshGroup() {
+            while (activeMeshGroup.children.length > 0) {
+                const obj = activeMeshGroup.children[0];
+                activeMeshGroup.remove(obj);
+            }
+            activeMeshGroup.rotation.set(0, 0, 0);
+            projectedLabels = []; // clear dimension guides labels
+        }
+
+        function addMeshWithWireframe(geometry) {
+            const mesh = new THREE.Mesh(geometry, materials.mainMesh);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            const edges = new THREE.EdgesGeometry(geometry);
+            const line = new THREE.LineSegments(edges, materials.wireframeLine);
+
+            activeMeshGroup.add(mesh);
+            activeMeshGroup.add(line);
+        }
+
+        function rebuild3DScene() {
+            clearActiveMeshGroup();
+
+            switch (activeShape) {
+                case 'cube': {
+                    const side = shapeParams.cube.a;
+                    const geom = new THREE.BoxGeometry(side, side, side);
+                    addMeshWithWireframe(geom);
+
+                    // --- DIMENSION GUIDES ---
+                    // Show side 'a' on bottom edge (Rose)
+                    const p1 = new THREE.Vector3(-side/2, -side/2, side/2 + 0.1);
+                    const p2 = new THREE.Vector3(side/2, -side/2, side/2 + 0.1);
+                    activeMeshGroup.add(createDimensionLine(p1, p2, materials.dimensionX));
+
+                    projectedLabels.push({
+                        pos: new THREE.Vector3(0, -side/2 - 0.2, side/2 + 0.2),
+                        text: `a = ${side.toFixed(1)}`,
+                        colorClass: 'text-rose-400 border-rose-500/40'
+                    });
+
+                    if (showInscribedSphere) {
+                        const r_in = side / 2;
+                        const geomIn = new THREE.SphereGeometry(r_in, 24, 24);
+                        const sphereIn = new THREE.Mesh(geomIn, materials.innerSphere);
+                        activeMeshGroup.add(sphereIn);
+
+                        // Draw inner radius line (Yellow)
+                        const pr1 = new THREE.Vector3(0, 0, 0);
+                        const pr2 = new THREE.Vector3(0, 0, r_in);
+                        activeMeshGroup.add(createDimensionLine(pr1, pr2, materials.dimensionRadius));
+                        projectedLabels.push({
+                            pos: new THREE.Vector3(0, 0.2, r_in/2),
+                            text: `r_in = ${(side/2).toFixed(1)}`,
+                            colorClass: 'text-yellow-400 border-yellow-500/40'
+                        });
+                    }
+                    if (showCircumscribedSphere) {
+                        const r_out = (Math.sqrt(3) * side) / 2;
+                        const geomOut = new THREE.SphereGeometry(r_out, 24, 24);
+                        const sphereOut = new THREE.Mesh(geomOut, materials.outerSphere);
+                        activeMeshGroup.add(sphereOut);
+
+                        // Draw outer body diagonal to corner (Purple)
+                        const pd1 = new THREE.Vector3(0, 0, 0);
+                        const pd2 = new THREE.Vector3(side/2, side/2, side/2);
+                        activeMeshGroup.add(createDimensionLine(pd1, pd2, materials.dimensionSlant));
+                        projectedLabels.push({
+                            pos: new THREE.Vector3(side/4, side/4 + 0.3, side/4),
+                            text: `R_out = ${r_out.toFixed(1)}`,
+                            colorClass: 'text-purple-400 border-purple-500/40'
+                        });
+                    }
+                    break;
+                }
+                case 'cuboid': {
+                    const l = shapeParams.cuboid.l;
+                    const w = shapeParams.cuboid.w;
+                    const h = shapeParams.cuboid.h;
+                    const geom = new THREE.BoxGeometry(l, h, w);
+                    addMeshWithWireframe(geom);
+
+                    // --- DIMENSION GUIDES ---
+                    // Length l guide along X bottom-front (Rose)
+                    const pl1 = new THREE.Vector3(-l/2, -h/2, w/2 + 0.1);
+                    const pl2 = new THREE.Vector3(l/2, -h/2, w/2 + 0.1);
+                    activeMeshGroup.add(createDimensionLine(pl1, pl2, materials.dimensionX));
+                    projectedLabels.push({
+                        pos: new THREE.Vector3(0, -h/2 - 0.2, w/2 + 0.2),
+                        text: `l = ${l.toFixed(1)}`,
+                        colorClass: 'text-rose-400 border-rose-500/40'
+                    });
+
+                    // Height h guide along Y left-front (Emerald)
+                    const ph1 = new THREE.Vector3(-l/2 - 0.1, -h/2, w/2);
+                    const ph2 = new THREE.Vector3(-l/2 - 0.1, h/2, w/2);
+                    activeMeshGroup.add(createDimensionLine(ph1, ph2, materials.dimensionY));
+                    projectedLabels.push({
+                        pos: new THREE.Vector3(-l/2 - 0.4, 0, w/2),
+                        text: `h = ${h.toFixed(1)}`,
+                        colorClass: 'text-emerald-400 border-emerald-500/40'
+                    });
+
+                    // Width w guide along Z bottom-right (Yellow)
+                    const pw1 = new THREE.Vector3(l/2 + 0.1, -h/2, -w/2);
+                    const pw2 = new THREE.Vector3(l/2 + 0.1, -h/2, w/2);
+                    activeMeshGroup.add(createDimensionLine(pw1, pw2, materials.dimensionRadius));
+                    projectedLabels.push({
+                        pos: new THREE.Vector3(l/2 + 0.3, -h/2 - 0.2, 0),
+                        text: `w = ${w.toFixed(1)}`,
+                        colorClass: 'text-yellow-400 border-yellow-500/40'
+                    });
+                    break;
+                }
+                case 'sphere': {
+                    const r = shapeParams.sphere.r;
+                    if (sphereToggleMode === 'sphere') {
+                        const geom = new THREE.SphereGeometry(r, 32, 32);
+                        addMeshWithWireframe(geom);
+
+                        // --- DIMENSION GUIDES ---
+                        // Radius line from center to right edge (Yellow)
+                        const pr1 = new THREE.Vector3(0, 0, 0);
+                        const pr2 = new THREE.Vector3(r, 0, 0);
+                        activeMeshGroup.add(createDimensionLine(pr1, pr2, materials.dimensionRadius));
+                        projectedLabels.push({
+                            pos: new THREE.Vector3(r/2, 0.2, 0),
+                            text: `r = ${r.toFixed(1)}`,
+                            colorClass: 'text-yellow-400 border-yellow-500/40'
+                        });
+                    } else {
+                        const geomHem = new THREE.SphereGeometry(r, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2);
+                        const hemMesh = new THREE.Mesh(geomHem, materials.mainMesh);
+                        const geomBase = new THREE.CircleGeometry(r, 32);
+                        const baseMesh = new THREE.Mesh(geomBase, materials.solidMesh);
+                        baseMesh.rotation.x = Math.PI / 2;
+
+                        const edgesHem = new THREE.EdgesGeometry(geomHem);
+                        const lineHem = new THREE.LineSegments(edgesHem, materials.wireframeLine);
+                        const edgesBase = new THREE.EdgesGeometry(geomBase);
+                        const lineBase = new THREE.LineSegments(edgesBase, materials.wireframeLine);
+                        lineBase.rotation.x = Math.PI / 2;
+
+                        activeMeshGroup.add(hemMesh);
+                        activeMeshGroup.add(baseMesh);
+                        activeMeshGroup.add(lineHem);
+                        activeMeshGroup.add(lineBase);
+
+                        // --- DIMENSION GUIDES ---
+                        // Horizontal radius line (Yellow)
+                        const pr1 = new THREE.Vector3(0, 0, 0);
+                        const pr2 = new THREE.Vector3(r, 0, 0);
+                        activeMeshGroup.add(createDimensionLine(pr1, pr2, materials.dimensionRadius));
+                        projectedLabels.push({
+                            pos: new THREE.Vector3(r/2, -0.3, 0),
+                            text: `r = ${r.toFixed(1)}`,
+                            colorClass: 'text-yellow-400 border-yellow-500/40'
+                        });
+
+                        // Vertical height radius line (Emerald)
+                        const ph1 = new THREE.Vector3(0, 0, 0);
+                        const ph2 = new THREE.Vector3(0, r, 0);
+                        activeMeshGroup.add(createDimensionLine(ph1, ph2, materials.dimensionY));
+                        projectedLabels.push({
+                            pos: new THREE.Vector3(-0.3, r/2, 0),
+                            text: `r_height = ${r.toFixed(1)}`,
+                            colorClass: 'text-emerald-400 border-emerald-500/40'
+                        });
+                    }
+                    break;
+                }
+                case 'cylinder': {
+                    const r = shapeParams.cylinder.r;
+                    const h = shapeParams.cylinder.h;
+                    const geom = new THREE.CylinderGeometry(r, r, h, 32);
+                    addMeshWithWireframe(geom);
+
+                    // --- DIMENSION GUIDES ---
+                    // Height line on the side (Emerald)
+                    const ph1 = new THREE.Vector3(-r - 0.2, -h/2, 0);
+                    const ph2 = new THREE.Vector3(-r - 0.2, h/2, 0);
+                    activeMeshGroup.add(createDimensionLine(ph1, ph2, materials.dimensionY));
+                    projectedLabels.push({
+                        pos: new THREE.Vector3(-r - 0.5, 0, 0),
+                        text: `h = ${h.toFixed(1)}`,
+                        colorClass: 'text-emerald-400 border-emerald-500/40'
+                    });
+
+                    // Base radius line on the bottom face (Yellow)
+                    const pr1 = new THREE.Vector3(0, -h/2, 0);
+                    const pr2 = new THREE.Vector3(r, -h/2, 0);
+                    activeMeshGroup.add(createDimensionLine(pr1, pr2, materials.dimensionRadius));
+                    projectedLabels.push({
+                        pos: new THREE.Vector3(r/2, -h/2 - 0.3, 0),
+                        text: `r = ${r.toFixed(1)}`,
+                        colorClass: 'text-yellow-400 border-yellow-500/40'
+                    });
+                    break;
+                }
+                case 'cone': {
+                    const h = shapeParams.cone.h;
+                    const rBottom = shapeParams.cone.rBottom;
+                    const rTop = coneToggleMode === 'frustum' ? shapeParams.cone.rTop : 0.0;
+                    const geom = new THREE.CylinderGeometry(rTop, rBottom, h, 32);
+                    addMeshWithWireframe(geom);
+
+                    // --- DIMENSION GUIDES ---
+                    // Vertical axis height line (Emerald)
+                    const ph1 = new THREE.Vector3(0, -h/2, 0);
+                    const ph2 = new THREE.Vector3(0, h/2, 0);
+                    activeMeshGroup.add(createDimensionLine(ph1, ph2, materials.dimensionY));
+                    projectedLabels.push({
+                        pos: new THREE.Vector3(-0.3, 0, 0),
+                        text: `h = ${h.toFixed(1)}`,
+                        colorClass: 'text-emerald-400 border-emerald-500/40'
+                    });
+
+                    // Base radius line on bottom face (Yellow)
+                    const prb1 = new THREE.Vector3(0, -h/2, 0);
+                    const prb2 = new THREE.Vector3(rBottom, -h/2, 0);
+                    activeMeshGroup.add(createDimensionLine(prb1, prb2, materials.dimensionRadius));
+                    projectedLabels.push({
+                        pos: new THREE.Vector3(rBottom/2, -h/2 - 0.3, 0),
+                        text: `R = ${rBottom.toFixed(1)}`,
+                        colorClass: 'text-yellow-400 border-yellow-500/40'
+                    });
+
+                    // Top radius guide line if frustum (Rose)
+                    if (coneToggleMode === 'frustum') {
+                        const prt1 = new THREE.Vector3(0, h/2, 0);
+                        const prt2 = new THREE.Vector3(rTop, h/2, 0);
+                        activeMeshGroup.add(createDimensionLine(prt1, prt2, materials.dimensionX));
+                        projectedLabels.push({
+                            pos: new THREE.Vector3(rTop/2, h/2 + 0.3, 0),
+                            text: `r = ${rTop.toFixed(1)}`,
+                            colorClass: 'text-rose-400 border-rose-500/40'
+                        });
+                    }
+
+                    // Slant height line along the edge (Purple)
+                    const ps1 = new THREE.Vector3(rBottom, -h/2, 0);
+                    const ps2 = new THREE.Vector3(rTop, h/2, 0);
+                    activeMeshGroup.add(createDimensionLine(ps1, ps2, materials.dimensionSlant));
+                    const slantLen = Math.sqrt(Math.pow(rBottom - rTop, 2) + h*h);
+                    projectedLabels.push({
+                        pos: new THREE.Vector3((rBottom + rTop)/2 + 0.4, 0, 0),
+                        text: `${coneToggleMode === 'frustum' ? 'L' : 'l'} = ${slantLen.toFixed(1)}`,
+                        colorClass: 'text-purple-400 border-purple-500/40'
+                    });
+                    break;
+                }
+                case 'parallelepiped': {
+                    const p = shapeParams.parallelepiped;
+                    const a = { x: p.ax, y: p.ay, z: p.az };
+                    const b = { x: p.bx, y: p.by, z: p.bz };
+                    const c = { x: p.cx, y: p.cy, z: p.cz };
+
+                    const offset = {
+                        x: (a.x + b.x + c.x) / 2,
+                        y: (a.y + b.y + c.y) / 2,
+                        z: (a.z + b.z + c.z) / 2
+                    };
+
+                    const rawVerts = [
+                        {x: 0, y: 0, z: 0},
+                        a,
+                        {x: a.x+b.x, y: a.y+b.y, z: a.z+b.z},
+                        b,
+                        c,
+                        {x: a.x+c.x, y: a.y+c.y, z: a.z+c.z},
+                        {x: a.x+b.x+c.x, y: a.y+b.y+c.y, z: a.z+b.z+c.z},
+                        {x: b.x+c.x, y: b.y+c.y, z: b.z+c.z}
+                    ];
+
+                    const vertices = [];
+                    rawVerts.forEach(v => {
+                        vertices.push(v.x - offset.x, v.y - offset.y, v.z - offset.z);
+                    });
+
+                    const indices = [
+                        0, 2, 1,   0, 3, 2, 
+                        4, 5, 6,   4, 6, 7, 
+                        0, 1, 5,   0, 5, 4, 
+                        1, 2, 6,   1, 6, 5, 
+                        2, 3, 7,   2, 7, 6, 
+                        3, 0, 4,   3, 4, 7  
+                    ];
+
+                    const geom = new THREE.BufferGeometry();
+                    geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+                    geom.setIndex(indices);
+                    geom.computeVertexNormals();
+
+                    const edgePairs = [
+                        0,1, 1,2, 2,3, 3,0, 
+                        4,5, 5,6, 6,7, 7,4, 
+                        0,4, 1,5, 2,6, 3,7  
+                    ];
+                    const edgePoints = [];
+                    edgePairs.forEach(idx => {
+                        edgePoints.push(new THREE.Vector3(vertices[idx*3], vertices[idx*3+1], vertices[idx*3+2]));
+                    });
+                    const geomEdges = new THREE.BufferGeometry().setFromPoints(edgePoints);
+                    const edgeSegments = new THREE.LineSegments(geomEdges, materials.wireframeLine);
+
+                    const mesh = new THREE.Mesh(geom, materials.mainMesh);
+                    activeMeshGroup.add(mesh);
+                    activeMeshGroup.add(edgeSegments);
+
+                    const vOrigin = new THREE.Vector3(-offset.x, -offset.y, -offset.z);
+                    
+                    // Thicker colored custom arrows representing vectors
+                    const arrowA = new THREE.ArrowHelper(new THREE.Vector3(a.x, a.y, a.z).normalize(), vOrigin, vectorMath.mag(a), 0xf43f5e, 0.4, 0.15);
+                    const arrowB = new THREE.ArrowHelper(new THREE.Vector3(b.x, b.y, b.z).normalize(), vOrigin, vectorMath.mag(b), 0x10b981, 0.4, 0.15);
+                    const arrowC = new THREE.ArrowHelper(new THREE.Vector3(c.x, c.y, c.z).normalize(), vOrigin, vectorMath.mag(c), 0xa855f7, 0.4, 0.15);
+
+                    activeMeshGroup.add(arrowA);
+                    activeMeshGroup.add(arrowB);
+                    activeMeshGroup.add(arrowC);
+
+                    // --- DIMENSION LABELS ON TIPS ---
+                    projectedLabels.push({
+                        pos: new THREE.Vector3(a.x - offset.x, a.y - offset.y, a.z - offset.z),
+                        text: `a⃗`,
+                        colorClass: 'text-rose-400 border-rose-500/40 font-bold scale-110'
+                    });
+                    projectedLabels.push({
+                        pos: new THREE.Vector3(b.x - offset.x, b.y - offset.y, b.z - offset.z),
+                        text: `b⃗`,
+                        colorClass: 'text-emerald-400 border-emerald-500/40 font-bold scale-110'
+                    });
+                    projectedLabels.push({
+                        pos: new THREE.Vector3(c.x - offset.x, c.y - offset.y, c.z - offset.z),
+                        text: `c⃗`,
+                        colorClass: 'text-purple-400 border-purple-500/40 font-bold scale-110'
+                    });
+                    break;
+                }
+                case 'tetrahedron': {
+                    const p = shapeParams.tetrahedron;
+                    let a, b, c;
+
+                    if (vectorLockRegularTetra) {
+                        const side = 4.5;
+                        a = { x: side, y: 0, z: 0 };
+                        b = { x: side / 2, y: (Math.sqrt(3) * side) / 2, z: 0 };
+                        c = { x: side / 2, y: (Math.sqrt(3) * side) / 6, z: Math.sqrt(2/3) * side };
+                    } else {
+                        a = { x: p.ax, y: p.ay, z: p.az };
+                        b = { x: p.bx, y: p.by, z: p.bz };
+                        c = { x: p.cx, y: p.cy, z: p.cz };
+                    }
+
+                    const offset = {
+                        x: (a.x + b.x + c.x) / 4,
+                        y: (a.y + b.y + c.y) / 4,
+                        z: (a.z + b.z + c.z) / 4
+                    };
+
+                    const rawVerts = [
+                        {x: 0, y: 0, z: 0},
+                        a, b, c
+                    ];
+
+                    const vertices = [];
+                    rawVerts.forEach(v => {
+                        vertices.push(v.x - offset.x, v.y - offset.y, v.z - offset.z);
+                    });
+
+                    const indices = [
+                        0, 2, 1, 
+                        0, 1, 3, 
+                        1, 2, 3, 
+                        2, 0, 3  
+                    ];
+
+                    const geom = new THREE.BufferGeometry();
+                    geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+                    geom.setIndex(indices);
+                    geom.computeVertexNormals();
+
+                    const edgePairs = [
+                        0,1, 0,2, 0,3, 
+                        1,2, 2,3, 3,1  
+                    ];
+                    const edgePoints = [];
+                    edgePairs.forEach(idx => {
+                        edgePoints.push(new THREE.Vector3(vertices[idx*3], vertices[idx*3+1], vertices[idx*3+2]));
+                    });
+                    const geomEdges = new THREE.BufferGeometry().setFromPoints(edgePoints);
+                    const edgeSegments = new THREE.LineSegments(geomEdges, materials.wireframeLine);
+
+                    const mesh = new THREE.Mesh(geom, materials.mainMesh);
+                    activeMeshGroup.add(mesh);
+                    activeMeshGroup.add(edgeSegments);
+
+                    const vOrigin = new THREE.Vector3(-offset.x, -offset.y, -offset.z);
+                    const arrowA = new THREE.ArrowHelper(new THREE.Vector3(a.x, a.y, a.z).normalize(), vOrigin, vectorMath.mag(a), 0xf43f5e, 0.4, 0.15);
+                    const arrowB = new THREE.ArrowHelper(new THREE.Vector3(b.x, b.y, b.z).normalize(), vOrigin, vectorMath.mag(b), 0x10b981, 0.4, 0.15);
+                    const arrowC = new THREE.ArrowHelper(new THREE.Vector3(c.x, c.y, c.z).normalize(), vOrigin, vectorMath.mag(c), 0xa855f7, 0.4, 0.15);
+
+                    activeMeshGroup.add(arrowA);
+                    activeMeshGroup.add(arrowB);
+                    activeMeshGroup.add(arrowC);
+
+                    // --- VECTORS ANNOTATIONS ---
+                    projectedLabels.push({
+                        pos: new THREE.Vector3(a.x - offset.x, a.y - offset.y, a.z - offset.z),
+                        text: `a⃗`,
+                        colorClass: 'text-rose-400 border-rose-500/40 font-bold scale-110'
+                    });
+                    projectedLabels.push({
+                        pos: new THREE.Vector3(b.x - offset.x, b.y - offset.y, b.z - offset.z),
+                        text: `b⃗`,
+                        colorClass: 'text-emerald-400 border-emerald-500/40 font-bold scale-110'
+                    });
+                    projectedLabels.push({
+                        pos: new THREE.Vector3(c.x - offset.x, c.y - offset.y, c.z - offset.z),
+                        text: `c⃗`,
+                        colorClass: 'text-purple-400 border-purple-500/40 font-bold scale-110'
+                    });
+
+                    // Draw vertical height guide if Locked Regular
+                    if (vectorLockRegularTetra) {
+                        const side = 4.5;
+                        const centroidBase = new THREE.Vector3(side/2 - offset.x, (Math.sqrt(3)*side)/6 - offset.y, 0 - offset.z);
+                        const apex = new THREE.Vector3(side/2 - offset.x, (Math.sqrt(3)*side)/6 - offset.y, Math.sqrt(2/3)*side - offset.z);
+                        activeMeshGroup.add(createDimensionLine(centroidBase, apex, materials.dimensionY));
+                        
+                        projectedLabels.push({
+                            pos: new THREE.Vector3(side/2 - offset.x + 0.3, (Math.sqrt(3)*side)/6 - offset.y, (Math.sqrt(2/3)*side)/2 - offset.z),
+                            text: `H = ${(Math.sqrt(2/3)*side).toFixed(1)}`,
+                            colorClass: 'text-emerald-400 border-emerald-500/40 font-bold'
+                        });
+                    }
+                    break;
+                }
+            }
+        }
+
+        // --- RENDER CONTROL SLIDERS ---
+        function renderSliders() {
+            const container = document.getElementById('sliders-box');
+            container.innerHTML = '';
+
+            const activeParams = shapeParams[activeShape];
+            const sliderTemplates = {
+                cube: [{ key: 'a', label: 'Side Length (a)', min: 1.0, max: 7.0, step: 0.1 }],
+                cuboid: [
+                    { key: 'l', label: 'Length (l)', min: 1.0, max: 8.0, step: 0.1 },
+                    { key: 'w', label: 'Width (w)', min: 1.0, max: 8.0, step: 0.1 },
+                    { key: 'h', label: 'Height (h)', min: 1.0, max: 8.0, step: 0.1 }
+                ],
+                sphere: [{ key: 'r', label: 'Radius (r)', min: 1.0, max: 5.0, step: 0.1 }],
+                cylinder: [
+                    { key: 'r', label: 'Base Radius (r)', min: 0.8, max: 4.5, step: 0.1 },
+                    { key: 'h', label: 'Height (h)', min: 1.5, max: 8.0, step: 0.1 }
+                ],
+                cone: [
+                    { key: 'rBottom', label: 'Base Radius (R)', min: 0.8, max: 4.5, step: 0.1 },
+                    { key: 'rTop', label: 'Top Radius (r)', min: 0.0, max: 4.5, step: 0.1, condition: () => coneToggleMode === 'frustum' },
+                    { key: 'h', label: 'Height (h)', min: 1.5, max: 8.0, step: 0.1 }
+                ],
+                parallelepiped: [
+                    { key: 'ax', label: 'Vector A (x-shear)', min: 1.5, max: 6.0, step: 0.1 },
+                    { key: 'bx', label: 'Vector B (x-shear)', min: -3.0, max: 3.0, step: 0.1 },
+                    { key: 'by', label: 'Vector B (y-shear)', min: 1.5, max: 6.0, step: 0.1 },
+                    { key: 'cx', label: 'Vector C (x-shear)', min: -3.0, max: 3.0, step: 0.1 },
+                    { key: 'cy', label: 'Vector C (y-shear)', min: -3.0, max: 3.0, step: 0.1 },
+                    { key: 'cz', label: 'Vector C (z-shear)', min: 1.5, max: 6.0, step: 0.1 }
+                ],
+                tetrahedron: [
+                    { key: 'ax', label: 'Vector A (x)', min: 1.5, max: 6.0, step: 0.1, disabled: () => vectorLockRegularTetra },
+                    { key: 'bx', label: 'Vector B (x)', min: -3.0, max: 4.5, step: 0.1, disabled: () => vectorLockRegularTetra },
+                    { key: 'by', label: 'Vector B (y)', min: 1.5, max: 6.0, step: 0.1, disabled: () => vectorLockRegularTetra },
+                    { key: 'cx', label: 'Vector C (x)', min: -3.0, max: 4.5, step: 0.1, disabled: () => vectorLockRegularTetra },
+                    { key: 'cy', label: 'Vector C (y)', min: -3.0, max: 4.5, step: 0.1, disabled: () => vectorLockRegularTetra },
+                    { key: 'cz', label: 'Vector C (z)', min: 1.5, max: 6.0, step: 0.1, disabled: () => vectorLockRegularTetra }
+                ]
+            };
+
+            const list = sliderTemplates[activeShape] || [];
+            list.forEach(item => {
+                if (item.condition && !item.condition()) return;
+                const isLocked = item.disabled && item.disabled();
+
+                const wrapper = document.createElement('div');
+                wrapper.className = `flex flex-col gap-1 ${isLocked ? 'opacity-40 cursor-not-allowed' : ''}`;
+
+                const labels = document.createElement('div');
+                labels.className = 'flex justify-between text-xs font-semibold text-slate-300';
+                
+                const spanLabel = document.createElement('span');
+                spanLabel.innerText = item.label;
+                const spanVal = document.createElement('span');
+                spanVal.className = 'font-mono text-cyan-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800';
+                spanVal.innerText = isLocked ? 'Locked (Regular)' : parseFloat(activeParams[item.key]).toFixed(1);
+
+                labels.appendChild(spanLabel);
+                labels.appendChild(spanVal);
+
+                const input = document.createElement('input');
+                input.type = 'range';
+                input.min = item.min;
+                input.max = item.max;
+                input.step = item.step;
+                input.value = activeParams[item.key];
+                input.disabled = isLocked;
+                input.className = 'w-full accent-cyan-500';
+
+                input.addEventListener('input', (e) => {
+                    activeParams[item.key] = parseFloat(e.target.value);
+                    spanVal.innerText = parseFloat(activeParams[item.key]).toFixed(1);
+                    rebuild3DScene();
+                    renderCalculations();
+                });
+
+                wrapper.appendChild(labels);
+                wrapper.appendChild(input);
+                container.appendChild(wrapper);
+            });
+        }
+
+        // Render upper floating settings inside visualizer viewport
+        function renderCanvasExtras() {
+            const container = document.getElementById('canvas-extras-box');
+            container.innerHTML = '';
+
+            if (activeShape === 'cube') {
+                container.innerHTML = `
+                    <div class="flex gap-1.5">
+                        <button onclick="toggleInscribed()" class="px-2 py-1 bg-slate-900/95 border ${showInscribedSphere ? 'border-emerald-500 text-emerald-400' : 'border-slate-800 text-slate-300'} rounded-lg text-[10px] font-bold hover:bg-slate-800 transition-all flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full ${showInscribedSphere ? 'bg-emerald-400' : 'bg-slate-600'}"></span> Inscribed Sphere
+                        </button>
+                        <button onclick="toggleCircumscribed()" class="px-2 py-1 bg-slate-900/95 border ${showCircumscribedSphere ? 'border-rose-500 text-rose-400' : 'border-slate-800 text-slate-300'} rounded-lg text-[10px] font-bold hover:bg-slate-800 transition-all flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full ${showCircumscribedSphere ? 'bg-rose-400' : 'bg-slate-600'}"></span> Circumscribed Sphere
+                        </button>
+                    </div>
+                `;
+            } else if (activeShape === 'sphere') {
+                container.innerHTML = `
+                    <div class="flex bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+                        <button onclick="setSphereMode('sphere')" class="px-2 py-1 text-[10px] font-bold ${sphereToggleMode === 'sphere' ? 'bg-cyan-600 text-white' : 'text-slate-400'}">Sphere</button>
+                        <button onclick="setSphereMode('hemisphere')" class="px-2 py-1 text-[10px] font-bold ${sphereToggleMode === 'hemisphere' ? 'bg-cyan-600 text-white' : 'text-slate-400'}">Hemisphere</button>
+                    </div>
+                `;
+            } else if (activeShape === 'cone') {
+                container.innerHTML = `
+                    <div class="flex bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+                        <button onclick="setConeMode('cone')" class="px-2 py-1 text-[10px] font-bold ${coneToggleMode === 'cone' ? 'bg-cyan-600 text-white' : 'text-slate-400'}">Cone</button>
+                        <button onclick="setConeMode('frustum')" class="px-2 py-1 text-[10px] font-bold ${coneToggleMode === 'frustum' ? 'bg-cyan-600 text-white' : 'text-slate-400'}">Frustum</button>
+                    </div>
+                `;
+            } else if (activeShape === 'tetrahedron') {
+                container.innerHTML = `
+                    <button onclick="toggleRegularTetra()" class="px-2.5 py-1 bg-slate-900/95 border ${vectorLockRegularTetra ? 'border-cyan-500 text-cyan-400' : 'border-slate-800 text-slate-300'} rounded-lg text-[10px] font-bold hover:bg-slate-800 transition-all flex items-center gap-1">
+                        <i data-lucide="${vectorLockRegularTetra ? 'lock' : 'unlock'}" class="w-3 h-3"></i> Regular Lock
+                    </button>
+                `;
+                lucide.createIcons();
+            }
+        }
+
+        function toggleInscribed() { showInscribedSphere = !showInscribedSphere; renderCanvasExtras(); rebuild3DScene(); renderCalculations(); }
+        function toggleCircumscribed() { showCircumscribedSphere = !showCircumscribedSphere; renderCanvasExtras(); rebuild3DScene(); renderCalculations(); }
+        function setSphereMode(m) { sphereToggleMode = m; renderCanvasExtras(); rebuild3DScene(); renderCalculations(); renderHandbook(); }
+        function setConeMode(m) { coneToggleMode = m; renderCanvasExtras(); renderSliders(); rebuild3DScene(); renderCalculations(); renderHandbook(); }
+        function toggleRegularTetra() { vectorLockRegularTetra = !vectorLockRegularTetra; renderCanvasExtras(); renderSliders(); rebuild3DScene(); renderCalculations(); renderHandbook(); }
+
+        // --- KATEX CALCULATOR ENGINE ---
+        function addCalcRow(label, latex, result) {
+            const container = document.getElementById('dynamic-calculations');
+            const row = document.createElement('div');
+            row.className = 'flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-slate-800/50 pb-1.5';
+            
+            const title = document.createElement('span');
+            title.className = 'text-[11px] font-bold text-slate-400';
+            title.innerText = label;
+
+            const formulaEl = document.createElement('span');
+            formulaEl.className = 'font-mono text-slate-100 text-[11.5px] overflow-x-auto';
+            
+            row.appendChild(title);
+            row.appendChild(formulaEl);
+            container.appendChild(row);
+
+            try {
+                katex.render(`${latex} \\approx ${result}`, formulaEl, { throwOnError: false });
+            } catch (err) {
+                formulaEl.innerText = `${latex} = ${result}`;
+            }
+        }
+
+        function renderCalculations() {
+            const container = document.getElementById('dynamic-calculations');
+            container.innerHTML = '';
+
+            switch (activeShape) {
+                case 'cube': {
+                    const a = shapeParams.cube.a;
+                    addCalcRow("Volume (V)", `a^3 = {${a.toFixed(1)}}^3`, `${Math.pow(a, 3).toFixed(2)}`);
+                    addCalcRow("Surface Area (TSA)", `6a^2 = 6 \\cdot {${a.toFixed(1)}}^2`, `${(6 * a * a).toFixed(2)}`);
+                    addCalcRow("Body Diagonal (d)", `\\sqrt{3}a = 1.732 \\cdot {${a.toFixed(1)}}`, `${(Math.sqrt(3) * a).toFixed(2)}`);
+                    addCalcRow("Inscribed Radius", `\\frac{a}{2}`, `${(a / 2).toFixed(2)}`);
+                    addCalcRow("Circumscribed Radius", `\\frac{\\sqrt{3}a}{2}`, `${((Math.sqrt(3) * a) / 2).toFixed(2)}`);
+                    break;
+                }
+                case 'cuboid': {
+                    const { l, w, h } = shapeParams.cuboid;
+                    addCalcRow("Volume (V)", `l \\cdot w \\cdot h`, `${(l * w * h).toFixed(2)}`);
+                    addCalcRow("Total Surface Area", `2(lw + wh + hl)`, `${(2 * (l*w + w*h + h*l)).toFixed(2)}`);
+                    addCalcRow("Body Diagonal (d)", `\\sqrt{l^2 + w^2 + h^2}`, `${Math.sqrt(l*l + w*w + h*h).toFixed(2)}`);
+                    break;
+                }
+                case 'sphere': {
+                    const r = shapeParams.sphere.r;
+                    if (sphereToggleMode === 'sphere') {
+                        addCalcRow("Sphere Volume (V)", `\\frac{4}{3}\\pi r^3`, `${((4/3) * Math.PI * Math.pow(r, 3)).toFixed(2)}`);
+                        addCalcRow("Surface Area (A)", `4\\pi r^2`, `${(4 * Math.PI * r * r).toFixed(2)}`);
+                    } else {
+                        addCalcRow("Hemisphere Volume (V)", `\\frac{2}{3}\\pi r^3`, `${((2/3) * Math.PI * Math.pow(r, 3)).toFixed(2)}`);
+                        addCalcRow("Curved Surface Area", `2\\pi r^2`, `${(2 * Math.PI * r * r).toFixed(2)}`);
+                        addCalcRow("Total Surface Area (TSA)", `3\\pi r^2`, `${(3 * Math.PI * r * r).toFixed(2)}`);
+                    }
+                    break;
+                }
+                case 'cylinder': {
+                    const { r, h } = shapeParams.cylinder;
+                    addCalcRow("Volume (V)", `\\pi r^2 h`, `${(Math.PI * r * r * h).toFixed(2)}`);
+                    addCalcRow("Curved Area (CSA)", `2\\pi r h`, `${(2 * Math.PI * r * h).toFixed(2)}`);
+                    addCalcRow("Total Area (TSA)", `2\\pi r(r + h)`, `${(2 * Math.PI * r * (r + h)).toFixed(2)}`);
+                    break;
+                }
+                case 'cone': {
+                    const { rBottom, rTop, h } = shapeParams.cone;
+                    if (coneToggleMode === 'cone') {
+                        const l = Math.sqrt(rBottom*rBottom + h*h);
+                        addCalcRow("Slant Height (l)", `\\sqrt{r^2 + h^2}`, `${l.toFixed(2)}`);
+                        addCalcRow("Volume (V)", `\\frac{1}{3}\\pi r^2 h`, `${((1/3) * Math.PI * rBottom * rBottom * h).toFixed(2)}`);
+                        addCalcRow("Curved Surface Area", `\\pi r l`, `${(Math.PI * rBottom * l).toFixed(2)}`);
+                    } else {
+                        const L = Math.sqrt(Math.pow(rBottom - rTop, 2) + h*h);
+                        addCalcRow("Slant Height (L)", `\\sqrt{h^2 + (R-r)^2}`, `${L.toFixed(2)}`);
+                        addCalcRow("Frustum Volume (V)", `\\frac{1}{3}\\pi h(R^2+r^2+Rr)`, `${((1/3) * Math.PI * h * (rBottom*rBottom + rTop*rTop + rBottom*rTop)).toFixed(2)}`);
+                        addCalcRow("Total Surface Area (TSA)", `CSA + \\pi R^2 + \\pi r^2`, `${(Math.PI*L*(rBottom+rTop) + Math.PI*rBottom*rBottom + Math.PI*rTop*rTop).toFixed(2)}`);
+                    }
+                    break;
+                }
+                case 'parallelepiped': {
+                    const p = shapeParams.parallelepiped;
+                    const a = { x: p.ax, y: p.ay, z: p.az };
+                    const b = { x: p.bx, y: p.by, z: p.bz };
+                    const c = { x: p.cx, y: p.cy, z: p.cz };
+                    const val = vectorMath.stp(a, b, c);
+                    addCalcRow("Volume (V = |STP|)", `|[\\vec{a}\\ \\vec{b}\\ \\vec{c}]|`, `${Math.abs(val).toFixed(2)}`);
+                    addCalcRow("Scalar Triple Product", `\\vec{a} \\cdot (\\vec{b} \\times \\vec{c})`, `${val.toFixed(2)}`);
+                    break;
+                }
+                case 'tetrahedron': {
+                    const p = shapeParams.tetrahedron;
+                    let a, b, c;
+                    if (vectorLockRegularTetra) {
+                        const s = 4.5;
+                        a = { x: s, y: 0, z: 0 };
+                        b = { x: s/2, y: (Math.sqrt(3)*s)/2, z: 0 };
+                        c = { x: s/2, y: (Math.sqrt(3)*s)/6, z: Math.sqrt(2/3)*s };
+                        addCalcRow("Regular Height (H)", `\\sqrt{\\frac{2}{3}}a`, `${(Math.sqrt(2/3)*s).toFixed(2)}`);
+                        addCalcRow("Regular Volume (V)", `\\frac{a^3}{12\\sqrt{2}}`, `${(Math.pow(s,3)/(12*Math.sqrt(2))).toFixed(2)}`);
+                    } else {
+                        a = { x: p.ax, y: p.ay, z: p.az };
+                        b = { x: p.bx, y: p.by, z: p.bz };
+                        c = { x: p.cx, y: p.cy, z: p.cz };
+                        const val = Math.abs(vectorMath.stp(a, b, c)) / 6;
+                        addCalcRow("Tetrahedron Volume (V)", `\\frac{1}{6}|[\\vec{a}\\ \\vec{b}\\ \\vec{c}]|`, `${val.toFixed(2)}`);
+                    }
+                    break;
+                }
+            }
+        }
+
+
+        // --- DYNAMIC HANDBOOK (TEXT DATA) ---
+        const handbookData = {
+            cube: {
+                formulas: `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h2 class="text-md font-bold text-cyan-400">Cube Geometrical Properties & Formulae</h2>
+                        </div>
+                        <p class="text-sm text-slate-300">A regular polyhedron bounded by six congruent square faces. It is the three-dimensional analogue of a square.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-slate-900/50 p-3.5 rounded-xl border border-slate-800">
+                                <h4 class="font-bold text-xs text-cyan-500 uppercase mb-1">Standard Equations</h4>
+                                <ul class="text-xs space-y-1.5 font-mono text-slate-300">
+                                    <li>Volume (V) = a³</li>
+                                    <li>Lateral Area (LSA) = 4a²</li>
+                                    <li>Total Area (TSA) = 6a²</li>
+                                    <li>Face Diagonal = √2a</li>
+                                    <li>Body Diagonal = √3a</li>
+                                </ul>
+                            </div>
+                            <div class="bg-slate-900/50 p-3.5 rounded-xl border border-slate-800">
+                                <h4 class="font-bold text-xs text-emerald-500 uppercase mb-1">Inscribed Spheres</h4>
+                                <ul class="text-xs space-y-1.5 text-slate-300">
+                                    <li><strong>Inradius ($r_i$):</strong> $r_i = \\frac{a}{2}$ (sphere touches all faces)</li>
+                                    <li><strong>Midsphere ($r_m$):</strong> $r_m = \\frac{a}{\\sqrt{2}}$ (touches all edges)</li>
+                                    <li><strong>Circumradius ($r_c$):</strong> $r_c = \\frac{\\sqrt{3}a}{2}$ (passes through all vertices)</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-900/30 p-4 rounded-xl border border-slate-800 space-y-2 text-xs text-slate-300">
+                            <h4 class="font-bold text-cyan-500">Derivation of Diagonals:</h4>
+                            <p>For a cube of side $a$ with a vertex at the origin $(0,0,0)$ and aligned to coordinates, the diagonal vertex is at $(a,a,a)$.</p>
+                            <p>Using the 3D distance formula, the body diagonal length is:</p>
+                            <p class="font-mono text-center text-cyan-400 bg-slate-950/80 py-1 rounded">$$d = \\sqrt{(a-0)^2 + (a-0)^2 + (a-0)^2} = \\sqrt{3a^2} = a\\sqrt{3}$$</p>
+                        </div>
+                    </div>
+                `,
+                jee: `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h2 class="text-md font-bold text-cyan-400">JEE Advanced Aspects: Cube</h2>
+                        </div>
+                        
+                        <div class="p-3 bg-cyan-950/20 border border-cyan-800/40 rounded-xl space-y-2">
+                            <h4 class="font-bold text-xs text-cyan-400 uppercase">1. Angle Between Body Diagonals</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">Let the four body diagonals be represented by vectors:
+                            $$\\vec{d}_1 = a\\hat{i} + a\\hat{j} + a\\hat{k} \\quad \\text{and} \\quad \\vec{d}_2 = -a\\hat{i} + a\\hat{j} + a\\hat{k}$$
+                            The acute angle $\\theta$ between them is found using the dot product formula:
+                            $$\\cos\\theta = \\frac{\\vec{d}_1 \\cdot \\vec{d}_2}{|\\vec{d}_1| |\\vec{d}_2|} = \\frac{-a^2 + a^2 + a^2}{3a^2} = \\frac{1}{3}$$
+                            $$\\theta = \\cos^{-1}\\left(\\frac{1}{3}\\right) \\approx 70.53^\\circ$$
+                            This is a frequent numerical answer question in JEE coordinate geometry.</p>
+                        </div>
+
+                        <div class="p-3 bg-slate-900/50 border border-slate-800 rounded-xl space-y-2 text-xs">
+                            <h4 class="font-bold text-emerald-400 uppercase">2. Bounding Spheres Volumes Ratio</h4>
+                            <p class="text-slate-300">Since $V \\propto r^3$, the ratio of the volumes of the inscribed, midsphere, and circumscribed spheres is:
+                            $$V_{\\text{inscribed}} : V_{\\text{midsphere}} : V_{\\text{circumscribed}} = r_i^3 : r_m^3 : r_c^3$$
+                            $$\\left(\\frac{a}{2}\\right)^3 : \\left(\\frac{a}{\\sqrt{2}}\\right)^3 : \\left(\\frac{\\sqrt{3}a}{2}\\right)^3 \\implies 1 : 2\\sqrt{2} : 3\\sqrt{3}$$</p>
+                        </div>
+                    </div>
+                `
+            },
+            cuboid: {
+                formulas: `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h2 class="text-md font-bold text-cyan-400">Cuboid Geometrical Properties & Formulae</h2>
+                        </div>
+                        <p class="text-sm text-slate-300">Also known as a rectangular parallelepiped. All six faces are rectangles, meeting at $90^\\circ$ angles.</p>
+                        
+                        <div class="bg-slate-900/50 p-3.5 rounded-xl border border-slate-800">
+                            <h4 class="font-bold text-xs text-cyan-500 uppercase mb-1">Standard Formulae</h4>
+                            <ul class="text-xs space-y-2 text-slate-300 font-mono">
+                                <li>Volume (V) = l · w · h</li>
+                                <li>Total Surface Area (TSA) = 2(l·w + w·h + h·l)</li>
+                                <li>Lateral Surface Area (LSA) = 2h(l + w)</li>
+                                <li>Body Diagonal (d) = √(l² + w² + h²)</li>
+                            </ul>
+                        </div>
+                    </div>
+                `,
+                jee: `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h2 class="text-md font-bold text-cyan-400">JEE Advanced Aspects: Cuboid</h2>
+                        </div>
+
+                        <div class="p-3 bg-cyan-950/20 border border-cyan-800/40 rounded-xl text-xs space-y-2">
+                            <h4 class="font-bold text-cyan-400 uppercase">1. Algebraic Identity Connection</h4>
+                            <p class="text-slate-300">Let the sum of edges be $S = l+w+h$, the diagonal be $d$, and total surface area be $A$.
+                            The algebraic expansion yields a direct connection often used in JEE optimization questions:
+                            $$(l+w+h)^2 = l^2 + w^2 + h^2 + 2(lw+wh+hl)$$
+                            $$\\mathbf{S^2 = d^2 + A}$$
+                            If you are given the sum of length, width, and height, and the body diagonal, you can find the Total Surface Area instantly without individual dimensions.</p>
+                        </div>
+
+                        <div class="p-3 bg-slate-900/50 border border-slate-800 rounded-xl text-xs space-y-1.5">
+                            <h4 class="font-bold text-emerald-400 uppercase">2. AM-GM Inequality Bounds</h4>
+                            <p class="text-slate-300">Given a fixed surface area $A$, the cuboid that maximizes the volume $V$ is a **cube** ($l = w = h$). This can be proved using the AM-GM inequality on the variables $lw, wh, hl$.</p>
+                        </div>
+                    </div>
+                `
+            },
+            sphere: {
+                formulas: `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h2 class="text-md font-bold text-cyan-400">${sphereToggleMode === 'sphere' ? 'Sphere' : 'Hemisphere'} Geometrical Formulae</h2>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-slate-900/50 p-3.5 rounded-xl border border-slate-800">
+                                <h4 class="font-bold text-xs text-cyan-500 uppercase mb-2">Sphere Formulations</h4>
+                                <ul class="text-xs space-y-1.5 text-slate-300 font-mono">
+                                    <li>Volume (V) = (4/3)·π·r³</li>
+                                    <li>Surface Area (A) = 4·π·r²</li>
+                                </ul>
+                            </div>
+                            <div class="bg-slate-900/50 p-3.5 rounded-xl border border-slate-800">
+                                <h4 class="font-bold text-xs text-emerald-500 uppercase mb-2">Hemisphere Formulations</h4>
+                                <ul class="text-xs space-y-1.5 text-slate-300 font-mono">
+                                    <li>Volume (V) = (2/3)·π·r³</li>
+                                    <li>Curved Area (CSA) = 2·π·r²</li>
+                                    <li>Total Area (TSA) = 3·π·r²</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                jee: `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h2 class="text-md font-bold text-cyan-400">JEE Advanced Aspects: Spheres & Coordinates</h2>
+                        </div>
+
+                        <div class="p-3 bg-cyan-950/20 border border-cyan-800/40 rounded-xl text-xs space-y-2">
+                            <h4 class="font-bold text-cyan-400 uppercase">1. Sphere Equations in 3D Coordinate Geometry</h4>
+                            <p class="text-slate-300">The general second-degree equation representing a sphere is:
+                            $$x^2 + y^2 + z^2 + 2ux + 2vy + 2wz + d = 0$$
+                            where:
+                            $$\\text{Center} = (-u, -v, -w), \\quad \\text{Radius } R = \\sqrt{u^2 + v^2 + w^2 - d}$$</p>
+                        </div>
+
+                        <div class="p-3 bg-slate-900/50 border border-slate-800 rounded-xl text-xs space-y-2">
+                            <h4 class="font-bold text-emerald-400 uppercase">2. Plane-Sphere Intersection (Planar Circles)</h4>
+                            <p class="text-slate-300">When a plane $lx + my + nz = p$ cuts a sphere of radius $R$, the intersection boundary is a **circle**.
+                            If $d$ is the perpendicular distance from the sphere center to the plane:
+                            $$\\text{Radius of Circle } r_c = \\sqrt{R^2 - d^2}$$
+                            The center of this intersection circle is the foot of the perpendicular from the sphere's center to the plane.</p>
+                        </div>
+
+                        <div class="p-3 bg-slate-900/50 border border-slate-800 rounded-xl text-xs space-y-2">
+                            <h4 class="font-bold text-purple-400 uppercase">3. Physical Center of Mass (Physics Link)</h4>
+                            <ul class="space-y-1 text-slate-300">
+                                <li><strong>Solid Hemisphere:</strong> CoM is at a height of $\\mathbf{\\frac{3R}{8}}$ from the flat base center.</li>
+                                <li><strong>Hollow Hemisphere:</strong> CoM is at a height of $\\mathbf{\\frac{R}{2}}$ from the flat base center.</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            cylinder: {
+                formulas: `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h2 class="text-md font-bold text-cyan-400">Cylinder Geometrical Formulae</h2>
+                        </div>
+                        
+                        <div class="bg-slate-900/50 p-3.5 rounded-xl border border-slate-800">
+                            <h4 class="font-bold text-xs text-cyan-500 uppercase mb-2">Mathematical Formulations</h4>
+                            <ul class="text-xs space-y-2 text-slate-300 font-mono">
+                                <li>Volume (V) = π·r²·h</li>
+                                <li>Curved Surface Area (CSA) = 2·π·r·h</li>
+                                <li>Total Surface Area (TSA) = 2·π·r·(r + h)</li>
+                            </ul>
+                        </div>
+                    </div>
+                `,
+                jee: `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h2 class="text-md font-bold text-cyan-400">JEE Advanced Aspects: Cylinder</h2>
+                        </div>
+
+                        <div class="p-3 bg-cyan-950/20 border border-cyan-800/40 rounded-xl text-xs space-y-2">
+                            <h4 class="font-bold text-cyan-400 uppercase">1. Calculus Optimization (Inscribed Solid)</h4>
+                            <p class="text-slate-300"><strong>Problem:</strong> Find the maximum volume of a cylinder inscribed in a cone of height $H$ and radius $R$.</p>
+                            <p class="text-slate-300">Using similar triangles, the relationship between cylinder radius $r$ and cylinder height $h$ is:
+                            $$\\frac{h}{H} = \\frac{R-r}{R} \\implies h = H\\left(1 - \\frac{r}{R}\\right)$$
+                            Substituting this into the volume equation:
+                            $$V(r) = \\pi r^2 h = \\pi r^2 H\\left(1 - \\frac{r}{R}\\right) = \\pi H \\left(r^2 - \\frac{r^3}{R}\\right)$$
+                            Differentiating and setting to zero ($dV/dr = 0$):
+                            $$2r - \\frac{3r^2}{R} = 0 \\implies r = \\frac{2}{3}R$$
+                            Substituting back gives the height: $h = \\frac{1}{3}H$. This exact optimization sequence is highly tested.</p>
+                        </div>
+                    </div>
+                `
+            },
+            cone: {
+                formulas: `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h2 class="text-md font-bold text-cyan-400">${coneToggleMode === 'cone' ? 'Cone' : 'Cone Frustum'} Geometrical Formulae</h2>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-slate-900/50 p-3.5 rounded-xl border border-slate-800">
+                                <h4 class="font-bold text-xs text-cyan-500 uppercase mb-2">Cone Formulations</h4>
+                                <ul class="text-xs space-y-1.5 text-slate-300 font-mono">
+                                    <li>l = √(r² + h²)</li>
+                                    <li>Volume (V) = (1/3)·π·r²·h</li>
+                                    <li>Curved Area (CSA) = π·r·l</li>
+                                    <li>Total Area (TSA) = π·r·(r + l)</li>
+                                </ul>
+                            </div>
+                            <div class="bg-slate-900/50 p-3.5 rounded-xl border border-slate-800">
+                                <h4 class="font-bold text-xs text-emerald-500 uppercase mb-2">Cone Frustum Formulations</h4>
+                                <ul class="text-xs space-y-1.5 text-slate-300 font-mono">
+                                    <li>L = √(h² + (R-r)²)</li>
+                                    <li>Volume (V) = (1/3)·π·h·(R² + r² + R·r)</li>
+                                    <li>CSA = π·L·(R + r)</li>
+                                    <li>TSA = CSA + π·R² + π·r²</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                jee: `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h2 class="text-md font-bold text-cyan-400">JEE Advanced Aspects: Cone Geometry</h2>
+                        </div>
+
+                        <div class="p-3 bg-cyan-950/20 border border-cyan-800/40 rounded-xl text-xs space-y-2">
+                            <h4 class="font-bold text-cyan-400 uppercase">1. Calculus: Rates of Change (Funnel flow)</h4>
+                            <p class="text-slate-300">A classic calculus application represents water exiting a cone of semi-vertical angle $\\alpha$ at a rate $dV/dt = K$.
+                            The volume at level $h$ is:
+                            $$V = \\frac{1}{3}\\pi r^2 h = \\frac{1}{3}\\pi h^3 \\tan^2\\alpha$$
+                            Differentiating with respect to time ($t$):
+                            $$\\frac{dV}{dt} = \\pi h^2 \\tan^2\\alpha \\frac{dh}{dt}$$
+                            This allows us to calculate the rate of change of water level ($dh/dt$) dynamically.</p>
+                        </div>
+
+                        <div class="p-3 bg-slate-900/50 border border-slate-800 rounded-xl text-xs space-y-1.5">
+                            <h4 class="font-bold text-emerald-400 uppercase">2. Center of Mass Positions (Physics Link)</h4>
+                            <ul class="space-y-1 text-slate-300 font-sans">
+                                <li><strong>Solid Uniform Cone:</strong> CoM lies on the axis of symmetry at height of $\\mathbf{\\frac{h}{4}}$ from flat circular base.</li>
+                                <li><strong>Hollow Uniform Cone:</strong> CoM lies on the axis of symmetry at height of $\\mathbf{\\frac{h}{3}}$ from flat circular base.</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            parallelepiped: {
+                formulas: `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h2 class="text-md font-bold text-cyan-400">Parallelepiped Geometrical & Vector Formulae</h2>
+                        </div>
+                        <p class="text-sm text-slate-300">A 3D prism whose faces are all parallelograms. Defined by three concurrent vectors representing edges: $\\vec{a}, \\vec{b}, \\vec{c}$.</p>
+                        
+                        <div class="bg-slate-900/50 p-3.5 rounded-xl border border-slate-800 space-y-2">
+                            <h4 class="font-bold text-xs text-cyan-500 uppercase mb-1">Vector Equations</h4>
+                            <ul class="text-xs space-y-1.5 text-slate-300 font-sans">
+                                <li><strong>Volume (V):</strong> Determined using the Scalar Triple Product (STP) of edge vectors:
+                                    $$V = \\big| [\\vec{a}\\ \\vec{b}\\ \\vec{c}] \\big| = \\big| \\vec{a} \\cdot (\\vec{b} \\times \\vec{c}) \\big|$$
+                                </li>
+                                <li><strong>Total Surface Area (TSA):</strong> Sum of areas of six face parallelograms:
+                                    $$TSA = 2\\big|\\vec{a}\\times\\vec{b}\\big| + 2\\big|\\vec{b}\\times\\vec{c}\\big| + 2\\big|\\vec{c}\\times\\vec{a}\\big|$$
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                `,
+                jee: `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h2 class="text-md font-bold text-cyan-400">JEE Advanced Aspects: Vector Triple Products</h2>
+                        </div>
+
+                        <div class="p-3 bg-cyan-950/20 border border-cyan-800/40 rounded-xl text-xs space-y-2">
+                            <h4 class="font-bold text-cyan-400 uppercase">1. STP Determinant & Coordinate Form</h4>
+                            <p class="text-slate-300">If the vectors are expressed as:
+                            $$\\vec{a} = a_x\\hat{i} + a_y\\hat{j} + a_z\\hat{k}, \\quad \\vec{b} = b_x\\hat{i} + b_y\\hat{j} + b_z\\hat{k}, \\quad \\vec{c} = c_x\\hat{i} + c_y\\hat{j} + c_z\\hat{k}$$
+                            The volume of the parallelepiped is evaluated via the matrix determinant:
+                            $$V = \\left| \\det \\begin{pmatrix} a_x & a_y & a_z \\\\ b_x & b_y & b_z \\\\ c_x & c_y & c_z \\end{pmatrix} \\right|$$</p>
+                        </div>
+
+                        <div class="p-3 bg-slate-900/50 border border-slate-800 rounded-xl text-xs space-y-2">
+                            <h4 class="font-bold text-emerald-400 uppercase">2. Vector Coplanarity Condition</h4>
+                            <p class="text-slate-300">If the volume of the parallelepiped is zero ($V = 0$), it implies that the three vectors lie in the same 2D plane:
+                            $$[\\vec{a}\\ \\vec{b}\\ \\vec{c}] = 0 \\implies \\vec{a}, \\vec{b}, \\vec{c} \\text{ are coplanar}$$
+                            This is a fundamental theorem tested in almost every JEE session.</p>
+                        </div>
+                    </div>
+                `
+            },
+            tetrahedron: {
+                formulas: `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h2 class="text-md font-bold text-cyan-400">Tetrahedron Geometrical & Vector Formulae</h2>
+                        </div>
+                        <p class="text-sm text-slate-300">A triangular pyramid, representing the simplest 3D polyhedron. Composed of 4 triangular faces, 6 edges, and 4 vertices.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-slate-900/50 p-3.5 rounded-xl border border-slate-800">
+                                <h4 class="font-bold text-xs text-cyan-500 uppercase mb-1">Arbitrary Tetrahedron</h4>
+                                <p class="text-xs text-slate-300">For concurrent edge vectors $\\vec{a}, \\vec{b}, \\vec{c}$ from vertex $A$:
+                                $$V = \\frac{1}{6}\\big| [\\vec{a}\\ \\vec{b}\\ \\vec{c}] \\big|$$
+                                *(Exactly one-sixth the volume of the spanned parallelepiped)*</p>
+                            </div>
+                            <div class="bg-slate-900/50 p-3.5 rounded-xl border border-slate-800">
+                                <h4 class="font-bold text-xs text-emerald-500 uppercase mb-1">Regular Tetrahedron (Side a)</h4>
+                                <ul class="text-xs space-y-1 text-slate-300 font-mono">
+                                    <li>Height (H) = √(2/3)·a</li>
+                                    <li>Volume (V) = a³ / (12·√2)</li>
+                                    <li>Total Area = √3·a²</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                jee: `
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h2 class="text-md font-bold text-cyan-400">JEE Advanced Aspects: Tetrahedron</h2>
+                        </div>
+
+                        <div class="p-3 bg-cyan-950/20 border border-cyan-800/40 rounded-xl text-xs space-y-2">
+                            <h4 class="font-bold text-cyan-400 uppercase">1. Centroid of a Tetrahedron</h4>
+                            <p class="text-slate-300">If the four vertices are $A(\\vec{a}), B(\\vec{b}), C(\\vec{c}), D(\\vec{d})$:
+                            $$\\text{Centroid } G = \\frac{\\vec{a} + \\vec{b} + \\vec{c} + \\vec{d}}{4}$$
+                            The line segment joining any vertex to the centroid of the opposite face is divided by $G$ in the ratio **$3:1$** (similar to the $2:1$ centroid ratio in 2D triangles).</p>
+                        </div>
+
+                        <div class="p-3 bg-slate-900/50 border border-slate-800 rounded-xl text-xs space-y-2">
+                            <h4 class="font-bold text-emerald-400 uppercase">2. Shortest Distance Between Skew Lines</h4>
+                            <p class="text-slate-300">Opposite edges of a tetrahedron (e.g., $AB$ and $CD$) are **skew lines**.
+                            The shortest distance ($SD$) between the lines is the projection of vector $\\vec{AC}$ onto the common perpendicular vector $(\\vec{AB} \\times \\vec{CD})$:
+                            $$SD = \\frac{|(\\vec{c} - \\vec{a}) \\cdot (\\vec{u} \\times \\vec{v})|}{|\\vec{u} \\times \\vec{v}|}$$
+                            where $\\vec{u} = \\vec{AB}$ and $\\vec{v} = \\vec{CD}$. This is an incredibly common question type in JEE coordinate geometry.</p>
+                        </div>
+                    </div>
+                `
+            }
+        };
+
+        // --- HANDBOOK DISPLAY MANAGER ---
+        function setInfoTab(tabName) {
+            activeHandbookTab = tabName;
+            
+            const tabButtons = {
+                formulas: document.getElementById('handbook-tab-formulas'),
+                'jee-advanced': document.getElementById('handbook-tab-jee-advanced'),
+                'cheat-sheet': document.getElementById('handbook-tab-cheat-sheet')
+            };
+
+            // Toggle active classes
+            Object.keys(tabButtons).forEach(k => {
+                if(k === tabName) {
+                    tabButtons[k].className = "flex-1 text-center py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all bg-slate-800 text-cyan-400 border border-slate-700/60";
+                } else {
+                    tabButtons[k].className = "flex-1 text-center py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all text-slate-400 hover:text-slate-200";
+                }
+            });
+
+            renderHandbook();
+        }
+
+        function renderHandbook() {
+            const container = document.getElementById('handbook-content');
+
+            if (activeHandbookTab === 'cheat-sheet') {
+                container.innerHTML = `
+                    <div class="space-y-4 animate-fadeIn">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h2 class="text-md font-bold text-cyan-400">Master JEE 3D Cheat Sheet (Quick Revision)</h2>
+                        </div>
+                        <div class="overflow-x-auto border border-slate-800 rounded-xl bg-slate-900/30">
+                            <table class="w-full text-[11px] text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-900 border-b border-slate-800 text-slate-300 font-bold uppercase">
+                                        <th class="p-2.5">Solid Shape</th>
+                                        <th class="p-2.5">Volume (V)</th>
+                                        <th class="p-2.5">Lateral / CSA</th>
+                                        <th class="p-2.5">Total (TSA) / Edges</th>
+                                        <th class="p-2.5">JEE / Vector Formula</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-800/60 text-slate-300 font-mono">
+                                    <tr>
+                                        <td class="p-2.5 font-bold text-cyan-400 font-sans">1. Cube</td>
+                                        <td class="p-2.5">$a^3$</td>
+                                        <td class="p-2.5">$4a^2$</td>
+                                        <td class="p-2.5">$6a^2$</td>
+                                        <td class="p-2.5">Diagonals Angle: $\\cos^{-1}(1/3)$</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 font-bold text-cyan-400 font-sans">2. Cuboid</td>
+                                        <td class="p-2.5">$l \\cdot w \\cdot h$</td>
+                                        <td class="p-2.5">$2h(l + w)$</td>
+                                        <td class="p-2.5">$2(lw + wh + hl)$</td>
+                                        <td class="p-2.5">$S^2 = d^2 + A$</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 font-bold text-cyan-400 font-sans">3. Sphere</td>
+                                        <td class="p-2.5">$\\frac{4}{3}\\pi r^3$</td>
+                                        <td class="p-2.5">N/A</td>
+                                        <td class="p-2.5">$4\\pi r^2$</td>
+                                        <td class="p-2.5">Section Circle: $r = \\sqrt{R^2 - d^2}$</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 font-bold text-cyan-400 font-sans">4. Cylinder</td>
+                                        <td class="p-2.5">$\\pi r^2 h$</td>
+                                        <td class="p-2.5">$2\\pi r h$</td>
+                                        <td class="p-2.5">$2\\pi r(r + h)$</td>
+                                        <td class="p-2.5">Max Cylinder in Cone: $r = \\frac{2}{3}R$</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 font-bold text-cyan-400 font-sans">5. Cone</td>
+                                        <td class="p-2.5">$\\frac{1}{3}\\pi r^2 h$</td>
+                                        <td class="p-2.5">$\\pi r l$</td>
+                                        <td class="p-2.5">$\\pi r (r + l)$</td>
+                                        <td class="p-2.5">CoM Solid: $h/4$, Hollow: $h/3$</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 font-bold text-cyan-400 font-sans">6. Parallelepiped</td>
+                                        <td class="p-2.5">$|[\\vec{a}\\ \\vec{b}\\ \\vec{c}]|$</td>
+                                        <td class="p-2.5">N/A</td>
+                                        <td class="p-2.5">$2\\sum|\\vec{a}\\times\\vec{b}|$</td>
+                                        <td class="p-2.5">Coplanar if $[\\vec{a}\\ \\vec{b}\\ \\vec{c}] = 0$</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 font-bold text-cyan-400 font-sans">7. Tetrahedron</td>
+                                        <td class="p-2.5">$\\frac{1}{6}|[\\vec{a}\\ \\vec{b}\\ \\vec{c}]|$</td>
+                                        <td class="p-2.5">N/A</td>
+                                        <td class="p-2.5">Regular: $\\sqrt{3}a^2$</td>
+                                        <td class="p-2.5">Centroid splits vertices at $3:1$</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const shapeData = handbookData[activeShape];
+                if (shapeData) {
+                    container.innerHTML = activeHandbookTab === 'formulas' ? shapeData.formulas : shapeData.jee;
+                } else {
+                    container.innerHTML = `<p class="text-xs text-slate-400">Select a shape from the top menu to view standard formulas and properties.</p>`;
+                }
+            }
+
+            // Fire KaTeX parser on the container
+            try {
+                renderMathInElement(container, {
+                    delimiters: [
+                        { left: "$$", right: "$$", display: true },
+                        { left: "$", right: "$", display: false }
+                    ]
+                });
+            } catch (err) {
+                console.error("Math rendering error: ", err);
+            }
+        }
+
+
+        // --- TAB SELECTION HANDLER ---
+        function setActiveTab(tabId) {
+            activeShape = tabId;
+
+            // Highlight ribbon tab selection
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                btn.className = "tab-btn px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 hover:bg-slate-800 text-slate-400";
+            });
+
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if (activeBtn) {
+                activeBtn.className = "tab-btn px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 bg-cyan-600 text-white shadow-md shadow-cyan-950/50";
+            }
+
+            // Update sliders header label
+            const titleMap = {
+                cube: 'Cube Geometry',
+                cuboid: 'Cuboid Dimensions',
+                sphere: 'Sphere & Hemisphere',
+                cylinder: 'Cylinder Parameters',
+                cone: 'Cone / Frustum Specifications',
+                parallelepiped: 'Spanning Edges Vectors (a, b, c)',
+                tetrahedron: 'Pyramid Edge Vectors (a, b, c)'
+            };
+            document.getElementById('active-slider-tag').innerText = titleMap[tabId] || 'Parameters';
+
+            renderCanvasExtras();
+            renderSliders();
+            rebuild3DScene();
+            renderCalculations();
+            renderHandbook();
+            resetCamera();
+        }
+
+        // --- WEBGL CONTEXT BOOTSTRAPPER ---
+        window.onload = function () {
+            lucide.createIcons();
+            initWebGL();
+            setActiveTab('cube');
+        }
+    </script>
+</body>
+</html>
