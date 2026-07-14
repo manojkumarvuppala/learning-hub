@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Valence Explorer - 3D Outer Shell & Electronic Configuration Simulator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        .fira-mono {
+            font-family: 'Fira Code', monospace;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+        /* Orbital highlights colors */
+        .color-s { color: #f87171; border-color: rgba(248, 113, 113, 0.3); }
+        .color-p { color: #22d3ee; border-color: rgba(34, 211, 238, 0.3); }
+        .color-d { color: #c084fc; border-color: rgba(192, 132, 252, 0.3); }
+        .color-f { color: #4ade80; border-color: rgba(74, 222, 128, 0.3); }
+        /* Dynamic table glowing effects */
+        .el-btn:hover {
+            transform: scale(1.08) translateY(-2px);
+            z-index: 40;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+        }
+        /* Glassmorphism backgrounds */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-gradient-to-tr from-cyan-600 to-indigo-600 rounded-xl shadow-lg shadow-cyan-500/20">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-extrabold bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">QUANTUM VALENCE EXPLORER</h1>
+                <p class="text-xs text-slate-400 font-medium">3D Outer Shell Molecular Orbital & Electronic Configuration Visualizer</p>
+            </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <!-- Global Search -->
+            <div class="relative flex-grow md:flex-grow-0">
+                <input id="searchInput" type="text" placeholder="Search by name, symbol, or number..." class="w-full md:w-64 bg-slate-900 border border-slate-800 text-slate-100 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all pl-10" />
+                <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <!-- Help Trigger -->
+            <button onclick="toggleModal('infoModal')" class="px-4 py-2 bg-slate-900 border border-slate-800 text-slate-300 rounded-xl hover:bg-slate-800 hover:text-white transition-all text-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Guide
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-grow p-4 lg:p-6 grid grid-cols-1 xl:grid-cols-12 gap-6 max-w-[1920px] mx-auto w-full">
+        
+        <!-- Left Column: The Periodic Table Grid (7 cols on XL) -->
+        <section class="xl:col-span-7 flex flex-col gap-6">
+            <div class="glass-panel p-4 lg:p-6 rounded-2xl flex flex-col gap-4 shadow-2xl">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                            <span>Interactive Periodic Table</span>
+                            <span class="text-xs font-semibold px-2 py-0.5 bg-cyan-950 text-cyan-400 rounded-full border border-cyan-800">118 Elements</span>
+                        </h2>
+                        <p class="text-xs text-slate-400">Click any element below to build and simulate its electronic outer shell orbitals.</p>
+                    </div>
+                    <!-- Quick Preset Legend Filters -->
+                    <div class="flex flex-wrap gap-1.5" id="legendFilter">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Scroll Container for Mobile Responsiveness of Table -->
+                <div class="overflow-x-auto w-full pb-2">
+                    <div class="min-w-[950px] select-none">
+                        <!-- Periodic Table CSS Grid Layout -->
+                        <div id="periodicGrid" class="grid grid-cols-18 gap-1 font-semibold text-center text-xs">
+                            <!-- Dynamic periodic cells loaded here -->
+                        </div>
+
+                        <!-- Spacer row between main table and f-block spacer -->
+                        <div class="h-4"></div>
+
+                        <!-- Lanthanides & Actinides (f-block rows separated dynamically) -->
+                        <div id="fBlockGrid" class="grid grid-cols-18 gap-1 font-semibold text-center text-xs mt-1">
+                            <!-- Lanthanides/Actinides placed here dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Reference Shell Physics & Info Panels -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Group Chemistry Behavior Card -->
+                <div class="glass-panel p-5 rounded-2xl flex flex-col gap-3">
+                    <h3 class="text-sm font-extrabold text-slate-300 uppercase tracking-wide flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                        Valence Group Chemistry
+                    </h3>
+                    <div id="groupBehaviorText" class="text-xs text-slate-400 leading-relaxed min-h-[80px]">
+                        Select an element above to analyze its standard group chemical properties, octet tendencies, and outer shell behavior.
+                    </div>
+                </div>
+                <!-- Quantum Rules Legend -->
+                <div class="glass-panel p-5 rounded-2xl flex flex-col gap-3">
+                    <h3 class="text-sm font-extrabold text-slate-300 uppercase tracking-wide flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                        Visual Subshell Legend
+                    </h3>
+                    <div class="grid grid-cols-2 gap-3 text-xs">
+                        <div class="flex items-center gap-2.5 p-1.5 rounded-lg border border-slate-800 bg-slate-950/40">
+                            <span class="w-3.5 h-3.5 rounded-full bg-red-500/70 shadow-lg shadow-red-500/30"></span>
+                            <div>
+                                <p class="font-bold text-red-400">s-orbital</p>
+                                <p class="text-[10px] text-slate-500">Spherical ($l=0$)</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2.5 p-1.5 rounded-lg border border-slate-800 bg-slate-950/40">
+                            <span class="w-3.5 h-3.5 rounded bg-cyan-500/70 shadow-lg shadow-cyan-500/30"></span>
+                            <div>
+                                <p class="font-bold text-cyan-400">p-orbital</p>
+                                <p class="text-[10px] text-slate-500">Dumbbell ($l=1$)</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2.5 p-1.5 rounded-lg border border-slate-800 bg-slate-950/40">
+                            <span class="w-3.5 h-3.5 rotate-45 rounded bg-purple-500/70 shadow-lg shadow-purple-500/30"></span>
+                            <div>
+                                <p class="font-bold text-purple-400">d-orbital</p>
+                                <p class="text-[10px] text-slate-500">Cloverleaf ($l=2$)</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2.5 p-1.5 rounded-lg border border-slate-800 bg-slate-950/40">
+                            <span class="w-3.5 h-3.5 rounded-full border border-dashed border-emerald-500 bg-emerald-500/40 shadow-lg shadow-emerald-500/30 animate-pulse"></span>
+                            <div>
+                                <p class="font-bold text-emerald-400">f-orbital</p>
+                                <p class="text-[10px] text-slate-500">Complex ($l=3$)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Column: Interactive Orbital Simulator Dashboard (5 cols on XL) -->
+        <section class="xl:col-span-5 flex flex-col gap-6">
+            
+            <!-- Selected Element HUD Display -->
+            <div id="elementCard" class="glass-panel p-6 rounded-2xl relative overflow-hidden transition-all duration-300 flex flex-col gap-4">
+                <!-- Glowing background accent depending on group -->
+                <div id="elementCardGradient" class="absolute -right-16 -top-16 w-48 h-48 rounded-full filter blur-3xl opacity-25"></div>
+                
+                <div class="flex justify-between items-start z-10">
+                    <div class="flex items-center gap-4">
+                        <div id="elementSymbolBox" class="w-20 h-20 flex items-center justify-center text-4xl font-extrabold rounded-2xl bg-slate-950/80 border text-white shadow-inner select-none relative">
+                            <!-- Symbol -->
+                            <div id="hudSymbol" class="font-black">H</div>
+                            <!-- Atomic Number top-left -->
+                            <span id="hudZ" class="absolute top-1.5 left-2 text-[11px] font-bold text-slate-400">1</span>
+                        </div>
+                        <div>
+                            <h3 id="hudName" class="text-2xl font-black text-white tracking-tight">Hydrogen</h3>
+                            <div class="flex gap-2 mt-1 items-center">
+                                <span id="hudCategory" class="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded bg-slate-800 text-slate-300">Reactive Nonmetal</span>
+                                <span id="hudMass" class="text-[11px] fira-mono text-slate-400">1.008 amu</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] uppercase tracking-wider font-extrabold text-slate-500">Configuration</p>
+                        <p id="hudAbbrevConfig" class="text-lg font-bold text-cyan-400 fira-mono select-all">1s¹</p>
+                        <!-- Configuration Toggle -->
+                        <button onclick="toggleConfigMode()" class="text-[10px] hover:text-white transition-all text-slate-400 underline cursor-pointer mt-0.5">Toggle Full Format</button>
+                    </div>
+                </div>
+                
+                <div id="hudFullConfigDiv" class="hidden p-3 rounded-xl bg-slate-950/60 border border-slate-900 text-xs fira-mono text-slate-300 z-10 flex flex-wrap gap-1 items-center">
+                    <span class="text-slate-500 mr-1.5">Full Sequence:</span>
+                    <span id="hudFullConfigText">1s¹</span>
+                </div>
+            </div>
+
+            <!-- Visualizer Container -->
+            <div class="glass-panel p-4 rounded-2xl relative shadow-2xl flex flex-col gap-4">
+                
+                <!-- Display Tab Toggles (Quantum 3D vs Bohr 2D) -->
+                <div class="flex justify-between items-center bg-slate-950/80 p-1.5 rounded-xl border border-slate-900">
+                    <button id="tabQuantumBtn" onclick="switchTab('quantum')" class="flex-1 py-2 text-xs font-extrabold rounded-lg transition-all flex justify-center items-center gap-2 bg-gradient-to-r from-cyan-950 to-indigo-950 text-cyan-300 border border-cyan-800/50 shadow-md">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
+                        3D QUANTUM ORBITALS
+                    </button>
+                    <button id="tabBohrBtn" onclick="switchTab('bohr')" class="flex-1 py-2 text-xs font-semibold rounded-lg transition-all text-slate-400 hover:text-slate-200 flex justify-center items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.5"/></svg>
+                        2D BOHR SHELLS MODEL
+                    </button>
+                </div>
+
+                <!-- Canvas Visualizer Frame -->
+                <div class="relative w-full aspect-square bg-slate-950 rounded-xl overflow-hidden border border-slate-900 shadow-inner group">
+                    <canvas id="simulationCanvas" class="w-full h-full cursor-grab active:cursor-grabbing block"></canvas>
+                    
+                    <!-- Loading HUD overlay -->
+                    <div id="simulationOverlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex-col justify-center items-center gap-3">
+                        <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-cyan-500"></div>
+                        <p class="text-xs text-slate-400 tracking-wider">Generating orbital wave packet configurations...</p>
+                    </div>
+
+                    <!-- 3D Rotation Instructions Overlay -->
+                    <div id="dragPrompt" class="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-slate-900/80 border border-slate-800 text-slate-400 text-[10px] rounded-full pointer-events-none transition-opacity duration-500 select-none flex items-center gap-1.5 opacity-90 group-hover:opacity-100">
+                        <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 013 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1"/></svg>
+                        Drag mouse or swipe to rotate 3D system
+                    </div>
+
+                    <!-- Canvas Interactive Stats Panel -->
+                    <div id="hoverQuantumHUD" class="absolute top-3 left-3 px-3 py-2 bg-slate-900/90 border border-slate-800 text-xs rounded-xl shadow-lg hidden pointer-events-none w-48 flex-col gap-1">
+                        <p class="text-[10px] uppercase font-bold text-slate-500">Electron State Selected</p>
+                        <p class="text-cyan-400 font-extrabold flex justify-between">
+                            <span>Orbital:</span>
+                            <span id="hudStateOrbital">4s</span>
+                        </p>
+                        <div class="border-t border-slate-800/80 my-1"></div>
+                        <div class="grid grid-cols-2 gap-1 font-mono text-[10px] text-slate-400">
+                            <div>n = <span id="hudStateN">4</span></div>
+                            <div>l = <span id="hudStateL">0</span></div>
+                            <div>ml = <span id="hudStateMl">0</span></div>
+                            <div>ms = <span id="hudStateMs">+1/2</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Visualization Controls Console -->
+                <div class="flex flex-col gap-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-300">Visualization Settings</span>
+                        <!-- Speed slider text HUD -->
+                        <div class="text-[10px] bg-slate-900 border border-slate-800 rounded px-2 py-0.5 text-slate-400 uppercase">
+                            Speed: <span id="speedValueText" class="text-cyan-400 font-extrabold">1.0x</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Speed Control Slider -->
+                        <div class="flex items-center gap-3">
+                            <span class="text-[11px] text-slate-400">Speed</span>
+                            <input type="range" id="speedSlider" min="0" max="3" step="0.1" value="1" class="flex-grow accent-cyan-500 h-1 bg-slate-800 rounded-lg cursor-pointer" />
+                        </div>
+                        <!-- Probability density cloud scale slider -->
+                        <div id="densityControl" class="flex items-center gap-3">
+                            <span class="text-[11px] text-slate-400">Probability Cloud</span>
+                            <input type="range" id="densitySlider" min="10" max="100" value="50" class="flex-grow accent-indigo-500 h-1 bg-slate-800 rounded-lg cursor-pointer" />
+                        </div>
+                    </div>
+
+                    <!-- Rendering Mode Selector Buttons -->
+                    <div id="renderModes" class="grid grid-cols-3 gap-2">
+                        <button onclick="setRenderMode('cloud')" id="btnModeCloud" class="py-1.5 text-[10px] font-extrabold rounded-lg border bg-gradient-to-r from-cyan-950 to-indigo-950 border-cyan-800/50 text-cyan-400">
+                            Probability Cloud
+                        </button>
+                        <button onclick="setRenderMode('wave')" id="btnModeWave" class="py-1.5 text-[10px] font-semibold rounded-lg border border-slate-800 bg-slate-900/50 hover:bg-slate-800 text-slate-400">
+                            Wave Flow Paths
+                        </button>
+                        <button onclick="setRenderMode('uncertainty')" id="btnModeUncertainty" class="py-1.5 text-[10px] font-semibold rounded-lg border border-slate-800 bg-slate-900/50 hover:bg-slate-800 text-slate-400">
+                            Uncertainty Flash
+                        </button>
+                    </div>
+
+                    <!-- Interactive Subshells Active State Checkboxes -->
+                    <div class="border-t border-slate-900/80 pt-4 flex flex-col gap-2">
+                        <span class="text-xs font-bold text-slate-400">Isolate Outer Shell subshells:</span>
+                        <div id="subshellFilters" class="flex flex-wrap gap-2">
+                            <!-- Toggle checkboxes filled by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Bi-directional Quantum Numbers Table -->
+            <div class="glass-panel p-5 rounded-2xl flex flex-col gap-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-slate-300">Valence Electrons Quantum Numbers</h3>
+                    <span class="text-[10px] text-slate-500 font-mono">Total Valence: <span id="valenceTotalText" class="text-indigo-400 font-extrabold">1</span></span>
+                </div>
+                <div class="overflow-y-auto max-h-[180px] border border-slate-900/80 rounded-xl bg-slate-950/40">
+                    <table class="w-full text-[11px] text-left">
+                        <thead>
+                            <tr class="bg-slate-950 text-slate-500 border-b border-slate-900">
+                                <th class="p-2">Orbit</th>
+                                <th class="p-2 text-center">n</th>
+                                <th class="p-2 text-center">l</th>
+                                <th class="p-2 text-center">ml</th>
+                                <th class="p-2 text-center">ms</th>
+                                <th class="p-2 text-right">Spin Vector</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quantumNumbersTableBody">
+                            <!-- Filled dynamically by JavaScript on element select -->
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-[10px] text-slate-500 italic leading-snug">Hovering over any electron row dynamically scales its particle on the live interactive visualization above.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Detailed Educational Help Modal Overlay -->
+    <div id="infoModal" class="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="glass-panel max-w-lg w-full rounded-2xl overflow-hidden shadow-2xl relative flex flex-col border border-slate-800 max-h-[90vh]">
+            <div class="p-6 border-b border-slate-800 bg-slate-900/40 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364.364l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    Understanding Quantum Atomic Orbitals
+                </h3>
+                <button onclick="toggleModal('infoModal')" class="text-slate-400 hover:text-white transition-all text-xl cursor-pointer font-bold">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4 text-xs leading-relaxed text-slate-300">
+                <p>This web workspace is designed specifically to help students and visual learners transition from the simplistic <strong>Bohr Shell Model</strong> to the actual <strong>3D Quantum Mechanics Model</strong> of elements.</p>
+                
+                <h4 class="font-extrabold text-cyan-400 uppercase text-[10px] tracking-wider">How to read the visualization:</h4>
+                <ul class="list-disc pl-5 space-y-1.5">
+                    <li><strong>3D Orbital Wireframes (New!)</strong>: Visualizes the exact mathematical outer shell boundaries (spheres for $s$, dumbbells for $p$, clovers for $d$, complex lobes for $f$) corresponding to the real wavefunctions.</li>
+                    <li><strong>Probability Cloud Mode</strong>: Represents the volume of space around the nucleus where there is a 90% probability of finding the electron ($|\psi|^2$). The particle dots represent quantum state densities.</li>
+                    <li><strong>Wave Flow Mode</strong>: Represents the classical deterministic path or flow lines of corresponding electron wavepackets inside their probability density lobes.</li>
+                    <li><strong>Uncertainty Flash Mode</strong>: Models the Heisenberg Uncertainty Principle and Copenhagen Interpretation. Instead of a set orbit, the electrons flash in random positions centered on the wave probability field density.</li>
+                </ul>
+
+                <h4 class="font-extrabold text-indigo-400 uppercase text-[10px] tracking-wider">What are Quantum Numbers?</h4>
+                <div class="p-3 bg-slate-950/60 border border-slate-900 rounded-xl space-y-2">
+                    <p><strong>Principal ($n$)</strong>: Defines the shell layer and energy level of the electron ($n=1, 2, 3...$).</p>
+                    <p><strong>Azimuthal ($l$)</strong>: Defines the angular momentum shape of the orbital ($l=0: \text{s-spherical}$, $l=1: \text{p-dumbbell}$, $l=2: \text{d-clover}$, $l=3: \text{f-complex}$).</p>
+                    <p><strong>Magnetic ($m_l$)</strong>: Defines the 3D spatial orientation of the orbital lobe (e.g., $p_x, p_y, p_z$).</p>
+                    <p><strong>Spin ($m_s$)</strong>: Defines the intrinsic spin direction of the individual electron ($+\frac{1}{2}$ spin up, $-\frac{1}{2}$ spin down).</p>
+                </div>
+
+                <h4 class="font-extrabold text-emerald-400 uppercase text-[10px] tracking-wider">Hund's Rule and Pauli Exclusion:</h4>
+                <p>Observe how electrons occupy degenerate subshell lobes (like the 3 separate $p$-lobes) singly first with identical parallel spins before pairing up. This interactive model simulates Hund's Rule of maximum multiplicity perfectly in real time!</p>
+            </div>
+            <div class="p-4 border-t border-slate-800 bg-slate-900/40 text-right">
+                <button onclick="toggleModal('infoModal')" class="px-5 py-2 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md">
+                    Got it, Let's Explore!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main JS Application Logic -->
+    <script>
+        // Set of Chemical Categories map
+        const CATEGORIES = [
+            "Reactive Nonmetal",      // 0
+            "Noble Gas",              // 1
+            "Alkali Metal",           // 2
+            "Alkaline Earth Metal",   // 3
+            "Metalloid",              // 4
+            "Post-transition Metal",   // 5
+            "Transition Metal",       // 6
+            "Lanthanide",             // 7
+            "Actinide",               // 8
+            "Unknown Properties"      // 9
+        ];
+
+        const CATEGORY_COLORS = {
+            0: "#3b82f6", // Blue
+            1: "#6366f1", // Indigo
+            2: "#ef4444", // Red
+            3: "#f97316", // Orange
+            4: "#14b8a6", // Teal
+            5: "#10b981", // Green
+            6: "#eab308", // Yellow
+            7: "#a855f7", // Purple
+            8: "#ec4899", // Pink
+            9: "#64748b"  // Slate
+        };
+
+        const CATEGORY_CLASSES = {
+            0: "bg-blue-500/20 text-blue-300 border-blue-500/30 hover:bg-blue-500/30",
+            1: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30 hover:bg-indigo-500/30",
+            2: "bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30",
+            3: "bg-orange-500/20 text-orange-300 border-orange-500/30 hover:bg-orange-500/30",
+            4: "bg-teal-500/20 text-teal-300 border-teal-500/30 hover:bg-teal-500/30",
+            5: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30",
+            6: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30 hover:bg-yellow-500/30",
+            7: "bg-purple-500/20 text-purple-300 border-purple-500/30 hover:bg-purple-500/30",
+            8: "bg-pink-500/20 text-pink-300 border-pink-500/30 hover:bg-pink-500/30",
+            9: "bg-slate-500/20 text-slate-300 border-slate-500/30 hover:bg-slate-500/30"
+        };
+
+        // Complete 118 Elements Database with Outer Shell Configuration Specifications
+        // Properties: [AtomicNumber Z, Symbol, Name, CategoryIndex, Period, Group, ShorthandConfig, outer-s, outer-p, active-d, active-f, valence-shell-n]
+        const ELEMENTS_DATA = [
+            [1, "H", "Hydrogen", 0, 1, 1, "1s¹", 1, 0, 0, 0, 1],
+            [2, "He", "Helium", 1, 1, 18, "1s²", 2, 0, 0, 0, 1],
+            [3, "Li", "Lithium", 2, 2, 1, "[He] 2s¹", 1, 0, 0, 0, 2],
+            [4, "Be", "Beryllium", 3, 2, 2, "[He] 2s²", 2, 0, 0, 0, 2],
+            [5, "B", "Boron", 4, 2, 13, "[He] 2s² 2p¹", 2, 1, 0, 0, 2],
+            [6, "C", "Carbon", 0, 2, 14, "[He] 2s² 2p²", 2, 2, 0, 0, 2],
+            [7, "N", "Nitrogen", 0, 2, 15, "[He] 2s² 2p³", 2, 3, 0, 0, 2],
+            [8, "O", "Oxygen", 0, 2, 16, "[He] 2s² 2p⁴", 2, 4, 0, 0, 2],
+            [9, "F", "Fluorine", 0, 2, 17, "[He] 2s² 2p⁵", 2, 5, 0, 0, 2],
+            [10, "Ne", "Neon", 1, 2, 18, "[He] 2s² 2p⁶", 2, 6, 0, 0, 2],
+            [11, "Na", "Sodium", 2, 3, 1, "[Ne] 3s¹", 1, 0, 0, 0, 3],
+            [12, "Mg", "Magnesium", 3, 3, 2, "[Ne] 3s²", 2, 0, 0, 0, 3],
+            [13, "Al", "Aluminium", 5, 3, 13, "[Ne] 3s² 3p¹", 2, 1, 0, 0, 3],
+            [14, "Si", "Silicon", 4, 3, 14, "[Ne] 3s² 3p²", 2, 2, 0, 0, 3],
+            [15, "P", "Phosphorus", 0, 3, 15, "[Ne] 3s² 3p³", 2, 3, 0, 0, 3],
+            [16, "S", "Sulfur", 0, 3, 16, "[Ne] 3s² 3p⁴", 2, 4, 0, 0, 3],
+            [17, "Cl", "Chlorine", 0, 3, 17, "[Ne] 3s² 3p⁵", 2, 5, 0, 0, 3],
+            [18, "Ar", "Argon", 1, 3, 18, "[Ne] 3s² 3p⁶", 2, 6, 0, 0, 3],
+            [19, "K", "Potassium", 2, 4, 1, "[Ar] 4s¹", 1, 0, 0, 0, 4],
+            [20, "Ca", "Calcium", 3, 4, 2, "[Ar] 4s²", 2, 0, 0, 0, 4],
+            [21, "Sc", "Scandium", 6, 4, 3, "[Ar] 3d¹ 4s²", 2, 0, 1, 0, 4],
+            [22, "Ti", "Titanium", 6, 4, 4, "[Ar] 3d² 4s²", 2, 0, 2, 0, 4],
+            [23, "V", "Vanadium", 6, 4, 5, "[Ar] 3d³ 4s²", 2, 0, 3, 0, 4],
+            [24, "Cr", "Chromium", 6, 4, 6, "[Ar] 3d⁵ 4s¹", 1, 0, 5, 0, 4],
+            [25, "Mn", "Manganese", 6, 4, 7, "[Ar] 3d⁵ 4s²", 2, 0, 5, 0, 4],
+            [26, "Fe", "Iron", 6, 4, 8, "[Ar] 3d⁶ 4s²", 2, 0, 6, 0, 4],
+            [27, "Co", "Cobalt", 6, 4, 9, "[Ar] 3d⁷ 4s²", 2, 0, 7, 0, 4],
+            [28, "Ni", "Nickel", 6, 4, 10, "[Ar] 3d⁸ 4s²", 2, 0, 8, 0, 4],
+            [29, "Cu", "Copper", 6, 4, 11, "[Ar] 3d¹0 4s¹", 1, 0, 10, 0, 4],
+            [30, "Zn", "Zinc", 6, 4, 12, "[Ar] 3d¹0 4s²", 2, 0, 10, 0, 4],
+            [31, "Ga", "Gallium", 5, 4, 13, "[Ar] 3d¹0 4s² 4p¹", 2, 1, 0, 0, 4],
+            [32, "Ge", "Germanium", 4, 4, 14, "[Ar] 3d¹0 4s² 4p²", 2, 2, 0, 0, 4],
+            [33, "As", "Arsenic", 4, 4, 15, "[Ar] 3d¹0 4s² 4p³", 2, 3, 0, 0, 4],
+            [34, "Se", "Selenium", 0, 4, 16, "[Ar] 3d¹0 4s² 4p⁴", 2, 4, 0, 0, 4],
+            [35, "Br", "Bromine", 0, 4, 17, "[Ar] 3d¹0 4s² 4p⁵", 2, 5, 0, 0, 4],
+            [36, "Kr", "Krypton", 1, 4, 18, "[Ar] 3d¹0 4s² 4p⁶", 2, 6, 0, 0, 4],
+            [37, "Rb", "Rubidium", 2, 5, 1, "[Kr] 5s¹", 1, 0, 0, 0, 5],
+            [38, "Sr", "Strontium", 3, 5, 2, "[Kr] 5s²", 2, 0, 0, 0, 5],
+            [39, "Y", "Yttrium", 6, 5, 3, "[Kr] 4d¹ 5s²", 2, 0, 1, 0, 5],
+            [40, "Zr", "Zirconium", 6, 5, 4, "[Kr] 4d² 5s²", 2, 0, 2, 0, 5],
+            [41, "Nb", "Niobium", 6, 5, 5, "[Kr] 4d⁴ 5s¹", 1, 0, 4, 0, 5],
+            [42, "Mo", "Molybdenum", 6, 5, 6, "[Kr] 4d⁵ 5s¹", 1, 0, 5, 0, 5],
+            [43, "Tc", "Technetium", 6, 5, 7, "[Kr] 4d⁵ 5s²", 2, 0, 5, 0, 5],
+            [44, "Ru", "Ruthenium", 6, 5, 8, "[Kr] 4d⁷ 5s¹", 1, 0, 7, 0, 5],
+            [45, "Rh", "Rhodium", 6, 5, 9, "[Kr] 4d⁸ 5s¹", 1, 0, 8, 0, 5],
+            [46, "Pd", "Palladium", 6, 5, 10, "[Kr] 4d¹0", 0, 0, 10, 0, 5],
+            [47, "Ag", "Silver", 6, 5, 11, "[Kr] 4d¹0 5s¹", 1, 0, 10, 0, 5],
+            [48, "Cd", "Cadmium", 6, 5, 12, "[Kr] 4d¹0 5s²", 2, 0, 10, 0, 5],
+            [49, "In", "Indium", 5, 5, 13, "[Kr] 4d¹0 5s² 5p¹", 2, 1, 0, 0, 5],
+            [50, "Sn", "Tin", 5, 5, 14, "[Kr] 4d¹0 5s² 5p²", 2, 2, 0, 0, 5],
+            [51, "Sb", "Antimony", 4, 5, 15, "[Kr] 4d¹0 5s² 5p³", 2, 3, 0, 0, 5],
+            [52, "Te", "Tellurium", 4, 5, 16, "[Kr] 4d¹0 5s² 5p⁴", 2, 4, 0, 0, 5],
+            [53, "I", "Iodine", 0, 5, 17, "[Kr] 4d¹0 5s² 5p⁵", 2, 5, 0, 0, 5],
+            [54, "Xe", "Xenon", 1, 5, 18, "[Kr] 4d¹0 5s² 5p⁶", 2, 6, 0, 0, 5],
+            [55, "Cs", "Caesium", 2, 6, 1, "[Xe] 6s¹", 1, 0, 0, 0, 6],
+            [56, "Ba", "Barium", 3, 6, 2, "[Xe] 6s²", 2, 0, 0, 0, 6],
+            // Lanthanides Group code 0 represents isolated row
+            [57, "La", "Lanthanum", 7, 6, 0, "[Xe] 5d¹ 6s²", 2, 0, 1, 0, 6],
+            [58, "Ce", "Cerium", 7, 6, 0, "[Xe] 4f¹ 5d¹ 6s²", 2, 0, 1, 1, 6],
+            [59, "Pr", "Praseodymium", 7, 6, 0, "[Xe] 4f³ 6s²", 2, 0, 0, 3, 6],
+            [60, "Nd", "Neodymium", 7, 6, 0, "[Xe] 4f⁴ 6s²", 2, 0, 0, 4, 6],
+            [61, "Pm", "Promethium", 7, 6, 0, "[Xe] 4f⁵ 6s²", 2, 0, 0, 5, 6],
+            [62, "Sm", "Samarium", 7, 6, 0, "[Xe] 4f⁶ 6s²", 2, 0, 0, 6, 6],
+            [63, "Eu", "Europium", 7, 6, 0, "[Xe] 4f⁷ 6s²", 2, 0, 0, 7, 6],
+            [64, "Gd", "Gadolinium", 7, 6, 0, "[Xe] 4f⁷ 5d¹ 6s²", 2, 0, 1, 7, 6],
+            [65, "Tb", "Terbium", 7, 6, 0, "[Xe] 4f⁹ 6s²", 2, 0, 0, 9, 6],
+            [66, "Dy", "Dysprosium", 7, 6, 0, "[Xe] 4f¹0 6s²", 2, 0, 0, 10, 6],
+            [67, "Ho", "Holmium", 7, 6, 0, "[Xe] 4f11 6s²", 2, 0, 0, 11, 6],
+            [68, "Er", "Erbium", 7, 6, 0, "[Xe] 4f12 6s²", 2, 0, 0, 12, 6],
+            [69, "Tm", "Thulium", 7, 6, 0, "[Xe] 4f13 6s²", 2, 0, 0, 13, 6],
+            [70, "Yb", "Ytterbium", 7, 6, 0, "[Xe] 4f14 6s²", 2, 0, 0, 14, 6],
+            [71, "Lu", "Lutetium", 7, 6, 0, "[Xe] 4f14 5d¹ 6s²", 2, 0, 1, 14, 6],
+            // Outer row 6 transition block
+            [72, "Hf", "Hafnium", 6, 6, 4, "[Xe] 4f14 5d² 6s²", 2, 0, 2, 0, 6],
+            [73, "Ta", "Tantalum", 6, 6, 5, "[Xe] 4f14 5d³ 6s²", 2, 0, 3, 0, 6],
+            [74, "W", "Tungsten", 6, 6, 6, "[Xe] 4f14 5d⁴ 6s²", 2, 0, 4, 0, 6],
+            [75, "Re", "Rhenium", 6, 6, 7, "[Xe] 4f14 5d⁵ 6s²", 2, 0, 5, 0, 6],
+            [76, "Os", "Osmium", 6, 6, 8, "[Xe] 4f14 5d⁶ 6s²", 2, 0, 6, 0, 6],
+            [77, "Ir", "Iridium", 6, 6, 9, "[Xe] 4f14 5d⁷ 6s²", 2, 0, 7, 0, 6],
+            [78, "Pt", "Platinum", 6, 6, 10, "[Xe] 4f14 5d⁹ 6s¹", 1, 0, 9, 0, 6],
+            [79, "Au", "Gold", 6, 6, 11, "[Xe] 4f14 5d10 6s¹", 1, 0, 10, 0, 6],
+            [80, "Hg", "Mercury", 6, 6, 12, "[Xe] 4f14 5d10 6s²", 2, 0, 10, 0, 6],
+            [81, "Tl", "Thallium", 5, 6, 13, "[Xe] 4f14 5d10 6s² 6p¹", 2, 1, 0, 0, 6],
+            [82, "Pb", "Lead", 5, 6, 14, "[Xe] 4f14 5d10 6s² 6p²", 2, 2, 0, 0, 6],
+            [83, "Bi", "Bismuth", 5, 6, 15, "[Xe] 4f14 5d10 6s² 6p³", 2, 3, 0, 0, 6],
+            [84, "Po", "Polonium", 5, 6, 16, "[Xe] 4f14 5d10 6s² 6p⁴", 2, 4, 0, 0, 6],
+            [85, "At", "Astatine", 0, 6, 17, "[Xe] 4f14 5d10 6s² 6p⁵", 2, 5, 0, 0, 6],
+            [86, "Rn", "Radon", 1, 6, 18, "[Xe] 4f14 5d10 6s² 6p⁶", 2, 6, 0, 0, 6],
+            [87, "Fr", "Francium", 2, 7, 1, "[Rn] 7s¹", 1, 0, 0, 0, 7],
+            [88, "Ra", "Radium", 3, 7, 2, "[Rn] 7s²", 2, 0, 0, 0, 7],
+            // Actinides Group code 0 represents isolated row
+            [89, "Ac", "Actinium", 8, 7, 0, "[Rn] 6d¹ 7s²", 2, 0, 1, 0, 7],
+            [90, "Th", "Thorium", 8, 7, 0, "[Rn] 6d² 7s²", 2, 0, 2, 0, 7],
+            [91, "Pa", "Protactinium", 8, 7, 0, "[Rn] 5f² 6d¹ 7s²", 2, 0, 1, 2, 7],
+            [92, "U", "Uranium", 8, 7, 0, "[Rn] 5f³ 6d¹ 7s²", 2, 0, 1, 3, 7],
+            [93, "Np", "Neptunium", 8, 7, 0, "[Rn] 5f⁴ 6d¹ 7s²", 2, 0, 1, 4, 7],
+            [94, "Pu", "Plutonium", 8, 7, 0, "[Rn] 5f⁶ 7s²", 2, 0, 0, 6, 7],
+            [95, "Am", "Americium", 8, 7, 0, "[Rn] 5f⁷ 7s²", 2, 0, 0, 7, 7],
+            [96, "Cm", "Curium", 8, 7, 0, "[Rn] 5f⁷ 6d¹ 7s²", 2, 0, 1, 7, 7],
+            [97, "Bk", "Berkelium", 8, 7, 0, "[Rn] 5f⁹ 7s²", 2, 0, 0, 9, 7],
+            [98, "Cf", "Californium", 8, 7, 0, "[Rn] 5f10 7s²", 2, 0, 0, 10, 7],
+            [99, "Es", "Einsteinium", 8, 7, 0, "[Rn] 5f11 7s²", 2, 0, 0, 11, 7],
+            [100, "Fm", "Fermium", 8, 7, 0, "[Rn] 5f12 7s²", 2, 0, 0, 12, 7],
+            [101, "Md", "Mendelevium", 8, 7, 0, "[Rn] 5f13 7s²", 2, 0, 0, 13, 7],
+            [102, "No", "Nobelium", 8, 7, 0, "[Rn] 5f14 7s²", 2, 0, 0, 14, 7],
+            [103, "Lr", "Lawrencium", 8, 7, 0, "[Rn] 5f14 6d¹ 7s²", 2, 0, 1, 14, 7],
+            // Outer row 7 transition block
+            [104, "Rf", "Rutherfordium", 9, 7, 4, "[Rn] 5f14 6d² 7s²", 2, 0, 2, 0, 7],
+            [105, "Db", "Dubnium", 9, 7, 5, "[Rn] 5f14 6d³ 7s²", 2, 0, 3, 0, 7],
+            [106, "Sg", "Seaborgium", 9, 7, 6, "[Rn] 5f14 6d⁴ 7s²", 2, 0, 4, 0, 7],
+            [107, "Bh", "Bohrium", 9, 7, 7, "[Rn] 5f14 6d⁵ 7s²", 2, 0, 5, 0, 7],
+            [108, "Hs", "Hassium", 9, 7, 8, "[Rn] 5f14 6d⁶ 7s²", 2, 0, 6, 0, 7],
+            [109, "Mt", "Meitnerium", 9, 7, 9, "[Rn] 5f14 6d⁷ 7s²", 2, 0, 7, 0, 7],
+            [110, "Ds", "Darmstadtium", 9, 7, 10, "[Rn] 5f14 6d⁸ 7s²", 2, 0, 8, 0, 7],
+            [111, "Rg", "Roentgenium", 9, 7, 11, "[Rn] 5f14 6d⁹ 7s²", 2, 0, 9, 0, 7],
+            [112, "Cn", "Copernicium", 9, 7, 12, "[Rn] 5f14 6d10 7s²", 2, 0, 10, 0, 7],
+            [113, "Nh", "Nihonium", 9, 7, 13, "[Rn] 5f14 6d10 7s² 7p¹", 2, 1, 0, 0, 7],
+            [114, "Fl", "Flerovium", 9, 7, 14, "[Rn] 5f14 6d10 7s² 7p²", 2, 2, 0, 0, 7],
+            [115, "Mc", "Moscovium", 9, 7, 15, "[Rn] 5f14 6d10 7s² 7p³", 2, 3, 0, 0, 7],
+            [116, "Lv", "Livermorium", 9, 7, 16, "[Rn] 5f14 6d10 7s² 7p⁴", 2, 4, 0, 0, 7],
+            [117, "Ts", "Tennessine", 9, 7, 17, "[Rn] 5f14 6d10 7s² 7p⁵", 2, 5, 0, 0, 7],
+            [118, "Og", "Oganesson", 9, 7, 18, "[Rn] 5f14 6d10 7s² 7p⁶", 2, 6, 0, 0, 7]
+        ];
+
+        // Bohr shell counts lookup database
+        const BOHR_SHELLS_DATA = {
+            1: [1], 2: [2], 3: [2, 1], 4: [2, 2], 5: [2, 3], 6: [2, 4], 7: [2, 5], 8: [2, 6], 9: [2, 7], 10: [2, 8],
+            11: [2, 8, 1], 12: [2, 8, 2], 13: [2, 8, 3], 14: [2, 8, 4], 15: [2, 8, 5], 16: [2, 8, 6], 17: [2, 8, 7], 18: [2, 8, 8],
+            19: [2, 8, 8, 1], 20: [2, 8, 8, 2], 21: [2, 8, 9, 2], 22: [2, 8, 10, 2], 23: [2, 8, 11, 2], 24: [2, 8, 13, 1], 25: [2, 8, 13, 2],
+            26: [2, 8, 14, 2], 27: [2, 8, 15, 2], 28: [2, 8, 16, 2], 29: [2, 8, 18, 1], 30: [2, 8, 18, 2], 31: [2, 8, 18, 3], 32: [2, 8, 18, 4],
+            33: [2, 8, 18, 5], 34: [2, 8, 18, 6], 35: [2, 8, 18, 7], 36: [2, 8, 18, 8], 37: [2, 8, 18, 8, 1], 38: [2, 8, 18, 8, 2],
+            39: [2, 8, 18, 9, 2], 40: [2, 8, 18, 10, 2], 41: [2, 8, 18, 12, 1], 42: [2, 8, 18, 13, 1], 43: [2, 8, 18, 14, 2], 44: [2, 8, 18, 15, 1],
+            45: [2, 8, 18, 16, 1], 46: [2, 8, 18, 18], 47: [2, 8, 18, 18, 1], 48: [2, 8, 18, 18, 2], 49: [2, 8, 18, 18, 3], 50: [2, 8, 18, 18, 4],
+            51: [2, 8, 18, 18, 5], 52: [2, 8, 18, 18, 6], 53: [2, 8, 18, 18, 7], 54: [2, 8, 18, 18, 8], 55: [2, 8, 18, 18, 8, 1], 56: [2, 8, 18, 18, 8, 2],
+            57: [2, 8, 18, 18, 9, 2], 58: [2, 8, 18, 19, 9, 2], 59: [2, 8, 18, 21, 8, 2], 60: [2, 8, 18, 22, 8, 2], 61: [2, 8, 18, 23, 8, 2],
+            62: [2, 8, 18, 24, 8, 2], 63: [2, 8, 18, 25, 8, 2], 64: [2, 8, 18, 25, 9, 2], 65: [2, 8, 18, 27, 8, 2], 66: [2, 8, 18, 28, 8, 2],
+            67: [2, 8, 18, 29, 8, 2], 68: [2, 8, 18, 30, 8, 2], 69: [2, 8, 18, 31, 8, 2], 70: [2, 8, 18, 32, 8, 2], 71: [2, 8, 18, 32, 9, 2],
+            72: [2, 8, 18, 32, 10, 2], 73: [2, 8, 18, 32, 11, 2], 74: [2, 8, 18, 32, 12, 2], 75: [2, 8, 18, 32, 13, 2], 76: [2, 8, 18, 32, 14, 2],
+            77: [2, 8, 18, 32, 15, 2], 78: [2, 8, 18, 32, 17, 1], 79: [2, 8, 18, 32, 18, 1], 80: [2, 8, 18, 32, 18, 2], 81: [2, 8, 18, 32, 18, 3],
+            82: [2, 8, 18, 32, 18, 4], 83: [2, 8, 18, 32, 18, 5], 84: [2, 8, 18, 32, 18, 6], 85: [2, 8, 18, 32, 18, 7], 86: [2, 8, 18, 32, 18, 8],
+            87: [2, 8, 18, 32, 18, 8, 1], 88: [2, 8, 18, 32, 18, 8, 2], 89: [2, 8, 18, 32, 18, 9, 2], 90: [2, 8, 18, 32, 18, 10, 2],
+            91: [2, 8, 18, 32, 20, 9, 2], 92: [2, 8, 18, 32, 21, 9, 2], 93: [2, 8, 18, 32, 22, 9, 2], 94: [2, 8, 18, 32, 24, 8, 2],
+            95: [2, 8, 18, 32, 25, 8, 2], 96: [2, 8, 18, 32, 25, 9, 2], 97: [2, 8, 18, 32, 27, 8, 2], 98: [2, 8, 18, 32, 28, 8, 2],
+            99: [2, 8, 18, 32, 29, 8, 2], 100: [2, 8, 18, 32, 30, 8, 2], 101: [2, 8, 18, 32, 31, 8, 2], 102: [2, 8, 18, 32, 32, 8, 2],
+            103: [2, 8, 18, 32, 32, 9, 2], 104: [2, 8, 18, 32, 32, 10, 2], 105: [2, 8, 18, 32, 32, 11, 2], 106: [2, 8, 18, 32, 32, 12, 2],
+            107: [2, 8, 18, 32, 32, 13, 2], 108: [2, 8, 18, 32, 32, 14, 2], 109: [2, 8, 18, 32, 32, 15, 2], 110: [2, 8, 18, 32, 32, 16, 2],
+            111: [2, 8, 18, 32, 32, 17, 2], 112: [2, 8, 18, 32, 32, 18, 2], 113: [2, 8, 18, 32, 32, 18, 3], 114: [2, 8, 18, 32, 32, 18, 4],
+            115: [2, 8, 18, 32, 32, 18, 5], 116: [2, 8, 18, 32, 32, 18, 6], 117: [2, 8, 18, 32, 32, 18, 7], 118: [2, 8, 18, 32, 32, 18, 8]
+        };
+
+        const GROUP_BEHAVIORS = {
+            2: "Alkali Metals: Highly reactive, containing exactly 1 valence electron in their outer s-orbital. They readily lose this single electron to achieve a stable octet, forming +1 cations.",
+            3: "Alkaline Earth Metals: Reactive metallic elements containing 2 valence s-electrons. They readily form +2 oxidation states when participating in chemical bonds.",
+            6: "Transition Metals: Characterized by partially filled outer d-orbitals. Their chemical properties are complex because inner d-electrons participate in bonding along with outer s-electrons.",
+            7: "Lanthanides: Known as rare-earth elements, characterized by the progressive filling of the 4f subshell. They display distinctive magnetic and optical capabilities.",
+            8: "Actinides: All are radioactive heavy elements filling the 5f subshell. They show highly variable oxidation states and form complex coordination compounds.",
+            5: "Post-transition Metals: Softer metals with higher electronegativities than transition metals. They utilize s and p valence electrons for metallic and covalent bonding.",
+            4: "Metalloids: Elements displaying intermediate properties, separating metals and nonmetals. Extremely crucial as semiconductors in electronics.",
+            0: "Reactive Nonmetals: Highly electronegative elements that share or accept electrons to fill their outer s and p subshells, seeking to fulfill the octet rule.",
+            1: "Noble Gases: Completely stable and chemically inert. They have completely filled outer shells ($ns^2 np^6$), forming a perfect octet with no tendency to gain/lose electrons.",
+            9: "Superheavy Elements: Artificially synthesized nuclei with extremely short half-lives. Due to relativistic effects, their actual orbital behaviors are highly experimental."
+        };
+
+        // Full electron configuration sequences for advanced view toggles
+        const NOBLE_G_CORES = {
+            "He": "1s²",
+            "Ne": "1s² 2s² 2p⁶",
+            "Ar": "1s² 2s² 2p⁶ 3s² 3p⁶",
+            "Kr": "1s² 2s² 2p⁶ 3s² 3p⁶ 3d¹0 4s² 4p⁶",
+            "Xe": "1s² 2s² 2p⁶ 3s² 3p⁶ 3d¹0 4s² 4p⁶ 4d¹0 5s² 5p⁶",
+            "Rn": "1s² 2s² 2p⁶ 3s² 3p⁶ 3d¹0 4s² 4p⁶ 4d¹0 5s² 5p⁶ 4f¹4 5d¹0 6s² 6p⁶"
+        };
+
+        // UI State Variables
+        let elements = [];
+        let selectedElement = null;
+        let activeTab = "quantum"; // quantum | bohr
+        let renderMode = "cloud"; // cloud | wave | uncertainty
+        let animationSpeed = 1.0;
+        let probabilityDensity = 50;
+        let showFullConfig = false;
+        let globalTime = 0;
+
+        // Interactive 3D Camera Controls
+        let pitch = 0.4;
+        let yaw = 0.8;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        let autoRotate = true;
+
+        // Subshell Isolate Filter Status
+        let subshellFilters = { s: true, p: true, d: true, f: true };
+
+        // Canvas Setup
+        let canvas, ctx;
+        let particles = [];
+        let outerElectrons = [];
+        let elementNucleons = [];
+        let orbitalWireframes = []; // Global wireframe lines for orbitals
+        let hoveredElectronId = null;
+
+        // Map elements array into proper structured objects
+        function initializeData() {
+            elements = ELEMENTS_DATA.map(raw => {
+                return {
+                    z: raw[0],
+                    symbol: raw[1],
+                    name: raw[2],
+                    catIndex: raw[3],
+                    category: CATEGORIES[raw[3]],
+                    period: raw[4],
+                    group: raw[5],
+                    config: raw[6],
+                    valS: raw[7],
+                    valP: raw[8],
+                    valD: raw[9],
+                    valF: raw[10],
+                    valN: raw[11],
+                    totalValence: raw[7] + raw[8] + raw[9] + raw[10]
+                };
+            });
+        }
+
+        // Box-Muller Transformation for normal distribution (gorgeous quantum cloud density)
+        function randNormal() {
+            let u = 0, v = 0;
+            while(u === 0) u = Math.random();
+            while(v === 0) v = Math.random();
+            return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+        }
+
+        // Toggle Guide Modal
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            if(modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Set Render Modes
+        function setRenderMode(mode) {
+            renderMode = mode;
+            // Update button visual highlights
+            ["btnModeCloud", "btnModeWave", "btnModeUncertainty"].forEach(id => {
+                const btn = document.getElementById(id);
+                btn.className = "py-1.5 text-[10px] font-semibold rounded-lg border border-slate-800 bg-slate-900/50 hover:bg-slate-800 text-slate-400";
+            });
+            let activeId = "btnModeCloud";
+            if (mode === "wave") activeId = "btnModeWave";
+            if (mode === "uncertainty") activeId = "btnModeUncertainty";
+            document.getElementById(activeId).className = "py-1.5 text-[10px] font-extrabold rounded-lg border bg-gradient-to-r from-cyan-950 to-indigo-950 border-cyan-800/50 text-cyan-400";
+        }
+
+        // Switch Visual Tabs
+        function switchTab(tab) {
+            activeTab = tab;
+            const qBtn = document.getElementById("tabQuantumBtn");
+            const bBtn = document.getElementById("tabBohrBtn");
+            const densCtrl = document.getElementById("densityControl");
+
+            if(tab === "quantum") {
+                qBtn.className = "flex-grow flex-1 py-2 text-xs font-extrabold rounded-lg transition-all flex justify-center items-center gap-2 bg-gradient-to-r from-cyan-950 to-indigo-950 text-cyan-300 border border-cyan-800/50 shadow-md";
+                bBtn.className = "flex-grow flex-1 py-2 text-xs font-semibold rounded-lg transition-all text-slate-400 hover:text-slate-200 flex justify-center items-center gap-2";
+                densCtrl.style.display = "flex";
+                document.getElementById("dragPrompt").style.display = "flex";
+            } else {
+                bBtn.className = "flex-grow flex-1 py-2 text-xs font-extrabold rounded-lg transition-all flex justify-center items-center gap-2 bg-gradient-to-r from-cyan-950 to-indigo-950 text-cyan-300 border border-cyan-800/50 shadow-md";
+                qBtn.className = "flex-grow flex-1 py-2 text-xs font-semibold rounded-lg transition-all text-slate-400 hover:text-slate-200 flex justify-center items-center gap-2";
+                densCtrl.style.display = "none";
+                document.getElementById("dragPrompt").style.display = "none";
+            }
+        }
+
+        // Toggle Configuration View Mode
+        function toggleConfigMode() {
+            showFullConfig = !showFullConfig;
+            updateConfigDisplay();
+        }
+
+        function updateConfigDisplay() {
+            if(!selectedElement) return;
+            const abbrevText = selectedElement.config;
+            const fullConfigDiv = document.getElementById("hudFullConfigDiv");
+            const fullTextSpan = document.getElementById("hudFullConfigText");
+
+            if(showFullConfig) {
+                fullConfigDiv.classList.remove("hidden");
+                // Construct Full configuration by looking up core shorthand
+                let fullStr = abbrevText;
+                Object.keys(NOBLE_G_CORES).forEach(core => {
+                    const pattern = `[${core}]`;
+                    if(abbrevText.includes(pattern)) {
+                        fullStr = abbrevText.replace(pattern, NOBLE_G_CORES[core]);
+                    }
+                });
+                fullTextSpan.innerText = fullStr;
+            } else {
+                fullConfigDiv.classList.add("hidden");
+            }
+        }
+
+        // Main Periodic Table Rendering
+        function renderPeriodicTable() {
+            const grid = document.getElementById("periodicGrid");
+            const fGrid = document.getElementById("fBlockGrid");
+            grid.innerHTML = "";
+            fGrid.innerHTML = "";
+
+            // Render periodic table legend filters
+            const legend = document.getElementById("legendFilter");
+            legend.innerHTML = "";
+            CATEGORIES.forEach((cat, idx) => {
+                const color = CATEGORY_COLORS[idx];
+                const btn = document.createElement("button");
+                btn.className = `px-2 py-1 text-[9px] font-bold rounded-lg transition-all border border-slate-800 bg-slate-900/60 text-slate-300 flex items-center gap-1.5 hover:border-slate-700`;
+                btn.innerHTML = `<span class="w-1.5 h-1.5 rounded-full" style="background-color: ${color}"></span> ${cat}`;
+                btn.onclick = () => filterTableByCategory(idx);
+                legend.appendChild(btn);
+            });
+
+            // 18 columns standard mapping
+            elements.forEach(el => {
+                const cell = document.createElement("div");
+                cell.id = `el-${el.z}`;
+                cell.className = `el-btn relative flex flex-col justify-between p-1 border cursor-pointer transition-all duration-300 rounded-xl bg-slate-900/80 border-slate-800 h-12 md:h-14 text-[10px] shadow-sm select-none group`;
+                
+                // Set specific position on the grid
+                if(el.group > 0) {
+                    cell.style.gridColumnStart = el.group;
+                    cell.style.gridRowStart = el.period;
+                }
+
+                // Color configuration according to category
+                const catColor = CATEGORY_COLORS[el.catIndex];
+                cell.style.borderColor = `${catColor}15`;
+
+                cell.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="text-[9px] font-bold text-slate-500 group-hover:text-slate-300">${el.z}</span>
+                        <span class="text-[8px] fira-mono opacity-0 group-hover:opacity-100 text-[${catColor}] transition-opacity">${el.valS}${el.valP > 0 ? 'p'+el.valP : ''}</span>
+                    </div>
+                    <div class="text-sm font-black tracking-tight" style="color: ${catColor}">${el.symbol}</div>
+                    <div class="text-[7px] truncate text-slate-400 group-hover:text-slate-200">${el.name}</div>
+                `;
+
+                cell.onclick = () => selectElement(el.z);
+
+                // Place in f-block grids or main table
+                if (el.group === 0) {
+                    // Lanthanides & Actinides separated rows below
+                    const targetRow = el.period === 6 ? 1 : 2;
+                    // Offset col by atomic order in f block
+                    const colIndex = el.z - (el.period === 6 ? 57 : 89) + 4;
+                    cell.style.gridColumnStart = colIndex;
+                    cell.style.gridRowStart = targetRow;
+                    fGrid.appendChild(cell);
+                } else {
+                    grid.appendChild(cell);
+                }
+            });
+
+            // Add placeholder rows/notices to Lanthanide/Actinide spacers in main table grid
+            addGridSpacer(6, 3, "57-71", "#a855f7");
+            addGridSpacer(7, 3, "89-103", "#ec4899");
+        }
+
+        // Add spacer badges inside main grid table
+        function addGridSpacer(row, col, text, color) {
+            const grid = document.getElementById("periodicGrid");
+            const spacer = document.createElement("div");
+            spacer.className = "flex items-center justify-center text-[10px] font-black rounded-lg border border-slate-900 bg-slate-950 text-slate-500 select-none h-12 md:h-14";
+            spacer.style.gridColumnStart = col;
+            spacer.style.gridRowStart = row;
+            spacer.style.borderColor = `${color}20`;
+            spacer.style.color = color;
+            spacer.innerText = text;
+            grid.appendChild(spacer);
+        }
+
+        // Quick Category Filter Highlight
+        function filterTableByCategory(idx) {
+            elements.forEach(el => {
+                const cell = document.getElementById(`el-${el.z}`);
+                if (!cell) return;
+                if (el.catIndex === idx) {
+                    cell.style.transform = "scale(1.05)";
+                    cell.style.boxShadow = `0 0 12px ${CATEGORY_COLORS[idx]}30`;
+                    cell.classList.remove("opacity-40");
+                } else {
+                    cell.style.transform = "scale(1.0)";
+                    cell.style.boxShadow = "none";
+                    cell.classList.add("opacity-40");
+                }
+            });
+            setTimeout(() => {
+                elements.forEach(el => {
+                    const cell = document.getElementById(`el-${el.z}`);
+                    if (cell) {
+                        cell.style.transform = "";
+                        cell.style.boxShadow = "";
+                        cell.classList.remove("opacity-40");
+                    }
+                });
+            }, 3000);
+        }
+
+        // Handle Table Search
+        document.getElementById("searchInput").oninput = function(e) {
+            const val = e.target.value.toLowerCase().trim();
+            elements.forEach(el => {
+                const cell = document.getElementById(`el-${el.z}`);
+                if (!cell) return;
+                if (val === "") {
+                    cell.classList.remove("opacity-20");
+                    return;
+                }
+                const match = el.name.toLowerCase().includes(val) || 
+                              el.symbol.toLowerCase().includes(val) || 
+                              el.z.toString() === val;
+                if(match) {
+                    cell.classList.remove("opacity-20");
+                } else {
+                    cell.classList.add("opacity-20");
+                }
+            });
+        };
+
+        // Select and build visualizer for a specific element
+        function selectElement(zVal) {
+            const el = elements.find(e => e.z === zVal);
+            if (!el) return;
+            selectedElement = el;
+
+            // Highlight selected in Periodic table
+            elements.forEach(item => {
+                const cell = document.getElementById(`el-${item.z}`);
+                if (cell) {
+                    if (item.z === zVal) {
+                        cell.style.transform = "scale(1.06)";
+                        cell.style.borderColor = CATEGORY_COLORS[item.catIndex];
+                        cell.style.boxShadow = `0 0 15px ${CATEGORY_COLORS[item.catIndex]}60`;
+                    } else {
+                        cell.style.transform = "";
+                        cell.style.borderColor = `${CATEGORY_COLORS[item.catIndex]}15`;
+                        cell.style.boxShadow = "";
+                    }
+                }
+            });
+
+            // Trigger visual loader
+            const overlay = document.getElementById("simulationOverlay");
+            overlay.classList.remove("hidden");
+            setTimeout(() => { overlay.classList.add("hidden"); }, 400);
+
+            // Update Selected Element HUD Details
+            document.getElementById("hudSymbol").innerText = el.symbol;
+            document.getElementById("hudZ").innerText = el.z;
+            document.getElementById("hudName").innerText = el.name;
+            document.getElementById("hudCategory").innerText = el.category;
+            
+            // Apply category badge color
+            const catColor = CATEGORY_COLORS[el.catIndex];
+            const badge = document.getElementById("hudCategory");
+            badge.style.color = catColor;
+            badge.style.backgroundColor = `${catColor}15`;
+            badge.style.borderColor = `${catColor}30`;
+            document.getElementById("elementSymbolBox").style.borderColor = `${catColor}40`;
+            document.getElementById("elementCardGradient").style.backgroundColor = catColor;
+
+            // Compute atomic mass estimation
+            const matchedMass = (BOHR_SHELLS_DATA[el.z].reduce((a, b) => a + b, 0) * 2 + (el.z > 20 ? el.z * 0.2 : 0)).toFixed(3);
+            document.getElementById("hudMass").innerText = `${matchedMass} amu`;
+
+            document.getElementById("hudAbbrevConfig").innerText = el.config;
+            updateConfigDisplay();
+
+            // Set Group Behavior Text
+            document.getElementById("groupBehaviorText").innerText = GROUP_BEHAVIORS[el.catIndex] || GROUP_BEHAVIORS[9];
+
+            // Setup active subshell isolation switches dynamically
+            setupSubshellSwitches(el);
+
+            // Construct exact electron list & physical wave structures
+            buildAtomicSystem(el);
+        }
+
+        // Construct isolate toggles checkboxes for selected subshell
+        function setupSubshellSwitches(el) {
+            const container = document.getElementById("subshellFilters");
+            container.innerHTML = "";
+
+            // Set filter defaults
+            subshellFilters = { s: true, p: true, d: true, f: true };
+
+            const list = [
+                { type: 's', count: el.valS, label: `${el.valN}s` },
+                { type: 'p', count: el.valP, label: `${el.valN}p` },
+                { type: 'd', count: el.valD, label: `${el.valN-1}d` },
+                { type: 'f', count: el.valF, label: `${el.valN-2}f` }
+            ];
+
+            list.forEach(item => {
+                if (item.count > 0) {
+                    const label = document.createElement("label");
+                    label.className = "flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold cursor-pointer transition-all select-none text-slate-300";
+                    label.innerHTML = `
+                        <input type="checkbox" checked onchange="toggleSubshellFilter('${item.type}')" class="rounded accent-cyan-500 mr-1 cursor-pointer">
+                        <span class="color-${item.type}">${item.label}</span>
+                        <span class="text-[10px] text-slate-500 font-mono">(${item.count} e⁻)</span>
+                    `;
+                    container.appendChild(label);
+                }
+            });
+        }
+
+        function toggleSubshellFilter(type) {
+            subshellFilters[type] = !subshellFilters[type];
+        }
+
+        // Helper 3D Wave Boundary Shape Generators (Wireframe representation)
+        function generateLobeWireframe(axis, maxRadius, color, subshellType) {
+            const slices = 4;
+            const steps = 32;
+            for (let s = 0; s < slices; s++) {
+                const phi = (s / slices) * Math.PI;
+                let prev = null;
+                for (let t = 0; t <= steps; t++) {
+                    const theta = (t / steps) * Math.PI;
+                    const r = maxRadius * Math.abs(Math.cos(theta));
+                    
+                    let x, y, z;
+                    if (axis === 'z') {
+                        x = r * Math.sin(theta) * Math.cos(phi);
+                        y = r * Math.sin(theta) * Math.sin(phi);
+                        z = r * Math.cos(theta);
+                    } else if (axis === 'x') {
+                        x = r * Math.cos(theta);
+                        y = r * Math.sin(theta) * Math.sin(phi);
+                        z = r * Math.sin(theta) * Math.cos(phi);
+                    } else if (axis === 'y') {
+                        x = r * Math.sin(theta) * Math.cos(phi);
+                        y = r * Math.cos(theta);
+                        z = r * Math.sin(theta) * Math.sin(phi);
+                    }
+
+                    const curr = { x, y, z };
+                    if (prev !== null) {
+                        orbitalWireframes.push({
+                            x1: prev.x, y1: prev.y, z1: prev.z,
+                            x2: curr.x, y2: curr.y, z2: curr.z,
+                            subshell: subshellType,
+                            color: color
+                        });
+                    }
+                    prev = curr;
+                }
+            }
+        }
+
+        function generateDxyWireframe(maxRadius, color, subshellType, isX2Y2) {
+            const basePhis = isX2Y2 ? [0, Math.PI/2, Math.PI, 3*Math.PI/2] : [Math.PI/4, 3*Math.PI/4, 5*Math.PI/4, 7*Math.PI/4];
+            const offsets = [-0.15, 0, 0.15];
+            const steps = 24;
+
+            basePhis.forEach(basePhi => {
+                offsets.forEach(offset => {
+                    const phi = basePhi + offset;
+                    let prev = null;
+                    for (let t = 0; t <= steps; t++) {
+                        const theta = (t / steps) * Math.PI;
+                        const angularTerm = isX2Y2 ? Math.cos(2 * phi) : Math.sin(2 * phi);
+                        const r = maxRadius * Math.sin(theta) * Math.sin(theta) * Math.abs(angularTerm);
+
+                        const x = r * Math.sin(theta) * Math.cos(phi);
+                        const y = r * Math.sin(theta) * Math.sin(phi);
+                        const z = r * Math.cos(theta);
+
+                        const curr = { x, y, z };
+                        if (prev !== null) {
+                            orbitalWireframes.push({
+                                x1: prev.x, y1: prev.y, z1: prev.z,
+                                x2: curr.x, y2: curr.y, z2: curr.z,
+                                subshell: subshellType,
+                                color: color
+                            });
+                        }
+                        prev = curr;
+                    }
+                });
+            });
+        }
+
+        function generateDxzDyzWireframe(maxRadius, color, subshellType, isYz) {
+            const basePhi = isYz ? Math.PI/2 : 0;
+            const phiOffsets = [-0.15, 0, 0.15];
+            const steps = 24;
+
+            phiOffsets.forEach(offset => {
+                const phi = basePhi + offset;
+                let prev = null;
+                for (let t = 0; t <= steps; t++) {
+                    const theta = (t / steps) * Math.PI * 2;
+                    const angularTerm = isYz ? (Math.sin(2*theta) * Math.sin(phi)) : (Math.sin(2*theta) * Math.cos(phi));
+                    const r = maxRadius * Math.abs(angularTerm);
+
+                    const x = r * Math.sin(theta) * Math.cos(phi);
+                    const y = r * Math.sin(theta) * Math.sin(phi);
+                    const z = r * Math.cos(theta);
+
+                    const curr = { x, y, z };
+                    if (prev !== null) {
+                        orbitalWireframes.push({
+                            x1: prev.x, y1: prev.y, z1: prev.z,
+                            x2: curr.x, y2: curr.y, z2: curr.z,
+                            subshell: subshellType,
+                            color: color
+                        });
+                    }
+                    prev = curr;
+                }
+            });
+        }
+
+        function generateDz2Wireframe(maxRadius, color, subshellType) {
+            const steps = 32;
+            const slices = 4;
+            // 1. Two vertical lobes along Z
+            for (let s = 0; s < slices; s++) {
+                const phi = (s / slices) * Math.PI;
+                let prev = null;
+                for (let t = 0; t <= steps; t++) {
+                    const theta = (t / steps) * Math.PI;
+                    const r = maxRadius * Math.abs(3 * Math.cos(theta) * Math.cos(theta) - 1) * 0.5;
+
+                    const x = r * Math.sin(theta) * Math.cos(phi);
+                    const y = r * Math.sin(theta) * Math.sin(phi);
+                    const z = r * Math.cos(theta);
+
+                    const curr = { x, y, z };
+                    if (prev !== null) {
+                        orbitalWireframes.push({
+                            x1: prev.x, y1: prev.y, z1: prev.z,
+                            x2: curr.x, y2: curr.y, z2: curr.z,
+                            subshell: subshellType,
+                            color: color
+                        });
+                    }
+                    prev = curr;
+                }
+            }
+
+            // 2. Torus ring in XY plane
+            const torusRadius = maxRadius * 0.45;
+            const torusCircles = 3;
+            for (let c = 0; c < torusCircles; c++) {
+                const rOffset = (c - 1) * 6;
+                const r = torusRadius + rOffset;
+                let prev = { x: r, y: 0, z: 0 };
+                for (let t = 1; t <= steps; t++) {
+                    const angle = (t / steps) * Math.PI * 2;
+                    const curr = {
+                        x: r * Math.cos(angle),
+                        y: r * Math.sin(angle),
+                        z: 0
+                    };
+                    orbitalWireframes.push({
+                        x1: prev.x, y1: prev.y, z1: prev.z,
+                        x2: curr.x, y2: curr.y, z2: curr.z,
+                        subshell: subshellType,
+                        color: color
+                    });
+                    prev = curr;
+                }
+            }
+        }
+
+        function generateFOrbitalWireframe(maxRadius, color, subshellType, orbitalId) {
+            const steps = 32;
+            const slices = 4;
+            for (let s = 0; s < slices; s++) {
+                const phi = (s / slices) * Math.PI * 2;
+                let prev = null;
+                for (let t = 0; t <= steps; t++) {
+                    const theta = (t / steps) * Math.PI;
+                    const rotPhi = phi + (orbitalId * Math.PI / 4);
+                    const r = maxRadius * Math.pow(Math.sin(theta), 3) * Math.abs(Math.cos(3 * rotPhi));
+
+                    const x = r * Math.sin(theta) * Math.cos(rotPhi);
+                    const y = r * Math.sin(theta) * Math.sin(rotPhi);
+                    const z = r * Math.cos(theta);
+
+                    const curr = { x, y, z };
+                    if (prev !== null) {
+                        orbitalWireframes.push({
+                            x1: prev.x, y1: prev.y, z1: prev.z,
+                            x2: curr.x, y2: curr.y, z2: curr.z,
+                            subshell: subshellType,
+                            color: color
+                        });
+                    }
+                    prev = curr;
+                }
+            }
+        }
+
+        // Build 3D Point clouds and Electron wave structures
+        function buildAtomicSystem(el) {
+            particles = [];
+            outerElectrons = [];
+            elementNucleons = [];
+            orbitalWireframes = []; // Reset wireframes
+
+            // 1. Generate Proton-Neutron Core Nucleus 3D cluster
+            const totalNucleons = Math.min(el.z + 10, 50); // clamp graphics render size
+            for(let i=0; i<totalNucleons; i++) {
+                // Generate nucleon coordinates in spherical shell
+                let r = Math.random() * 12;
+                let theta = Math.random() * Math.PI * 2;
+                let phi = Math.acos(Math.random() * 2 - 1);
+                
+                elementNucleons.push({
+                    x: r * Math.sin(phi) * Math.cos(theta),
+                    y: r * Math.sin(phi) * Math.sin(theta),
+                    z: r * Math.cos(phi),
+                    isProton: Math.random() > 0.5
+                });
+            }
+
+            // 2. Build detailed lists of electrons adhering strictly to Hund's Rule
+            let electronIndex = 1;
+
+            // Generate s electrons
+            for (let i = 0; i < el.valS; i++) {
+                outerElectrons.push({
+                    id: `e-s-${i}`,
+                    subshell: 's',
+                    shellName: `${el.valN}s`,
+                    n: el.valN,
+                    l: 0,
+                    ml: 0,
+                    ms: i === 0 ? 0.5 : -0.5,
+                    t: Math.random() * Math.PI * 2,
+                    orbitalName: "s-orbital",
+                    orbitalId: 0
+                });
+            }
+
+            // Generate p electrons (up to 3 degenerate orientations: p_x, p_y, p_z)
+            // Hund's Rule: Place single spin-up electrons in px, py, pz, then pair spin-down
+            for (let i = 0; i < el.valP; i++) {
+                const ml_values = [-1, 0, 1]; // px, py, pz
+                const subIndex = i % 3;
+                const msVal = i < 3 ? 0.5 : -0.5;
+                outerElectrons.push({
+                    id: `e-p-${i}`,
+                    subshell: 'p',
+                    shellName: `${el.valN}p`,
+                    n: el.valN,
+                    l: 1,
+                    ml: ml_values[subIndex],
+                    ms: msVal,
+                    t: Math.random() * Math.PI * 2,
+                    orbitalName: `p${subIndex === 0 ? 'x' : subIndex === 1 ? 'y' : 'z'}-orbital`,
+                    orbitalId: subIndex
+                });
+            }
+
+            // Generate d electrons (up to 5 degenerate orientations)
+            for (let i = 0; i < el.valD; i++) {
+                const ml_values = [-2, -1, 0, 1, 2];
+                const subIndex = i % 5;
+                const msVal = i < 5 ? 0.5 : -0.5;
+                outerElectrons.push({
+                    id: `e-d-${i}`,
+                    subshell: 'd',
+                    shellName: `${el.valN-1}d`,
+                    n: el.valN - 1,
+                    l: 2,
+                    ml: ml_values[subIndex],
+                    ms: msVal,
+                    t: Math.random() * Math.PI * 2,
+                    orbitalName: `d${subIndex+1}-orbital`,
+                    orbitalId: subIndex
+                });
+            }
+
+            // Generate f electrons (up to 7 orientations)
+            for (let i = 0; i < el.valF; i++) {
+                const ml_values = [-3, -2, -1, 0, 1, 2, 3];
+                const subIndex = i % 7;
+                const msVal = i < 7 ? 0.5 : -0.5;
+                outerElectrons.push({
+                    id: `e-f-${i}`,
+                    subshell: 'f',
+                    shellName: `${el.valN-2}f`,
+                    n: el.valN - 2,
+                    l: 3,
+                    ml: ml_values[subIndex],
+                    ms: msVal,
+                    t: Math.random() * Math.PI * 2,
+                    orbitalName: `f${subIndex+1}-orbital`,
+                    orbitalId: subIndex
+                });
+            }
+
+            // Draw Bi-directional Interactive Table Body
+            const tableBody = document.getElementById("quantumNumbersTableBody");
+            tableBody.innerHTML = "";
+            document.getElementById("valenceTotalText").innerText = outerElectrons.length;
+
+            outerElectrons.forEach(e => {
+                const row = document.createElement("tr");
+                row.id = `row-${e.id}`;
+                row.className = "border-b border-slate-900 hover:bg-slate-900/40 cursor-pointer transition-all";
+                
+                let subColor = 'text-red-400';
+                if(e.subshell === 'p') subColor = 'text-cyan-400';
+                if(e.subshell === 'd') subColor = 'text-purple-400';
+                if(e.subshell === 'f') subColor = 'text-emerald-400';
+
+                row.innerHTML = `
+                    <td class="p-2 font-bold ${subColor}">${e.shellName} (${e.orbitalName.split('-')[0]})</td>
+                    <td class="p-2 text-center font-mono">${e.n}</td>
+                    <td class="p-2 text-center font-mono">${e.l}</td>
+                    <td class="p-2 text-center font-mono">${e.ml}</td>
+                    <td class="p-2 text-center font-mono">${e.ms > 0 ? '+½' : '-½'}</td>
+                    <td class="p-2 text-right font-mono">${e.ms > 0 ? '↑ Spin Up' : '↓ Spin Down'}</td>
+                `;
+
+                // Add highlight hover listeners
+                row.onmouseenter = () => hoveredElectronId = e.id;
+                row.onmouseleave = () => hoveredElectronId = null;
+
+                tableBody.appendChild(row);
+            });
+
+            // 3. Build Probability Quantum cloud points lists
+            generatePointClouds(el);
+
+            // 4. Build exact mathematical orbital wireframe shapes
+            buildOrbitalWireframes(el);
+        }
+
+        function buildOrbitalWireframes(el) {
+            const sRadius = 75;
+            const pRadius = 110;
+            const dRadius = 135;
+            const fRadius = 160;
+
+            const colorS = 'rgba(248, 113, 113, 0.45)'; // s Red
+            const colorP = 'rgba(34, 211, 238, 0.45)';  // p Cyan
+            const colorD = 'rgba(192, 132, 252, 0.45)'; // d Purple
+            const colorF = 'rgba(74, 222, 128, 0.45)';  // f Emerald
+
+            // s wireframe
+            if (el.valS > 0) {
+                const steps = 36;
+                const rings = [
+                    (a) => ({ x: sRadius * Math.cos(a), y: sRadius * Math.sin(a), z: 0 }),
+                    (a) => ({ x: sRadius * Math.cos(a), y: 0, z: sRadius * Math.sin(a) }),
+                    (a) => ({ x: 0, y: sRadius * Math.cos(a), z: sRadius * Math.sin(a) })
+                ];
+                const latVal = Math.PI / 6;
+                const latZ = sRadius * Math.sin(latVal);
+                const latR = sRadius * Math.cos(latVal);
+                rings.push((a) => ({ x: latR * Math.cos(a), y: latR * Math.sin(a), z: latZ }));
+                rings.push((a) => ({ x: latR * Math.cos(a), y: latR * Math.sin(a), z: -latZ }));
+
+                rings.forEach(ringFn => {
+                    let prev = ringFn(0);
+                    for (let j = 1; j <= steps; j++) {
+                        let angle = (j / steps) * Math.PI * 2;
+                        let curr = ringFn(angle);
+                        orbitalWireframes.push({
+                            x1: prev.x, y1: prev.y, z1: prev.z,
+                            x2: curr.x, y2: curr.y, z2: curr.z,
+                            subshell: 's',
+                            color: colorS
+                        });
+                        prev = curr;
+                    }
+                });
+            }
+
+            // p wireframes
+            if (el.valP > 0) {
+                if (el.valP >= 1) generateLobeWireframe('x', pRadius, colorP, 'p');
+                if (el.valP >= 2) generateLobeWireframe('y', pRadius, colorP, 'p');
+                if (el.valP >= 3) generateLobeWireframe('z', pRadius, colorP, 'p');
+            }
+
+            // d wireframes
+            if (el.valD > 0) {
+                if (el.valD >= 1) generateDxyWireframe(dRadius, colorD, 'd', false);
+                if (el.valD >= 2) generateDxzDyzWireframe(dRadius, colorD, 'd', true);
+                if (el.valD >= 3) generateDxzDyzWireframe(dRadius, colorD, 'd', false);
+                if (el.valD >= 4) generateDxyWireframe(dRadius, colorD, 'd', true);
+                if (el.valD >= 5) generateDz2Wireframe(dRadius, colorD, 'd');
+            }
+
+            // f wireframes
+            if (el.valF > 0) {
+                const totalF = Math.min(el.valF, 7);
+                for (let i = 0; i < totalF; i++) {
+                    generateFOrbitalWireframe(fRadius, colorF, 'f', i);
+                }
+            }
+        }
+
+        // Generate 3D static point clusters representing wave-functions probability density
+        function generatePointClouds(el) {
+            // Sizing coordinates parameters for shell layer heights
+            const sRadius = 75;
+            const pRadius = 110;
+            const dRadius = 135;
+            const fRadius = 160;
+
+            const baseDensity = probabilityDensity * 12; // points per active orbit
+
+            // s clouds (Spherical)
+            if (el.valS > 0) {
+                for (let i = 0; i < baseDensity; i++) {
+                    let theta = Math.random() * Math.PI * 2;
+                    let phi = Math.acos(Math.random() * 2 - 1);
+                    let r = sRadius + randNormal() * 12; // radial dispersion
+                    particles.push({
+                        x: r * Math.sin(phi) * Math.cos(theta),
+                        y: r * Math.sin(phi) * Math.sin(theta),
+                        z: r * Math.cos(phi),
+                        subshell: 's',
+                        color: 'rgba(239, 68, 68, 0.22)' // Red cloud
+                    });
+                }
+            }
+
+            // p clouds (Dumbbells along x, y, z)
+            if (el.valP > 0) {
+                const pxActive = el.valP >= 1;
+                const pyActive = el.valP >= 2;
+                const pzActive = el.valP >= 3;
+
+                for (let i = 0; i < baseDensity; i++) {
+                    let theta = Math.acos(Math.random() * 2 - 1);
+                    let phi = Math.random() * Math.PI * 2;
+
+                    // Probability functions proportional to spherical harmonics:
+                    if (pxActive) {
+                        let amp = Math.sin(theta) * Math.cos(phi);
+                        let r = pRadius * Math.abs(amp) + randNormal() * 8;
+                        particles.push({
+                            x: r * Math.sin(theta) * Math.cos(phi),
+                            y: r * Math.sin(theta) * Math.sin(phi),
+                            z: r * Math.cos(theta),
+                            subshell: 'p',
+                            color: 'rgba(34, 211, 238, 0.18)' // Cyan px cloud
+                        });
+                    }
+
+                    if (pyActive) {
+                        let amp = Math.sin(theta) * Math.sin(phi);
+                        let r = pRadius * Math.abs(amp) + randNormal() * 8;
+                        particles.push({
+                            x: r * Math.sin(theta) * Math.cos(phi),
+                            y: r * Math.sin(theta) * Math.sin(phi),
+                            z: r * Math.cos(theta),
+                            subshell: 'p',
+                            color: 'rgba(6, 182, 212, 0.18)' // Cyan py cloud
+                        });
+                    }
+
+                    if (pzActive) {
+                        let amp = Math.cos(theta);
+                        let r = pRadius * Math.abs(amp) + randNormal() * 8;
+                        particles.push({
+                            x: r * Math.sin(theta) * Math.cos(phi),
+                            y: r * Math.sin(theta) * Math.sin(phi),
+                            z: r * Math.cos(theta),
+                            subshell: 'p',
+                            color: 'rgba(14, 116, 144, 0.18)' // Cyan pz cloud
+                        });
+                    }
+                }
+            }
+
+            // d clouds (Cloverleaf distribution)
+            if (el.valD > 0) {
+                const totalDActive = Math.min(el.valD, 5);
+                for(let k=0; k<totalDActive; k++) {
+                    for (let i = 0; i < baseDensity / 1.5; i++) {
+                        let theta = Math.acos(Math.random() * 2 - 1);
+                        let phi = Math.random() * Math.PI * 2;
+                        let amp = 0;
+
+                        // Basic clover wave probability density functions
+                        if (k === 0) amp = Math.sin(theta) * Math.sin(theta) * Math.sin(2*phi); // d_xy
+                        if (k === 1) amp = Math.sin(2*theta) * Math.sin(phi); // d_yz
+                        if (k === 2) amp = Math.sin(2*theta) * Math.cos(phi); // d_xz
+                        if (k === 3) amp = Math.sin(theta) * Math.sin(theta) * Math.cos(2*phi); // d_x2-y2
+                        if (k === 4) amp = (3 * Math.cos(theta) * Math.cos(theta) - 1) * 0.5; // d_z2
+
+                        let r = dRadius * Math.abs(amp) + randNormal() * 8;
+                        particles.push({
+                            x: r * Math.sin(theta) * Math.cos(phi),
+                            y: r * Math.sin(theta) * Math.sin(phi),
+                            z: r * Math.cos(theta),
+                            subshell: 'd',
+                            color: 'rgba(168, 85, 247, 0.18)' // Purple d cloud
+                        });
+                    }
+                }
+            }
+
+            // f clouds (Complex multi-lobed)
+            if (el.valF > 0) {
+                const totalFActive = Math.min(el.valF, 7);
+                for(let k=0; k<totalFActive; k++) {
+                    for (let i = 0; i < baseDensity / 2; i++) {
+                        let theta = Math.acos(Math.random() * 2 - 1);
+                        let phi = Math.random() * Math.PI * 2;
+                        
+                        // Cubic f harmonic shape approximations
+                        let amp = Math.sin(theta) * Math.sin(theta) * Math.sin(theta) * Math.cos(3*phi);
+
+                        let r = fRadius * Math.abs(amp) + randNormal() * 6;
+                        particles.push({
+                            x: r * Math.sin(theta) * Math.cos(phi),
+                            y: r * Math.sin(theta) * Math.sin(phi),
+                            z: r * Math.cos(theta),
+                            subshell: 'f',
+                            color: 'rgba(74, 222, 128, 0.18)' // Green f cloud
+                        });
+                    }
+                }
+            }
+        }
+
+        // Project 3D vector coordinates to 2D Canvas viewport with camera matrix
+        function project3D(x, y, z) {
+            // Yaw (Rotation around Y axis)
+            let cosY = Math.cos(yaw);
+            let sinY = Math.sin(yaw);
+            let x1 = x * cosY - z * sinY;
+            let z1 = x * sinY + z * cosY;
+
+            // Pitch (Rotation around X axis)
+            let cosP = Math.cos(pitch);
+            let sinP = Math.sin(pitch);
+            let y2 = y * cosP - z1 * sinP;
+            let z2 = y * sinP + z1 * cosP;
+
+            // Simple Perspective Transform
+            const scaleFactor = 320;
+            const distance = 400;
+            const perspective = distance / (distance + z2);
+
+            return {
+                x: canvas.width / 2 + x1 * perspective,
+                y: canvas.height / 2 - y2 * perspective, // invert Y axis for cartesian canvas
+                zDepth: z2
+            };
+        }
+
+        // Calculate continuous smooth parametric paths for the electrons in wave mode
+        function getElectronCoordinates(e, time) {
+            const sRadius = 75;
+            const pRadius = 110;
+            const dRadius = 135;
+            const fRadius = 160;
+
+            const t = e.t + time * 0.04 * animationSpeed;
+
+            if (e.subshell === 's') {
+                // Spherical Orbit Paths:
+                const dir = e.ms > 0 ? 1 : -1;
+                const offset = e.ms > 0 ? 0 : Math.PI;
+                return {
+                    x: sRadius * Math.cos(dir * t + offset),
+                    y: sRadius * Math.sin(dir * t + offset) * 0.5,
+                    z: sRadius * Math.sin(dir * t + offset) * Math.sin(dir * 0.5)
+                };
+            }
+
+            if (e.subshell === 'p') {
+                // Dumbbell orbits modeled using Lemniscates of Bernoulli
+                let r = pRadius * Math.sqrt(Math.max(0, Math.cos(2 * t))) || 0;
+                if (Math.cos(2 * t) < 0) {
+                    r = -pRadius * Math.sqrt(Math.max(0, -Math.cos(2 * t)));
+                }
+
+                if (e.orbitalId === 0) {
+                    // px Dumbbell on X axis
+                    return { x: r, y: r * Math.sin(t) * 0.2, z: r * Math.cos(t) * 0.2 };
+                } else if (e.orbitalId === 1) {
+                    // py Dumbbell on Y axis
+                    return { x: r * Math.sin(t) * 0.2, y: r, z: r * Math.cos(t) * 0.2 };
+                } else {
+                    // pz Dumbbell on Z axis
+                    return { x: r * Math.sin(t) * 0.2, y: r * Math.cos(t) * 0.2, z: r };
+                }
+            }
+
+            if (e.subshell === 'd') {
+                // Cloverleaf orbits modeled using Rose curves (r = a * sin(2 * theta))
+                let r = dRadius * Math.sin(2 * t);
+                
+                if (e.orbitalId === 0) {
+                    // d_xy Clover
+                    return { x: r * Math.cos(t), y: r * Math.sin(t), z: 0 };
+                } else if (e.orbitalId === 1) {
+                    // d_yz Clover
+                    return { x: 0, y: r * Math.cos(t), z: r * Math.sin(t) };
+                } else if (e.orbitalId === 2) {
+                    // d_xz Clover
+                    return { x: r * Math.cos(t), y: 0, z: r * Math.sin(t) };
+                } else if (e.orbitalId === 3) {
+                    // d_x2-y2 Clover (Rotated)
+                    let rotT = t + Math.PI / 4;
+                    return { x: r * Math.cos(rotT), y: r * Math.sin(rotT), z: 0 };
+                } else {
+                    // d_z2 Dumbbell with Torus ring
+                    if (e.ms > 0) {
+                        let rZ = dRadius * Math.cos(t);
+                        return { x: 0, y: 0, z: rZ };
+                    } else {
+                        return { x: dRadius * 0.5 * Math.cos(t), y: dRadius * 0.5 * Math.sin(t), z: 0 };
+                    }
+                }
+            }
+
+            if (e.subshell === 'f') {
+                let r = fRadius * Math.sin(3 * t);
+                const angle = (e.orbitalId * Math.PI) / 4;
+                return {
+                    x: r * Math.cos(t) * Math.cos(angle),
+                    y: r * Math.sin(t) * Math.sin(angle),
+                    z: r * Math.cos(angle * 1.5)
+                };
+            }
+
+            return { x: 0, y: 0, z: 0 };
+        }
+
+        // Draw Modern 3D Quantum Orbitals Scene Frame
+        function drawQuantumScene() {
+            // Sort point-cloud particles, wireframe shapes, electrons, and nucleons into unified depth list to handle transparent layering (Painters Algorithm)
+            let drawQueue = [];
+
+            // Add Protons / Neutrons core
+            elementNucleons.forEach(n => {
+                let proj = project3D(n.x, n.y, n.z);
+                drawQueue.push({
+                    type: 'nucleon',
+                    proj: proj,
+                    isProton: n.isProton
+                });
+            });
+
+            // Add Orbital boundary wireframe outlines
+            orbitalWireframes.forEach(seg => {
+                if (!subshellFilters[seg.subshell]) return;
+
+                let proj1 = project3D(seg.x1, seg.y1, seg.z1);
+                let proj2 = project3D(seg.x2, seg.y2, seg.z2);
+                let avgDepth = (proj1.zDepth + proj2.zDepth) / 2;
+
+                drawQueue.push({
+                    type: 'wireframe',
+                    proj1: proj1,
+                    proj2: proj2,
+                    zDepth: avgDepth,
+                    color: seg.color
+                });
+            });
+
+            // Add Probability cloud particles
+            particles.forEach(p => {
+                if (!subshellFilters[p.subshell]) return;
+
+                let proj = project3D(p.x, p.y, p.z);
+                drawQueue.push({
+                    type: 'cloud_point',
+                    proj: proj,
+                    color: p.color
+                });
+            });
+
+            // Add active animated Electrons
+            outerElectrons.forEach(e => {
+                if (!subshellFilters[e.subshell]) return;
+
+                let coords;
+                if (renderMode === "uncertainty") {
+                    if (Math.random() < 0.08) {
+                        let matchingCloud = particles.filter(p => p.subshell === e.subshell);
+                        if (matchingCloud.length > 0) {
+                            let randomP = matchingCloud[Math.floor(Math.random() * matchingCloud.length)];
+                            e.currUncertainCoords = { x: randomP.x, y: randomP.y, z: randomP.z };
+                        }
+                    }
+                    coords = e.currUncertainCoords || { x: 0, y: 0, z: 0 };
+                } else {
+                    coords = getElectronCoordinates(e, globalTime);
+                }
+
+                let proj = project3D(coords.x, coords.y, coords.z);
+                drawQueue.push({
+                    type: 'electron',
+                    id: e.id,
+                    proj: proj,
+                    subshell: e.subshell,
+                    ms: e.ms,
+                    state: e
+                });
+            });
+
+            // Sort everything back-to-front by depth coordinates (zDepth)
+            drawQueue.sort((a, b) => {
+                let depthA = a.type === 'wireframe' ? a.zDepth : a.proj.zDepth;
+                let depthB = b.type === 'wireframe' ? b.zDepth : b.proj.zDepth;
+                return depthB - depthA;
+            });
+
+            // Perform depth rendering loop
+            drawQueue.forEach(item => {
+                if (item.type === 'wireframe') {
+                    // Render boundary orbital shell lines
+                    ctx.beginPath();
+                    ctx.moveTo(item.proj1.x, item.proj1.y);
+                    ctx.lineTo(item.proj2.x, item.proj2.y);
+                    ctx.strokeStyle = item.color;
+                    ctx.lineWidth = 1.1;
+                    ctx.stroke();
+                    return;
+                }
+
+                const { x, y, zDepth } = item.proj;
+                const distanceFactor = Math.max(0.1, (400 - zDepth) / 400);
+
+                if (item.type === 'nucleon') {
+                    const r = 5.5 * distanceFactor;
+                    ctx.beginPath();
+                    ctx.arc(x, y, r, 0, Math.PI * 2);
+                    ctx.fillStyle = item.isProton ? '#ef4444' : '#64748b'; 
+                    ctx.shadowBlur = 4;
+                    ctx.shadowColor = item.isProton ? '#ef4444' : '#64748b';
+                    ctx.fill();
+                    ctx.shadowBlur = 0; 
+                }
+
+                else if (item.type === 'cloud_point' && renderMode === "cloud") {
+                    const r = 1.4 * distanceFactor;
+                    ctx.beginPath();
+                    ctx.arc(x, y, r, 0, Math.PI * 2);
+                    ctx.fillStyle = item.color;
+                    ctx.fill();
+                }
+
+                else if (item.type === 'electron') {
+                    const isHovered = (hoveredElectronId === item.id);
+                    const eSize = (isHovered ? 12 : 6) * distanceFactor;
+
+                    let coreColor = '#ef4444'; 
+                    if (item.subshell === 'p') coreColor = '#22d3ee'; 
+                    if (item.subshell === 'd') coreColor = '#c084fc'; 
+                    if (item.subshell === 'f') coreColor = '#4ade80'; 
+
+                    const grad = ctx.createRadialGradient(x, y, 0, x, y, eSize * 2.5);
+                    grad.addColorStop(0, '#ffffff');
+                    grad.addColorStop(0.3, coreColor);
+                    grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, eSize * 2.5, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, eSize * 0.5, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = coreColor;
+                    ctx.fill();
+                    ctx.shadowBlur = 0; 
+
+                    // Check for mouse overlap
+                    const mouseDist = Math.hypot(x - lastMouseX, y - lastMouseY);
+                    if (mouseDist < 12 && !isDragging) {
+                        highlightElectronRow(item.id);
+                        showCanvasStateHUD(item.state, x, y);
+                    }
+                }
+            });
+        }
+
+        // Display Canvas hovering overlay info
+        function showCanvasStateHUD(state, x, y) {
+            const hud = document.getElementById("hoverQuantumHUD");
+            hud.style.left = `${x + 15}px`;
+            hud.style.top = `${y - 45}px`;
+            hud.style.display = "flex";
+
+            document.getElementById("hudStateOrbital").innerText = state.shellName;
+            document.getElementById("hudStateN").innerText = state.n;
+            document.getElementById("hudStateL").innerText = state.l;
+            document.getElementById("hudStateMl").innerText = state.ml;
+            document.getElementById("hudStateMs").innerText = state.ms > 0 ? "+1/2 (Up)" : "-1/2 (Down)";
+        }
+
+        function highlightElectronRow(id) {
+            const rows = document.querySelectorAll("#quantumNumbersTableBody tr");
+            rows.forEach(r => r.classList.remove("bg-cyan-950/40", "border-cyan-500/50"));
+            
+            const activeRow = document.getElementById(`row-${id}`);
+            if (activeRow) {
+                activeRow.classList.add("bg-cyan-950/40", "border-cyan-500/50");
+            }
+        }
+
+        // Draw Concentric 2D Bohr Shells Model Scene
+        function drawBohrScene() {
+            if(!selectedElement) return;
+            const shells = BOHR_SHELLS_DATA[selectedElement.z] || [1];
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            // Draw center nucleus core ball
+            ctx.beginPath();
+            ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
+            ctx.strokeStyle = "#4f46e5";
+            ctx.lineWidth = 3;
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 11px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(`+${selectedElement.z}`, cx, cy);
+
+            const shellColors = ["#ef4444", "#f97316", "#eab308", "#10b981", "#14b8a6", "#3b82f6", "#a855f7"];
+
+            shells.forEach((electronCount, idx) => {
+                const shellRadius = 45 + (idx * 30);
+                const shellColor = shellColors[idx % shellColors.length];
+
+                // 1. Draw concentric pathway loop
+                ctx.beginPath();
+                ctx.arc(cx, cy, shellRadius, 0, Math.PI * 2);
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+                ctx.setLineDash([5, 5]);
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.setLineDash([]); 
+
+                const letters = ["K", "L", "M", "N", "O", "P", "Q"];
+                ctx.fillStyle = "rgba(255,255,255,0.25)";
+                ctx.font = "9px monospace";
+                ctx.fillText(letters[idx], cx + shellRadius, cy - 8);
+
+                // 2. Position and rotate electrons uniformly around shell radius
+                for(let i=0; i<electronCount; i++) {
+                    const angleOffset = globalTime * 0.02 * (1.2 - idx * 0.15); 
+                    const angle = (i * Math.PI * 2 / electronCount) + angleOffset;
+                    
+                    const ex = cx + shellRadius * Math.cos(angle);
+                    const ey = cy + shellRadius * Math.sin(angle);
+
+                    const grad = ctx.createRadialGradient(ex, ey, 0, ex, ey, 8);
+                    grad.addColorStop(0, '#ffffff');
+                    grad.addColorStop(0.3, shellColor);
+                    grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+                    ctx.beginPath();
+                    ctx.arc(ex, ey, 8, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(ex, ey, 3.5, 0, Math.PI * 2);
+                    ctx.fillStyle = "#ffffff";
+                    ctx.fill();
+                }
+            });
+        }
+
+        // Principal Canvas Animation Engine Loop
+        function animate() {
+            globalTime += 1;
+
+            // Clear canvas viewport
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if(activeTab === "quantum") {
+                if (autoRotate && !isDragging) {
+                    yaw += 0.003 * animationSpeed;
+                }
+                drawQuantumScene();
+            } else {
+                drawBohrScene();
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // Setup Window Canvas responsive size and Mouse rotation events
+        window.onload = function() {
+            initializeData();
+
+            canvas = document.getElementById("simulationCanvas");
+            ctx = canvas.getContext("2d");
+
+            function resizeCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width * window.devicePixelRatio;
+                canvas.height = rect.height * window.devicePixelRatio;
+                ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            // Render default Periodic table layout
+            renderPeriodicTable();
+
+            // Set default selected element as Hydrogen (z=1)
+            selectElement(1);
+
+            // Drag mouse orbit rotations events
+            canvas.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                autoRotate = false;
+                const rect = canvas.getBoundingClientRect();
+                lastMouseX = (e.clientX - rect.left) * window.devicePixelRatio;
+                lastMouseY = (e.clientY - rect.top) * window.devicePixelRatio;
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const currentX = (e.clientX - rect.left) * window.devicePixelRatio;
+                const currentY = (e.clientY - rect.top) * window.devicePixelRatio;
+
+                if (isDragging) {
+                    const dx = currentX - lastMouseX;
+                    const dy = currentY - lastMouseY;
+
+                    yaw += dx * 0.006;
+                    pitch = Math.max(-Math.PI/2.1, Math.min(Math.PI/2.1, pitch + dy * 0.006));
+
+                    lastMouseX = currentX;
+                    lastMouseY = currentY;
+                } else {
+                    lastMouseX = currentX / window.devicePixelRatio;
+                    lastMouseY = currentY / window.devicePixelRatio;
+                    document.getElementById("hoverQuantumHUD").style.display = "none";
+                }
+            });
+
+            // Touch events supporting mobile dragging
+            canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    autoRotate = false;
+                    const rect = canvas.getBoundingClientRect();
+                    lastMouseX = (e.touches[0].clientX - rect.left) * window.devicePixelRatio;
+                    lastMouseY = (e.touches[0].clientY - rect.top) * window.devicePixelRatio;
+                }
+            });
+
+            window.addEventListener('touchend', () => {
+                isDragging = false;
+            });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (isDragging && e.touches.length === 1) {
+                    const rect = canvas.getBoundingClientRect();
+                    const currentX = (e.touches[0].clientX - rect.left) * window.devicePixelRatio;
+                    const currentY = (e.touches[0].clientY - rect.top) * window.devicePixelRatio;
+
+                    const dx = currentX - lastMouseX;
+                    const dy = currentY - lastMouseY;
+
+                    yaw += dx * 0.006;
+                    pitch = Math.max(-Math.PI/2.1, Math.min(Math.PI/2.1, pitch + dy * 0.006));
+
+                    lastMouseX = currentX;
+                    lastMouseY = currentY;
+                }
+            });
+
+            // Sliders Events
+            document.getElementById("speedSlider").oninput = function(e) {
+                animationSpeed = parseFloat(e.target.value);
+                document.getElementById("speedValueText").innerText = `${animationSpeed.toFixed(1)}x`;
+            };
+
+            document.getElementById("densitySlider").oninput = function(e) {
+                probabilityDensity = parseInt(e.target.value);
+                if (selectedElement) {
+                    generatePointClouds(selectedElement);
+                }
+            };
+
+            // Start animation engine loop
+            animate();
+        };
+    </script>
+</body>
+</html>
