@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>VedaMatics - Playful Vedic Maths Trainer</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts for Friendly Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    h1, h2, h3, .font-heading {
+      font-family: 'Fredoka', sans-serif;
+    }
+    .custom-shadow-sm {
+      box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.08);
+    }
+    .custom-shadow-md {
+      box-shadow: 0 6px 0 0 rgba(0, 0, 0, 0.1);
+    }
+    .custom-shadow-lg {
+      box-shadow: 0 8px 0 0 rgba(0, 0, 0, 0.12);
+    }
+    .custom-shadow-primary {
+      box-shadow: 0 6px 0 0 #4f46e5;
+    }
+    .custom-shadow-success {
+      box-shadow: 0 6px 0 0 #16a34a;
+    }
+    .bounce-hover:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Animations */
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    .pop-anim {
+      animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .shake-anim {
+      animation: shake 0.4s ease-in-out;
+    }
+
+    @keyframes floating {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+      100% { transform: translateY(0px); }
+    }
+    .float-anim {
+      animation: floating 3s ease-in-out infinite;
+    }
+
+    /* Custom Hide Scrollbar */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-[#F8F9FD] min-h-screen flex flex-col selection:bg-indigo-100 overflow-x-hidden">
+
+  <!-- Header Banner -->
+  <header class="bg-white border-b-2 border-indigo-100 px-4 py-3 sticky top-0 z-40">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-2 cursor-pointer" onclick="navigateTo('dashboard')">
+        <div class="w-10 h-10 bg-indigo-500 rounded-2xl flex items-center justify-center text-white custom-shadow-primary transform rotate-3">
+          <span class="text-xl font-bold font-heading">ॐ</span>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-indigo-900 tracking-wide">VedaMatics</h1>
+          <p class="text-xs text-indigo-500 font-semibold">Speedy Vedic Magic</p>
+        </div>
+      </div>
+      
+      <!-- Stats Badges -->
+      <div class="flex items-center space-x-3">
+        <!-- Streak -->
+        <div class="flex items-center space-x-1 bg-amber-50 border-2 border-amber-200 px-2.5 py-1 rounded-full text-amber-700 font-bold text-sm">
+          <i data-lucide="zap" class="w-4 h-4 fill-amber-500 text-amber-500"></i>
+          <span id="global-streak">0</span>
+        </div>
+        <!-- Total Stars -->
+        <div class="flex items-center space-x-1 bg-yellow-50 border-2 border-yellow-200 px-2.5 py-1 rounded-full text-yellow-700 font-bold text-sm">
+          <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-500 animate-pulse"></i>
+          <span id="global-stars">0</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main class="flex-grow max-w-md w-full mx-auto p-4 pb-12 flex flex-col justify-start">
+
+    <!-- 1. DASHBOARD VIEW -->
+    <section id="view-dashboard" class="space-y-6">
+      <!-- Welcome Hero Card -->
+      <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl p-5 text-white custom-shadow-lg relative overflow-hidden">
+        <div class="relative z-10 space-y-2">
+          <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Mind Gym</span>
+          <h2 class="text-2xl font-bold leading-tight">Master the Secrets of Vedic Mathematics!</h2>
+          <p class="text-indigo-100 text-sm">Solve complex multiplications in seconds without using paper. Pick a training capsule below to begin!</p>
+        </div>
+        <!-- Decorative SVG backdrop -->
+        <div class="absolute -right-10 -bottom-10 text-white/10 pointer-events-none transform rotate-12">
+          <svg width="180" height="180" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4 6h-4v2h4v2h-4v2h4v2H9V7h6v2z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Lessons Grid Container -->
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-indigo-900 flex items-center gap-2">
+            <i data-lucide="compass" class="w-5 h-5 text-indigo-500"></i>
+            Active Tricks
+          </h3>
+          <span class="text-xs text-indigo-400 font-bold" id="completion-text">0 / 4 Mastered</span>
+        </div>
+        
+        <div class="space-y-4" id="lessons-container">
+          <!-- Dynamic cards injected here -->
+        </div>
+      </div>
+
+      <!-- Quick Tips Section -->
+      <div class="bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-4 flex items-start space-x-3">
+        <div class="p-2 bg-emerald-500 text-white rounded-xl custom-shadow-success mt-0.5">
+          <i data-lucide="sparkles" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h4 class="font-bold text-emerald-900 text-sm">Did you know?</h4>
+          <p class="text-xs text-emerald-700 mt-1 leading-relaxed">
+            Vedic Maths comes from ancient Indian texts called Vedas. It helps develop mental agile calculations and utilizes both the logical left and creative right brain hemispheres!
+          </p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- 2. TRICK EXPLANATION & STUDY MODE VIEW -->
+    <section id="view-study" class="hidden space-y-6">
+      <!-- Back Header -->
+      <button onclick="navigateTo('dashboard')" class="flex items-center text-indigo-600 font-bold text-sm bg-indigo-50 px-3 py-1.5 rounded-xl hover:bg-indigo-100 transition bounce-hover self-start">
+        <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i> Dashboard
+      </button>
+
+      <!-- Lesson Main Meta Info -->
+      <div id="study-hero-card" class="rounded-3xl p-6 text-white custom-shadow-lg relative overflow-hidden">
+        <div class="relative z-10 space-y-2">
+          <div class="flex items-center space-x-2">
+            <span class="bg-white/20 text-white text-xs font-bold px-2.5 py-0.5 rounded-full uppercase" id="study-badge">Trick 1</span>
+          </div>
+          <h2 class="text-2xl font-bold" id="study-title">Loading Lesson...</h2>
+          <p class="text-white/90 text-sm leading-relaxed" id="study-description">Learn to solve rapidly.</p>
+        </div>
+      </div>
+
+      <!-- Explanation Blueprint Step-by-Step Card -->
+      <div class="bg-white border-2 border-indigo-100 rounded-3xl p-5 space-y-4 shadow-sm">
+        <h3 class="text-md font-bold text-indigo-900 border-b border-indigo-50 pb-2 flex items-center gap-2">
+          <i data-lucide="book-open" class="text-indigo-500 w-5 h-5"></i>
+          How the Shortcut Works
+        </h3>
+
+        <!-- Interactive Dynamic Sandbox Calculator -->
+        <div class="bg-indigo-50/50 rounded-2xl p-3 border border-indigo-100/50 space-y-3">
+          <div class="flex items-center justify-between text-xs text-indigo-500 font-bold px-1">
+            <span>TRY A DYNAMIC EXAMPLE:</span>
+            <button onclick="regenerateStudyExample()" class="flex items-center gap-1 text-indigo-600 bg-indigo-100/70 px-2 py-1 rounded-lg hover:bg-indigo-100">
+              <i data-lucide="rotate-cw" class="w-3 h-3"></i> Try New Example
+            </button>
+          </div>
+          <div class="flex justify-center items-center space-x-3 text-2xl font-black text-indigo-900 font-heading my-1">
+            <span id="study-factor-1" class="bg-indigo-100 px-3 py-1.5 rounded-xl border-2 border-indigo-200">42</span>
+            <span class="text-indigo-400">×</span>
+            <span id="study-factor-2" class="bg-indigo-100 px-3 py-1.5 rounded-xl border-2 border-indigo-200">48</span>
+            <span class="text-indigo-400">=</span>
+            <span id="study-factor-ans" class="bg-amber-400 text-white px-3 py-1.5 rounded-xl custom-shadow-sm border-2 border-amber-500">2016</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Visual Guide Steps Stacked -->
+        <div class="space-y-4" id="study-steps-container">
+          <!-- Dynamic Explanation steps populated here -->
+        </div>
+      </div>
+
+      <!-- Action Button Container to enter Practice engine -->
+      <div class="space-y-3">
+        <button onclick="openTestConfigModal()" class="w-full bg-indigo-600 text-white rounded-2xl py-4 font-bold text-lg hover:bg-indigo-700 transition bounce-hover flex items-center justify-center space-x-2 custom-shadow-lg">
+          <i data-lucide="play" class="w-5 h-5 fill-white"></i>
+          <span>Challenge Yourself!</span>
+        </button>
+        <button onclick="navigateTo('dashboard')" class="w-full bg-slate-100 text-slate-600 rounded-2xl py-3.5 font-bold text-sm hover:bg-slate-200 transition bounce-hover text-center">
+          Go Back
+        </button>
+      </div>
+    </section>
+
+
+    <!-- 3. TEST ENGINE & CONFIG MODAL OVERLAY -->
+    <!-- (Styled cleanly inside standard container but functions as overlay sheet) -->
+    <section id="view-test-config" class="hidden space-y-6">
+      <button onclick="navigateTo('study')" class="flex items-center text-indigo-600 font-bold text-sm bg-indigo-50 px-3 py-1.5 rounded-xl hover:bg-indigo-100 transition bounce-hover">
+        <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i> Back to Lesson
+      </button>
+
+      <div class="bg-white border-2 border-indigo-100 rounded-3xl p-6 space-y-6 shadow-sm">
+        <div class="text-center space-y-1">
+          <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto text-purple-600 mb-2">
+            <i data-lucide="sliders-horizontal" class="w-8 h-8"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-indigo-950">Setup Your Challenge</h2>
+          <p class="text-xs text-indigo-400">Configure parameters to match your current training target.</p>
+        </div>
+
+        <!-- Problem Count Segment -->
+        <div class="space-y-2">
+          <label class="text-sm font-bold text-indigo-900 block">Question Count</label>
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="selectQuestionCount(5)" id="btn-count-5" class="py-3 border-2 border-indigo-500 bg-indigo-50 text-indigo-900 font-bold rounded-2xl transition">
+              5 Questions
+            </button>
+            <button onclick="selectQuestionCount(10)" id="btn-count-10" class="py-3 border-2 border-slate-200 bg-white text-slate-600 font-bold rounded-2xl transition">
+              10 Questions
+            </button>
+          </div>
+        </div>
+
+        <!-- Timer Segment -->
+        <div class="space-y-2">
+          <label class="text-sm font-bold text-indigo-900 block">Time Limit Per Question</label>
+          <div class="grid grid-cols-3 gap-2.5">
+            <button onclick="selectTimerOption(5)" id="btn-timer-5" class="py-3 border-2 border-slate-200 bg-white text-slate-600 font-bold text-sm rounded-2xl transition">
+              5 Seconds
+            </button>
+            <button onclick="selectTimerOption(10)" id="btn-timer-10" class="py-3 border-2 border-indigo-500 bg-indigo-50 text-indigo-900 font-bold text-sm rounded-2xl transition">
+              10 Seconds
+            </button>
+            <button onclick="selectTimerOption(0)" id="btn-timer-0" class="py-3 border-2 border-slate-200 bg-white text-slate-600 font-bold text-sm rounded-2xl transition">
+              No Timer
+            </button>
+          </div>
+        </div>
+
+        <!-- Final Play Button -->
+        <button onclick="startChallenge()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-2xl py-4 font-bold text-lg hover:from-emerald-600 hover:to-teal-600 transition bounce-hover flex items-center justify-center space-x-2 custom-shadow-success">
+          <i data-lucide="swords" class="w-5 h-5"></i>
+          <span>Let's Begin!</span>
+        </button>
+      </div>
+    </section>
+
+
+    <!-- 4. ACTIVE TEST GAMEPLAY PLAYGROUND -->
+    <section id="view-test-gameplay" class="hidden flex-grow flex flex-col justify-between space-y-6">
+      
+      <!-- Gameplay Header -->
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-bold text-indigo-500" id="gameplay-lesson-title">Lesson 1: Magic Trick</span>
+        <button onclick="exitActiveTestPrompt()" class="text-slate-400 hover:text-slate-600 font-bold text-sm p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Question Progress Bar Stack -->
+      <div class="space-y-1">
+        <div class="flex justify-between text-xs font-bold text-indigo-900">
+          <span id="gameplay-progress-index">Question 1 of 5</span>
+          <span id="gameplay-score-snapshot">Streak: 🔥 0</span>
+        </div>
+        <div class="w-full bg-indigo-100/50 h-3 rounded-full overflow-hidden border border-indigo-100">
+          <div id="gameplay-progress-bar" class="bg-indigo-600 h-full w-1/5 transition-all duration-300"></div>
+        </div>
+      </div>
+
+      <!-- Problem Prompt Box Card -->
+      <div class="bg-white border-2 border-indigo-100 rounded-3xl p-6 text-center space-y-6 relative overflow-hidden custom-shadow-md">
+        <!-- Visual Timer Bar -->
+        <div id="gameplay-timer-container" class="absolute top-0 left-0 w-full h-1.5 bg-slate-100">
+          <div id="gameplay-timer-bar" class="h-full bg-gradient-to-r from-amber-400 to-red-500 transition-all duration-100" style="width: 100%;"></div>
+        </div>
+
+        <div class="space-y-1 pt-2">
+          <span class="text-xs bg-indigo-50 text-indigo-600 font-bold px-3 py-1 rounded-full border border-indigo-100 uppercase tracking-widest">SOLVE MENTALLY</span>
+          <h2 class="text-5xl font-black tracking-wide text-indigo-950 font-heading flex justify-center items-center gap-3 pt-3" id="gameplay-question-equation">
+            <span>42</span>
+            <span class="text-indigo-400 text-3xl">×</span>
+            <span>48</span>
+          </h2>
+        </div>
+
+        <!-- Keyboard input / Input Display Interface -->
+        <div class="space-y-2">
+          <div class="relative max-w-[240px] mx-auto">
+            <div id="gameplay-input-display" class="w-full bg-slate-50 border-3 border-indigo-200 text-indigo-950 rounded-2xl py-3.5 text-3xl font-black font-heading focus:outline-none flex items-center justify-center min-h-[64px] custom-shadow-sm select-none">
+              <!-- Animated custom blinking cursor when empty -->
+              <span class="text-indigo-300 font-normal select-none pointer-events-none" id="input-placeholder">Type Answer</span>
+            </div>
+            <!-- Indicator for feedback alerts (correct / error) -->
+            <div id="input-feedback-toast" class="absolute -top-4 -right-4 hidden">
+              <span class="bg-emerald-500 text-white font-bold p-2.5 rounded-full flex items-center justify-center shadow-lg transform rotate-12">
+                <i data-lucide="check" class="w-5 h-5"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Tips Toggle Helper during active challenge -->
+      <div id="hint-panel" class="hidden bg-indigo-50/50 border border-indigo-100 rounded-2xl p-3 flex items-start gap-2 text-xs text-indigo-700">
+        <i data-lucide="info" class="w-4 h-4 text-indigo-500 mt-0.5 flex-shrink-0"></i>
+        <div>
+          <span class="font-bold">Hint Reminder:</span>
+          <span id="hint-panel-text">Vedic rule here!</span>
+        </div>
+      </div>
+
+      <!-- Integrated Playful Custom Digit Pad -->
+      <div class="space-y-4">
+        <!-- Number Pad Keypad -->
+        <div class="grid grid-cols-3 gap-3">
+          <button onclick="pressDigit(1)" class="bg-white border-2 border-slate-200 active:border-indigo-400 py-3 rounded-2xl text-2xl font-bold text-slate-800 bounce-hover custom-shadow-sm flex items-center justify-center">1</button>
+          <button onclick="pressDigit(2)" class="bg-white border-2 border-slate-200 active:border-indigo-400 py-3 rounded-2xl text-2xl font-bold text-slate-800 bounce-hover custom-shadow-sm flex items-center justify-center">2</button>
+          <button onclick="pressDigit(3)" class="bg-white border-2 border-slate-200 active:border-indigo-400 py-3 rounded-2xl text-2xl font-bold text-slate-800 bounce-hover custom-shadow-sm flex items-center justify-center">3</button>
+          <button onclick="pressDigit(4)" class="bg-white border-2 border-slate-200 active:border-indigo-400 py-3 rounded-2xl text-2xl font-bold text-slate-800 bounce-hover custom-shadow-sm flex items-center justify-center">4</button>
+          <button onclick="pressDigit(5)" class="bg-white border-2 border-slate-200 active:border-indigo-400 py-3 rounded-2xl text-2xl font-bold text-slate-800 bounce-hover custom-shadow-sm flex items-center justify-center">5</button>
+          <button onclick="pressDigit(6)" class="bg-white border-2 border-slate-200 active:border-indigo-400 py-3 rounded-2xl text-2xl font-bold text-slate-800 bounce-hover custom-shadow-sm flex items-center justify-center">6</button>
+          <button onclick="pressDigit(7)" class="bg-white border-2 border-slate-200 active:border-indigo-400 py-3 rounded-2xl text-2xl font-bold text-slate-800 bounce-hover custom-shadow-sm flex items-center justify-center">7</button>
+          <button onclick="pressDigit(8)" class="bg-white border-2 border-slate-200 active:border-indigo-400 py-3 rounded-2xl text-2xl font-bold text-slate-800 bounce-hover custom-shadow-sm flex items-center justify-center">8</button>
+          <button onclick="pressDigit(9)" class="bg-white border-2 border-slate-200 active:border-indigo-400 py-3 rounded-2xl text-2xl font-bold text-slate-800 bounce-hover custom-shadow-sm flex items-center justify-center">9</button>
+          
+          <!-- Backspace / Clear -->
+          <button onclick="pressDigit('back')" class="bg-[#FFEFEF] border-2 border-red-200 hover:bg-red-100 py-3 rounded-2xl text-red-500 bounce-hover custom-shadow-sm flex items-center justify-center">
+            <i data-lucide="delete" class="w-6 h-6"></i>
+          </button>
+          <button onclick="pressDigit(0)" class="bg-white border-2 border-slate-200 active:border-indigo-400 py-3 rounded-2xl text-2xl font-bold text-slate-800 bounce-hover custom-shadow-sm flex items-center justify-center">0</button>
+          <!-- Submit Button -->
+          <button onclick="pressDigit('submit')" id="gameplay-btn-submit" class="bg-indigo-600 text-white rounded-2xl py-3 text-lg font-bold bounce-hover custom-shadow-primary flex items-center justify-center">
+            <i data-lucide="arrow-right" class="w-6 h-6"></i>
+          </button>
+        </div>
+
+        <!-- Optional Reveal Hint Button -->
+        <button id="btn-reveal-hint" onclick="toggleGameplayHint()" class="w-full bg-slate-100 text-slate-500 py-2.5 rounded-xl text-xs font-bold hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center justify-center gap-1.5 border border-slate-200">
+          <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-500"></i> Toggle Formula Helper
+        </button>
+      </div>
+    </section>
+
+
+    <!-- 5. GAMIFIED SCORE REPORT VIEW -->
+    <section id="view-score-report" class="hidden space-y-6 relative">
+      <!-- High Performance Canvas Confetti overlay space -->
+      <canvas id="confetti-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-10 rounded-3xl"></canvas>
+
+      <div class="bg-white border-2 border-indigo-100 rounded-3xl p-6 text-center space-y-6 shadow-md relative z-20 overflow-hidden">
+        
+        <!-- Star Evaluation Panel -->
+        <div class="space-y-2">
+          <div class="flex justify-center items-center space-x-2 py-3" id="report-star-stack">
+            <!-- Dynamic Glowing Stars injected here -->
+            <i data-lucide="star" class="w-10 h-10 text-yellow-400 fill-yellow-400"></i>
+            <i data-lucide="star" class="w-12 h-12 text-yellow-400 fill-yellow-400 -translate-y-2"></i>
+            <i data-lucide="star" class="w-10 h-10 text-slate-200"></i>
+          </div>
+          <h2 class="text-3xl font-bold text-indigo-950" id="report-heading">Sensational Attempt!</h2>
+          <p class="text-sm text-indigo-400" id="report-motivational-text">You got most sums correct with lightning reflex actions!</p>
+        </div>
+
+        <!-- Raw Stats Card -->
+        <div class="grid grid-cols-2 gap-4 bg-indigo-50/50 rounded-2xl p-4 border border-indigo-100/30">
+          <div class="space-y-1">
+            <span class="text-xs text-slate-500 block uppercase font-bold tracking-wider">Correct Answers</span>
+            <span class="text-3xl font-black font-heading text-emerald-600" id="report-stat-correct">4 / 5</span>
+          </div>
+          <div class="space-y-1">
+            <span class="text-xs text-slate-500 block uppercase font-bold tracking-wider">Time Rating</span>
+            <span class="text-3xl font-black font-heading text-indigo-600" id="report-stat-timer">Perfect</span>
+          </div>
+        </div>
+
+        <!-- Collapsible Problem Detailed Breakdown Sheet -->
+        <div class="text-left space-y-3">
+          <h3 class="text-md font-bold text-indigo-900 flex items-center gap-2 border-b border-indigo-50 pb-2">
+            <i data-lucide="clipboard-check" class="w-5 h-5 text-indigo-500"></i>
+            Question Breakdown
+          </h3>
+          
+          <div class="space-y-3 max-h-[220px] overflow-y-auto pr-1 no-scrollbar" id="report-breakdown-list">
+            <!-- Generated Items list dynamically added with step-by-step shortcuts helper togglers -->
+          </div>
+        </div>
+
+        <!-- Action Loop Choices -->
+        <div class="space-y-3 pt-2">
+          <button onclick="retryActiveLessonChallenge()" class="w-full bg-indigo-600 text-white rounded-2xl py-4 font-bold text-md hover:bg-indigo-700 transition bounce-hover flex items-center justify-center space-x-2 custom-shadow-primary">
+            <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+            <span>Train Again</span>
+          </button>
+          <button onclick="navigateTo('dashboard')" class="w-full bg-slate-100 text-slate-600 border-2 border-slate-200 rounded-2xl py-3 font-bold text-sm hover:bg-slate-200 transition bounce-hover text-center">
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Interactive Prompt Modals (Native HTML Custom dialog for confirmation without using alerts) -->
+  <div id="custom-modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl border-2 border-indigo-100 transform scale-95 transition-all">
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mx-auto">
+          <i data-lucide="alert-triangle" class="w-7 h-7"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900" id="modal-title">Exit Challenge?</h3>
+        <p class="text-xs text-slate-500 leading-relaxed" id="modal-description">Exiting now will erase your current scoring metrics for this practice quiz.</p>
+      </div>
+      <div class="flex space-x-3">
+        <button id="modal-btn-cancel" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-2xl transition text-sm">
+          Keep Training
+        </button>
+        <button id="modal-btn-confirm" class="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl transition text-sm">
+          Exit Challenge
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Synth Sound Engine Helper using Web Audio API -->
+  <script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playSynthSound(type) {
+      if (!audioCtx) return;
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      if (type === 'success') {
+        // Double sweet arpeggio sound
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime); // A4
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15); // A5
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+      } 
+      else if (type === 'error') {
+        // Quick buzzing failure tone
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+      } 
+      else if (type === 'congrats') {
+        // Grand victory chord arpeggios
+        const playNote = (freq, delay, duration) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.type = 'triangle';
+          o.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+          g.gain.setValueAtTime(0.1, audioCtx.currentTime + delay);
+          g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + delay + duration);
+          o.start(audioCtx.currentTime + delay);
+          o.stop(audioCtx.currentTime + delay + duration);
+        };
+        playNote(523.25, 0, 0.15); // C5
+        playNote(659.25, 0.08, 0.15); // E5
+        playNote(783.99, 0.16, 0.15); // G5
+        playNote(1046.50, 0.24, 0.4); // C6
+      }
+      else if (type === 'click') {
+        // Light subtle pop bubble tap
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.05);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+      }
+    }
+  </script>
+
+  <!-- Dataset & Modulable Trick Engine Blueprint Javascript Array -->
+  <script>
+    /**
+     * VEDIC TRICK Blueprints Dataset.
+     * Scale easily by adding object schemas to this array.
+     */
+    const TRICKS = [
+      {
+        id: "lesson-1",
+        number: 1,
+        title: "First figures same, last figures sum to 10",
+        badge: "Complementary Ten Rule",
+        tagline: "Speed multiply pairs like 42 × 48 or 73 × 77 in seconds.",
+        colorClasses: "from-indigo-500 to-purple-500",
+        
+        // Dynamic Question Generator with memory parameters to ensure zero duplications
+        generator: function() {
+          const commonTens = Math.floor(Math.random() * 9) + 1; // 1 to 9
+          const units1 = Math.floor(Math.random() * 9) + 1; // 1 to 9
+          const units2 = 10 - units1; // ensures they add up to 10
+          
+          const num1 = (commonTens * 10) + units1;
+          const num2 = (commonTens * 10) + units2;
+          const ans = num1 * num2;
+          
+          return {
+            num1: num1,
+            num2: num2,
+            correctAnswer: ans,
+            explanationSteps: [
+              `Look at the tens digits: They are both <span class="bg-indigo-100 font-bold px-1.5 rounded text-indigo-700">${commonTens}</span>. Multiply <span class="font-bold">${commonTens}</span> by the next consecutive number (<span class="font-bold">${commonTens} + 1 = ${commonTens + 1}</span>).`,
+              `Left Side calculation: <span class="font-black text-indigo-900">${commonTens} × ${commonTens + 1} = ${commonTens * (commonTens + 1)}</span>.`,
+              `Multiply units digits together: <span class="font-bold text-indigo-900">${units1} × ${units2} = ${units1 * units2 < 10 ? '0' + (units1 * units2) : units1 * units2}</span> (Always pad to 2 digits).`,
+              `Combine Left & Right Sides: <span class="font-black text-indigo-900 text-lg">${commonTens * (commonTens + 1)}</span> & <span class="font-black text-amber-600 text-lg">${units1 * units2 < 10 ? '0' + (units1 * units2) : units1 * units2}</span> giving <span class="bg-indigo-600 text-white font-black px-2.5 py-1 rounded-lg">${ans}</span>.`
+            ]
+          };
+        }
+      },
+      {
+        id: "lesson-2",
+        number: 2,
+        title: "First figures sum to 10, last figures same",
+        badge: "Reversed Complementary Ten",
+        tagline: "Speed multiply pairs like 44 × 64 or 81 × 21.",
+        colorClasses: "from-purple-500 to-pink-500",
+        
+        generator: function() {
+          const commonUnits = Math.floor(Math.random() * 9) + 1; // 1 to 9
+          const tens1 = Math.floor(Math.random() * 9) + 1; // 1 to 9
+          const tens2 = 10 - tens1; // tens add up to 10
+          
+          const num1 = (tens1 * 10) + commonUnits;
+          const num2 = (tens2 * 10) + commonUnits;
+          const ans = num1 * num2;
+          
+          return {
+            num1: num1,
+            num2: num2,
+            correctAnswer: ans,
+            explanationSteps: [
+              `Identify digits: Tens are <span class="bg-indigo-100 font-bold px-1 rounded text-indigo-700">${tens1}</span> and <span class="bg-indigo-100 font-bold px-1 rounded text-indigo-700">${tens2}</span> (sum to 10). Units digit is shared common: <span class="font-bold text-indigo-900">${commonUnits}</span>.`,
+              `Left Side calculation: (Tens 1 × Tens 2) + Common Units digit &rarr; (<span class="font-bold">${tens1} × ${tens2}</span>) + <span class="font-bold">${commonUnits}</span> = <span class="font-black text-indigo-900">${(tens1 * tens2) + commonUnits}</span>.`,
+              `Right Side calculation: Square the units digit: <span class="font-bold">${commonUnits} × ${commonUnits} = ${commonUnits * commonUnits < 10 ? '0' + (commonUnits * commonUnits) : commonUnits * commonUnits}</span> (always write as 2 digits with 0 padding if necessary).`,
+              `Join Left & Right side blocks: <span class="font-black text-indigo-900 text-lg">${(tens1 * tens2) + commonUnits}</span> and <span class="font-black text-amber-600 text-lg">${commonUnits * commonUnits < 10 ? '0' + (commonUnits * commonUnits) : commonUnits * commonUnits}</span> gives final total <span class="bg-purple-600 text-white font-black px-2.5 py-1 rounded-lg">${ans}</span>.`
+            ]
+          };
+        }
+      },
+      {
+        id: "lesson-3",
+        number: 3,
+        title: "First number's digits sum to 10, second digits identical",
+        badge: "The Dual Homogeneity Law",
+        tagline: "Easily tackle complex math sums like 46 × 55 inside your head.",
+        colorClasses: "from-teal-500 to-emerald-500",
+        
+        generator: function() {
+          // Num1: Tens1 + Units1 = 10
+          const tens1 = Math.floor(Math.random() * 8) + 1; // 1 to 8
+          const units1 = 10 - tens1;
+          // Num2: Identical digits
+          const common2 = Math.floor(Math.random() * 9) + 1; // 1 to 9
+          
+          const num1 = (tens1 * 10) + units1;
+          const num2 = (common2 * 10) + common2;
+          const ans = num1 * num2;
+          
+          return {
+            num1: num1,
+            num2: num2,
+            correctAnswer: ans,
+            explanationSteps: [
+              `Check values: First number is <span class="font-bold">${num1}</span> (its digits sum to 10). Second number is <span class="font-bold">${num2}</span> (both digits are identical <span class="bg-indigo-100 font-bold px-1.5 text-indigo-700 rounded">${common2}</span>).`,
+              `Left Side calculation: (Tens 1 × Identical Digit) + Identical Digit &rarr; (<span class="font-bold">${tens1} × ${common2}</span>) + <span class="font-bold">${common2}</span> = <span class="font-black text-indigo-900">${(tens1 * common2) + common2}</span>.`,
+              `Right Side calculation: Units 1 × Identical Digit &rarr; <span class="font-bold">${units1} × ${common2} = ${units1 * common2 < 10 ? '0' + (units1 * common2) : units1 * common2}</span> (Add 0-padding if required).`,
+              `Combine total: <span class="font-black text-indigo-900 text-lg">${(tens1 * common2) + common2}</span> & <span class="font-black text-amber-600 text-lg">${units1 * common2 < 10 ? '0' + (units1 * common2) : units1 * common2}</span> &rarr; <span class="bg-emerald-600 text-white font-black px-2.5 py-1 rounded-lg">${ans}</span>.`
+            ]
+          };
+        }
+      },
+      {
+        id: "lesson-4",
+        number: 4,
+        title: "Multiplying numbers just over 100",
+        badge: "Surplus Nikhilam Law",
+        tagline: "Calculate super big numbers like 108 × 109 in a few simple steps.",
+        colorClasses: "from-amber-500 to-orange-500",
+        
+        generator: function() {
+          const excess1 = Math.floor(Math.random() * 9) + 1; // 1 to 9
+          const excess2 = Math.floor(Math.random() * 9) + 1; // 1 to 9
+          
+          const num1 = 100 + excess1;
+          const num2 = 100 + excess2;
+          const ans = num1 * num2;
+          
+          return {
+            num1: num1,
+            num2: num2,
+            correctAnswer: ans,
+            explanationSteps: [
+              `Identify excess difference from base 100: Number 1 has excess of <span class="bg-indigo-100 font-bold text-indigo-700 px-1 rounded">+${excess1}</span>, and Number 2 has excess <span class="bg-indigo-100 font-bold text-indigo-700 px-1 rounded">+${excess2}</span>.`,
+              `Left Side calculation: Add cross-wise excess &rarr; Base Number 1 + Excess 2 &rarr; <span class="font-bold">${num1} + ${excess2} = ${num1 + excess2}</span>.`,
+              `Right Side calculation: Multiply both excesses together &rarr; <span class="font-bold">${excess1} × ${excess2} = ${excess1 * excess2 < 10 ? '0' + (excess1 * excess2) : excess1 * excess2}</span> (always keep as 2 digits, zero padding if less than 10).`,
+              `Glue Left and Right values: <span class="font-black text-indigo-900 text-lg">${num1 + excess2}</span> & <span class="font-black text-amber-600 text-lg">${excess1 * excess2 < 10 ? '0' + (excess1 * excess2) : excess1 * excess2}</span> &rarr; <span class="bg-amber-500 text-white font-black px-2.5 py-1 rounded-lg">${ans}</span>.`
+            ]
+          };
+        }
+      }
+    ];
+  </script>
+
+  <!-- Interactive SPA Dashboard & Test Evaluation Engine Logic -->
+  <script>
+    // State Variables
+    let currentTrickIndex = 0;
+    let selectedQuestionCount = 5;
+    let selectedTimerValue = 10; // 5, 10 or 0 (no timer)
+    
+    // Active Test State
+    let activeQuestionList = [];
+    let currentQuestionIndex = 0;
+    let currentTimerId = null;
+    let remainingTime = 10;
+    let answersLogged = []; // list of objects: { question, userAns, isCorrect, steps }
+    
+    // Global User Stats (In-Memory default)
+    let globalStats = {
+      stars: 0,
+      streak: 0,
+      completedLessons: {} // lessonId -> true/false
+    };
+
+    // Initialize application on load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStatsFromLocalStorage();
+      renderDashboard();
+      lucide.createIcons();
+    });
+
+    function navigateTo(viewId) {
+      playSynthSound('click');
+      
+      // Hide all main section containers
+      document.getElementById('view-dashboard').classList.add('hidden');
+      document.getElementById('view-study').classList.add('hidden');
+      document.getElementById('view-test-config').classList.add('hidden');
+      document.getElementById('view-test-gameplay').classList.add('hidden');
+      document.getElementById('view-score-report').classList.add('hidden');
+      
+      // Show targeted view
+      document.getElementById('view-' + viewId).classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Load user game state metrics
+    function loadStatsFromLocalStorage() {
+      try {
+        const stored = localStorage.getItem('vedamatic_user_stats');
+        if (stored) {
+          globalStats = JSON.parse(stored);
+        }
+      } catch (e) {
+        console.warn("Storage read failed. Fallback to fresh session state.");
+      }
+      updateGlobalBadges();
+    }
+
+    function saveStatsToLocalStorage() {
+      try {
+        localStorage.setItem('vedamatic_user_stats', JSON.stringify(globalStats));
+      } catch (e) {
+        console.warn("Storage write failed.");
+      }
+      updateGlobalBadges();
+    }
+
+    function updateGlobalBadges() {
+      document.getElementById('global-streak').innerText = globalStats.streak || 0;
+      document.getElementById('global-stars').innerText = globalStats.stars || 0;
+      
+      // Compute completed text percentage
+      const completedCount = Object.keys(globalStats.completedLessons || {}).length;
+      document.getElementById('completion-text').innerText = `${completedCount} / ${TRICKS.length} Mastered`;
+    }
+
+    // Build beautiful play cards in dashboard grid
+    function renderDashboard() {
+      const container = document.getElementById('lessons-container');
+      container.innerHTML = '';
+      
+      TRICKS.forEach((trick, index) => {
+        const isMastered = globalStats.completedLessons[trick.id] || false;
+        
+        const card = document.createElement('div');
+        card.className = "bg-white border-2 border-slate-200 hover:border-indigo-300 rounded-3xl p-5 cursor-pointer transition transform active:scale-[0.98] flex justify-between items-center relative overflow-hidden custom-shadow-sm";
+        card.setAttribute('onclick', `openStudyLesson(${index})`);
+        
+        card.innerHTML = `
+          <div class="space-y-2 max-w-[75%]">
+            <div class="flex items-center space-x-2">
+              <span class="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full tracking-wider bg-slate-100 text-slate-500">
+                Unit 0${trick.number}
+              </span>
+              ${isMastered ? '<span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 flex items-center gap-0.5"><i data-lucide="check" class="w-3 h-3"></i> Mastered</span>' : ''}
+            </div>
+            <h3 class="font-extrabold text-indigo-950 text-base leading-tight">${trick.title}</h3>
+            <p class="text-xs text-indigo-400">${trick.tagline}</p>
+          </div>
+          <div class="flex flex-col items-center justify-center space-y-1">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr ${trick.colorClasses} text-white flex items-center justify-center custom-shadow-sm">
+              <i data-lucide="book-open" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[11px] font-bold text-indigo-600">Start Guide</span>
+          </div>
+        `;
+        
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    // Open study tutorial view
+    function openStudyLesson(index) {
+      currentTrickIndex = index;
+      const trick = TRICKS[index];
+      
+      const hero = document.getElementById('study-hero-card');
+      // replace gradients
+      hero.className = `rounded-3xl p-6 text-white custom-shadow-lg relative overflow-hidden bg-gradient-to-r ${trick.colorClasses}`;
+      
+      document.getElementById('study-badge').innerText = `Trick 0${trick.number} • ${trick.badge}`;
+      document.getElementById('study-title').innerText = trick.title;
+      document.getElementById('study-description').innerText = trick.tagline;
+      
+      regenerateStudyExample();
+      navigateTo('study');
+    }
+
+    // Refresh dynamic example calculator sandbox inside guide tutorial
+    function regenerateStudyExample() {
+      const trick = TRICKS[currentTrickIndex];
+      const data = trick.generator();
+      
+      document.getElementById('study-factor-1').innerText = data.num1;
+      document.getElementById('study-factor-2').innerText = data.num2;
+      document.getElementById('study-factor-ans').innerText = data.correctAnswer;
+      
+      const stepsContainer = document.getElementById('study-steps-container');
+      stepsContainer.innerHTML = '';
+      
+      data.explanationSteps.forEach((step, idx) => {
+        const stepElem = document.createElement('div');
+        stepElem.className = "flex items-start space-x-3.5 pt-1.5";
+        stepElem.innerHTML = `
+          <div class="w-6 h-6 rounded-full bg-indigo-500 text-white font-black text-xs flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+            ${idx + 1}
+          </div>
+          <p class="text-sm text-slate-600 leading-relaxed">${step}</p>
+        `;
+        stepsContainer.appendChild(stepElem);
+      });
+    }
+
+    // Config Dialog Control
+    function openTestConfigModal() {
+      navigateTo('test-config');
+    }
+
+    function selectQuestionCount(count) {
+      playSynthSound('click');
+      selectedQuestionCount = count;
+      
+      // Update UI Buttons
+      document.getElementById('btn-count-5').className = count === 5 
+        ? "py-3 border-2 border-indigo-500 bg-indigo-50 text-indigo-900 font-bold rounded-2xl transition" 
+        : "py-3 border-2 border-slate-200 bg-white text-slate-600 font-bold rounded-2xl transition";
+        
+      document.getElementById('btn-count-10').className = count === 10 
+        ? "py-3 border-2 border-indigo-500 bg-indigo-50 text-indigo-900 font-bold rounded-2xl transition" 
+        : "py-3 border-2 border-slate-200 bg-white text-slate-600 font-bold rounded-2xl transition";
+    }
+
+    function selectTimerOption(seconds) {
+      playSynthSound('click');
+      selectedTimerValue = seconds;
+      
+      const options = [5, 10, 0];
+      options.forEach(opt => {
+        const btn = document.getElementById(`btn-timer-${opt}`);
+        if (opt === seconds) {
+          btn.className = "py-3 border-2 border-indigo-500 bg-indigo-50 text-indigo-900 font-bold text-sm rounded-2xl transition";
+        } else {
+          btn.className = "py-3 border-2 border-slate-200 bg-white text-slate-600 font-bold text-sm rounded-2xl transition";
+        }
+      });
+    }
+
+    // Launch Game Arena
+    function startChallenge() {
+      const trick = TRICKS[currentTrickIndex];
+      
+      // Reset Session values
+      activeQuestionList = [];
+      answersLogged = [];
+      currentQuestionIndex = 0;
+      
+      // Generate active non-repetitive pool
+      const usedPairs = new Set();
+      
+      while (activeQuestionList.length < selectedQuestionCount) {
+        const q = trick.generator();
+        const pairKey = `${q.num1}x${q.num2}`;
+        
+        if (!usedPairs.has(pairKey)) {
+          usedPairs.add(pairKey);
+          activeQuestionList.push(q);
+        }
+      }
+      
+      // Hide dynamic keypad hint panel by default
+      document.getElementById('hint-panel').classList.add('hidden');
+      
+      navigateTo('test-gameplay');
+      presentQuestion();
+    }
+
+    // Inject active challenge card values
+    function presentQuestion() {
+      // Clear input fields
+      const inputDisp = document.getElementById('gameplay-input-display');
+      inputDisp.innerText = '';
+      
+      // Inject cursor placeholder back
+      const placeholder = document.createElement('span');
+      placeholder.id = 'input-placeholder';
+      placeholder.className = 'text-indigo-300 font-normal select-none pointer-events-none';
+      placeholder.innerText = 'Type Answer';
+      inputDisp.appendChild(placeholder);
+      
+      // Clear keyboard/feedback styles
+      inputDisp.className = "w-full bg-slate-50 border-3 border-indigo-200 text-indigo-950 rounded-2xl py-3.5 text-3xl font-black font-heading focus:outline-none flex items-center justify-center min-h-[64px] custom-shadow-sm select-none";
+      document.getElementById('input-feedback-toast').classList.add('hidden');
+      
+      const q = activeQuestionList[currentQuestionIndex];
+      const trick = TRICKS[currentTrickIndex];
+      
+      document.getElementById('gameplay-lesson-title').innerText = `${trick.title}`;
+      document.getElementById('gameplay-progress-index').innerText = `Question ${currentQuestionIndex + 1} of ${selectedQuestionCount}`;
+      document.getElementById('gameplay-score-snapshot').innerText = `Streak: 🔥 ${globalStats.streak || 0}`;
+      
+      // Progress Bar calculations
+      const progressPercent = ((currentQuestionIndex) / selectedQuestionCount) * 100;
+      document.getElementById('gameplay-progress-bar').style.width = `${progressPercent}%`;
+      
+      // Render components inside target math node
+      const mathNode = document.getElementById('gameplay-question-equation');
+      mathNode.innerHTML = `
+        <span>${q.num1}</span>
+        <span class="text-indigo-400 text-3xl">×</span>
+        <span>${q.num2}</span>
+      `;
+
+      // Set Hint panel text to current specific problem explanation
+      document.getElementById('hint-panel-text').innerHTML = q.explanationSteps[q.explanationSteps.length - 1];
+      
+      // Handle active timers
+      if (currentTimerId) clearInterval(currentTimerId);
+      
+      const timerContainer = document.getElementById('gameplay-timer-container');
+      const timerBar = document.getElementById('gameplay-timer-bar');
+      const submitBtn = document.getElementById('gameplay-btn-submit');
+      
+      if (selectedTimerValue > 0) {
+        timerContainer.classList.remove('hidden');
+        remainingTime = selectedTimerValue;
+        timerBar.style.width = '100%';
+        
+        // No "Next" icon in timer mode to promote rapid reaction times
+        submitBtn.innerHTML = '<i data-lucide="arrow-right" class="w-6 h-6"></i>';
+        
+        const tickInterval = 100; // tick every 100ms for extra smooth transition UI
+        const totalTicks = selectedTimerValue * 10;
+        let elapsedTicks = 0;
+        
+        currentTimerId = setInterval(() => {
+          elapsedTicks++;
+          const remainPercent = 100 - ((elapsedTicks / totalTicks) * 100);
+          timerBar.style.width = `${remainPercent}%`;
+          
+          if (elapsedTicks >= totalTicks) {
+            clearInterval(currentTimerId);
+            evaluateSubmission(null, true); // Trigger absolute timeout error
+          }
+        }, tickInterval);
+      } else {
+        timerContainer.classList.add('hidden');
+        // If no timer, change submit button to arrow icon for clear forward progression
+        submitBtn.innerHTML = '<i data-lucide="arrow-right" class="w-6 h-6"></i>';
+      }
+      lucide.createIcons();
+    }
+
+    // Keyboard Keypad Action Map
+    function pressDigit(val) {
+      playSynthSound('click');
+      const display = document.getElementById('gameplay-input-display');
+      const ph = document.getElementById('input-placeholder');
+      
+      // Check if current is displaying custom feedback (don't type during answer show animations)
+      if (display.classList.contains('border-emerald-400') || display.classList.contains('border-rose-400')) {
+        return; 
+      }
+      
+      // Clear placeholder on first keypress
+      if (ph) {
+        display.removeChild(ph);
+      }
+      
+      let curText = display.innerText.trim();
+      
+      if (val === 'back') {
+        if (curText.length > 0) {
+          display.innerText = curText.slice(0, -1);
+        }
+        if (display.innerText === '') {
+          display.appendChild(ph || createPlaceholderNode());
+        }
+      } 
+      else if (val === 'submit') {
+        evaluateSubmission(curText || null, false);
+      } 
+      else {
+        // limit characters to prevent container break
+        if (curText.length < 8) {
+          display.innerText = curText + val;
+        }
+      }
+    }
+
+    function createPlaceholderNode() {
+      const node = document.createElement('span');
+      node.id = 'input-placeholder';
+      node.className = 'text-indigo-300 font-normal select-none pointer-events-none';
+      node.innerText = 'Type Answer';
+      return node;
+    }
+
+    // Toggle active shortcut help formula info panel
+    function toggleGameplayHint() {
+      playSynthSound('click');
+      const panel = document.getElementById('hint-panel');
+      panel.classList.toggle('hidden');
+    }
+
+    // Evaluates calculation inputs dynamically
+    function evaluateSubmission(userInputStr, isTimeout = false) {
+      if (currentTimerId) clearInterval(currentTimerId);
+      
+      const q = activeQuestionList[currentQuestionIndex];
+      const correctVal = q.correctAnswer;
+      const parsedUserVal = userInputStr ? parseInt(userInputStr, 10) : null;
+      
+      const isCorrect = (parsedUserVal === correctVal) && !isTimeout;
+      
+      // Push response data
+      answersLogged.push({
+        num1: q.num1,
+        num2: q.num2,
+        correctAnswer: correctVal,
+        userAns: isTimeout ? "TIME OUT" : (userInputStr || "EMPTY"),
+        isCorrect: isCorrect,
+        explanationSteps: q.explanationSteps
+      });
+
+      const display = document.getElementById('gameplay-input-display');
+      const feedbackToast = document.getElementById('input-feedback-toast');
+      
+      if (isCorrect) {
+        playSynthSound('success');
+        globalStats.streak++;
+        
+        // Beautiful emerald glow bounce animations
+        display.className = "w-full bg-emerald-50 border-3 border-emerald-400 text-emerald-700 rounded-2xl py-3.5 text-3xl font-black font-heading flex items-center justify-center min-h-[64px] pop-anim custom-shadow-sm select-none";
+        feedbackToast.innerHTML = '<span class="bg-emerald-500 text-white font-bold p-2.5 rounded-full flex items-center justify-center shadow-lg transform rotate-12"><i data-lucide="check" class="w-5 h-5"></i></span>';
+        feedbackToast.classList.remove('hidden');
+      } else {
+        playSynthSound('error');
+        globalStats.streak = 0; // break streak
+        
+        // Rose tint error shake feedback
+        display.className = "w-full bg-rose-50 border-3 border-rose-400 text-rose-700 rounded-2xl py-3.5 text-3xl font-black font-heading flex items-center justify-center min-h-[64px] shake-anim custom-shadow-sm select-none";
+        
+        if (isTimeout) {
+          display.innerText = "TIME OUT";
+        }
+        
+        feedbackToast.innerHTML = '<span class="bg-rose-500 text-white font-bold p-2.5 rounded-full flex items-center justify-center shadow-lg transform rotate-12"><i data-lucide="clock" class="w-5 h-5"></i></span>';
+        feedbackToast.classList.remove('hidden');
+      }
+      
+      lucide.createIcons();
+      saveStatsToLocalStorage();
+
+      // Pause briefly for animation to finalize, then progress
+      setTimeout(() => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < selectedQuestionCount) {
+          presentQuestion();
+        } else {
+          showScoreReport();
+        }
+      }, 1300);
+    }
+
+    // Build customized gamified final performance summary card
+    function showScoreReport() {
+      navigateTo('score-report');
+      
+      const correctCount = answersLogged.filter(a => a.isCorrect).length;
+      const scorePercentage = (correctCount / selectedQuestionCount) * 100;
+      
+      // Star Calculation logic: Perfect = 3 Stars, >= 60% = 2 Stars, Else = 1 Star
+      let starsEarned = 1;
+      let headingText = "Nice Try!";
+      let subText = "Keep practicing to master this Vedic mental magic trick.";
+      
+      if (scorePercentage === 100) {
+        starsEarned = 3;
+        headingText = "Perfect Mastery! 👑";
+        subText = "You are a calculation wizard! Superb focus and swift math mechanics.";
+        playSynthSound('congrats');
+        triggerConfettiCascade();
+      } else if (scorePercentage >= 60) {
+        starsEarned = 2;
+        headingText = "Spectacular Effort!";
+        subText = "You've got the logic down! Just work a bit on speed and consistency.";
+        playSynthSound('congrats');
+      } else {
+        starsEarned = 1;
+        playSynthSound('error');
+      }
+
+      // Add to global stars tally
+      globalStats.stars += starsEarned;
+      
+      // Update mastered lessons metrics
+      const activeTrick = TRICKS[currentTrickIndex];
+      if (scorePercentage >= 80) {
+        globalStats.completedLessons[activeTrick.id] = true;
+      }
+      
+      saveStatsToLocalStorage();
+      renderDashboard(); // Re-render to display unlock checkboxes
+
+      // Update Stars graphic container
+      const starContainer = document.getElementById('report-star-stack');
+      starContainer.innerHTML = '';
+      for (let i = 1; i <= 3; i++) {
+        const isEarned = i <= starsEarned;
+        const starEl = document.createElement('i');
+        starEl.setAttribute('data-lucide', 'star');
+        
+        if (isEarned) {
+          starEl.className = `w-12 h-12 text-yellow-400 fill-yellow-400 ${i === 2 ? '-translate-y-2.5 w-14 h-14' : ''} animate-bounce`;
+        } else {
+          starEl.className = `w-10 h-10 text-slate-200 ${i === 2 ? '-translate-y-2.5' : ''}`;
+        }
+        starContainer.appendChild(starEl);
+      }
+
+      // Update values
+      document.getElementById('report-heading').innerText = headingText;
+      document.getElementById('report-motivational-text').innerText = subText;
+      document.getElementById('report-stat-correct').innerText = `${correctCount} / ${selectedQuestionCount}`;
+      document.getElementById('report-stat-timer').innerText = selectedTimerValue > 0 ? `${selectedTimerValue}s Limit` : "Un-timed";
+
+      // Build breakdown lists with collapsible detailed helper steps
+      const breakdownList = document.getElementById('report-breakdown-list');
+      breakdownList.innerHTML = '';
+      
+      answersLogged.forEach((ans, index) => {
+        const item = document.createElement('div');
+        item.className = "bg-slate-50 border border-slate-200/60 rounded-2xl p-3.5 space-y-2 transition";
+        
+        const isCorrect = ans.isCorrect;
+        const iconName = isCorrect ? 'check-circle' : 'x-circle';
+        const colorClass = isCorrect ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50';
+        
+        item.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="w-6 h-6 rounded-lg ${colorClass} flex items-center justify-center text-sm font-bold">
+                Q${index + 1}
+              </span>
+              <span class="font-extrabold text-slate-800">${ans.num1} × ${ans.num2} = ${ans.correctAnswer}</span>
+            </div>
+            <div class="flex items-center space-x-1.5 text-xs font-bold">
+              <span class="text-slate-400">You: <b class="${isCorrect ? 'text-emerald-600' : 'text-rose-600'}">${ans.userAns}</b></span>
+              <i data-lucide="${iconName}" class="w-4 h-4 ${isCorrect ? 'text-emerald-500' : 'text-rose-500'}"></i>
+            </div>
+          </div>
+          
+          <button onclick="toggleReportStep(${index})" class="text-[11px] text-indigo-500 hover:text-indigo-700 font-extrabold flex items-center gap-1">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-500"></i> Show Vedic Shortcut Steps
+          </button>
+          
+          <div id="report-step-box-${index}" class="hidden bg-white border border-indigo-50 rounded-xl p-2.5 text-xs text-slate-600 space-y-1.5 mt-1">
+            ${ans.explanationSteps.map((step, sIdx) => `
+              <div class="flex items-start gap-1.5">
+                <span class="text-indigo-500 font-black">${sIdx + 1}.</span>
+                <p class="leading-relaxed">${step}</p>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        
+        breakdownList.appendChild(item);
+      });
+
+      lucide.createIcons();
+    }
+
+    function toggleReportStep(index) {
+      playSynthSound('click');
+      const box = document.getElementById(`report-step-box-${index}`);
+      box.classList.toggle('hidden');
+    }
+
+    function retryActiveLessonChallenge() {
+      navigateTo('test-config');
+    }
+
+    // Custom Interactive Confirmation Dialog Prompts
+    function exitActiveTestPrompt() {
+      if (currentTimerId) clearInterval(currentTimerId);
+      
+      const backdrop = document.getElementById('custom-modal-backdrop');
+      backdrop.classList.remove('hidden');
+      
+      document.getElementById('modal-btn-cancel').onclick = () => {
+        playSynthSound('click');
+        backdrop.classList.add('hidden');
+        // Restart current question loop timer
+        presentQuestion();
+      };
+      
+      document.getElementById('modal-btn-confirm').onclick = () => {
+        playSynthSound('click');
+        backdrop.classList.add('hidden');
+        navigateTo('study');
+      };
+    }
+  </script>
+
+  <!-- Confetti Canvas Animation System (Independent Lightweight Render Engine) -->
+  <script>
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    let confettiActive = false;
+    let confettiList = [];
+    let animationId = null;
+
+    function resizeConfettiCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+
+    function triggerConfettiCascade() {
+      resizeConfettiCanvas();
+      confettiList = [];
+      confettiActive = true;
+      
+      // Populate colorful confetti units
+      const colors = ['#818CF8', '#34D399', '#FBBF24', '#F472B6', '#60A5FA', '#A78BFA'];
+      for (let i = 0; i < 75; i++) {
+        confettiList.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * -100 - 10,
+          size: Math.random() * 6 + 6,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          speedX: Math.random() * 4 - 2,
+          speedY: Math.random() * 3 + 2,
+          rotation: Math.random() * 360,
+          rotationSpeed: Math.random() * 4 - 2
+        });
+      }
+
+      if (animationId) cancelAnimationFrame(animationId);
+      renderConfettiFrame();
+      
+      // Stop animation cascade after 3.5 seconds
+      setTimeout(() => {
+        confettiActive = false;
+      }, 3500);
+    }
+
+    function renderConfettiFrame() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      let elementsActive = false;
+      
+      confettiList.forEach(c => {
+        if (c.y < canvas.height) {
+          elementsActive = true;
+        }
+        
+        c.x += c.speedX;
+        c.y += c.speedY;
+        c.rotation += c.rotationSpeed;
+        
+        ctx.save();
+        ctx.translate(c.x, c.y);
+        ctx.rotate((c.rotation * Math.PI) / 180);
+        ctx.fillStyle = c.color;
+        ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size);
+        ctx.restore();
+      });
+
+      if (confettiActive || elementsActive) {
+        animationId = requestAnimationFrame(renderConfettiFrame);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+  </script>
+</body>
+</html>
