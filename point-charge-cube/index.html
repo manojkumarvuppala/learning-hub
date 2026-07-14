@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corner Charge (q/8) 3D Visualization Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- KaTeX for formula rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Three.js and OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <style>
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans overflow-hidden">
+
+    <!-- Responsive Grid Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 h-screen w-screen overflow-hidden">
+        
+        <!-- SIDEBAR / CONTROLS PANEL (4 cols) -->
+        <div class="lg:col-span-4 h-[45vh] lg:h-full bg-slate-900 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col justify-between overflow-hidden z-10 shadow-2xl">
+            
+            <!-- Header Section -->
+            <div class="p-4 border-b border-slate-800 bg-slate-950 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-amber-500/10 rounded-lg text-amber-500 border border-amber-500/20">
+                        <i class="fa-solid fa-atom text-xl animate-spin-slow"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-base tracking-wide text-amber-400">Corner Charge</h1>
+                        <p class="text-[11px] text-slate-400">3D Electrostatic Visualizer</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="px-2 py-1 bg-slate-800 border border-slate-700 text-xs rounded-full text-slate-300 font-mono font-bold">
+                        Flux = q / 8ε₀
+                    </span>
+                </div>
+            </div>
+
+            <!-- Tab Navigation Header -->
+            <div class="flex bg-slate-900 border-b border-slate-800 shrink-0">
+                <button id="tab-guided" onclick="switchTab('guided')" class="flex-1 py-2.5 text-xs font-semibold text-center border-b-2 border-amber-500 text-amber-400 transition-all duration-200">
+                    <i class="fa-solid fa-graduation-cap mr-1.5"></i>Guided Tutorial
+                </button>
+                <button id="tab-sandbox" onclick="switchTab('sandbox')" class="flex-1 py-2.5 text-xs font-semibold text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all duration-200">
+                    <i class="fa-solid fa-sliders mr-1.5"></i>Sandbox Mode
+                </button>
+            </div>
+
+            <!-- Scrollable Content Area -->
+            <div class="flex-1 overflow-y-auto p-5 space-y-5">
+                
+                <!-- TAB 1: GUIDED TUTORIAL -->
+                <div id="content-guided" class="space-y-4">
+                    <!-- Step Indicator -->
+                    <div class="flex justify-between items-center text-xs text-slate-400">
+                        <span id="step-number-badge" class="bg-amber-500/10 text-amber-400 font-semibold px-2 py-1 rounded border border-amber-500/20">Step 1 of 8</span>
+                        <span class="font-medium text-slate-400">Symmetry Concept</span>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                        <div id="step-progress" class="bg-amber-500 h-full w-[12.5%] transition-all duration-300"></div>
+                    </div>
+
+                    <!-- Current Step Card -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <h2 id="step-title" class="text-base font-bold text-amber-300 flex items-center">
+                            <!-- Injected dynamically -->
+                        </h2>
+                        <div id="step-text" class="text-sm text-slate-300 leading-relaxed space-y-2">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: SANDBOX CONTROLS -->
+                <div id="content-sandbox" class="hidden space-y-5">
+                    <p class="text-xs text-slate-400">Customize the physical parameters to analyze how boundaries, opacities, and flux vectors distribute across the system.</p>
+
+                    <!-- Explode Controller -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-semibold text-slate-300">Exploded View Expansion</span>
+                            <span id="explode-val" class="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-sky-400">0.00x</span>
+                        </div>
+                        <input type="range" id="explode-slider" min="0" max="3" step="0.05" value="0" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-500">
+                    </div>
+
+                    <!-- Sphere Sector Size -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-semibold text-slate-300 font-mono">Gaussian Sector Radius (R)</span>
+                            <span id="radius-val" class="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-sky-400">1.20</span>
+                        </div>
+                        <input type="range" id="radius-slider" min="0.5" max="2.0" step="0.05" value="1.2" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-500">
+                    </div>
+
+                    <!-- Cube Opacity -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-semibold text-slate-300">Cube Transparency</span>
+                            <span id="opacity-val" class="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-sky-400">35%</span>
+                        </div>
+                        <input type="range" id="opacity-slider" min="0.05" max="0.9" step="0.05" value="0.35" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-500">
+                    </div>
+
+                    <!-- Visual Toggles -->
+                    <div class="space-y-3 bg-slate-950 p-4 border border-slate-800 rounded-xl">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Display Elements</h3>
+                        
+                        <!-- Show Fields -->
+                        <label class="flex items-center justify-between cursor-pointer group">
+                            <span class="text-xs text-slate-300 group-hover:text-slate-100 transition-colors">Electric Field Vectors</span>
+                            <div class="relative">
+                                <input type="checkbox" id="show-lines-cb" checked class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 peer-checked:after:bg-sky-400 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-950/50 border border-slate-700 peer-checked:border-sky-500/50"></div>
+                            </div>
+                        </label>
+
+                        <!-- Animate Particles -->
+                        <label class="flex items-center justify-between cursor-pointer group">
+                            <span class="text-xs text-slate-300 group-hover:text-slate-100 transition-colors">Animate Flux Particles</span>
+                            <div class="relative">
+                                <input type="checkbox" id="animate-flux-cb" checked class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 peer-checked:after:bg-sky-400 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-950/50 border border-slate-700 peer-checked:border-sky-500/50"></div>
+                            </div>
+                        </label>
+
+                        <!-- Show Sphere Sectors -->
+                        <label class="flex items-center justify-between cursor-pointer group">
+                            <span class="text-xs text-slate-300 group-hover:text-slate-100 transition-colors">Show Spherical Capped Octants</span>
+                            <div class="relative">
+                                <input type="checkbox" id="show-sector-cb" checked class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 peer-checked:after:bg-sky-400 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-950/50 border border-slate-700 peer-checked:border-sky-500/50"></div>
+                            </div>
+                        </label>
+
+                        <!-- Highlight Shared Faces -->
+                        <label class="flex items-center justify-between cursor-pointer group">
+                            <div class="flex flex-col">
+                                <span class="text-xs text-slate-300 group-hover:text-slate-100 transition-colors font-medium">Highlight Flux Faces</span>
+                                <span class="text-[10px] text-slate-500">Separates XY, YZ, ZX planes</span>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="highlight-faces-cb" class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 peer-checked:after:bg-sky-400 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-950/50 border border-slate-700 peer-checked:border-sky-500/50"></div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Interactive Cube Cluster Matrix -->
+                    <div class="space-y-2 bg-slate-950 p-4 border border-slate-800 rounded-xl">
+                        <div class="flex justify-between items-center mb-1">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Manual Cube Toggles</h3>
+                            <button onclick="toggleAllCubes(true)" class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-sky-400 hover:bg-slate-700">Enclose All</button>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mb-3">Click to enable/disable each of the 8 adjacent cubes sharing the corner vertex.</p>
+                        
+                        <div class="grid grid-cols-4 gap-2">
+                            <!-- Render the 8 buttons representing octants -->
+                            <button id="cube-btn-0" onclick="toggleCube(0)" class="py-2 rounded text-xs font-semibold border transition-all bg-amber-500 text-slate-950 border-amber-400 shadow-md">
+                                C1 (Main)
+                            </button>
+                            <button id="cube-btn-1" onclick="toggleCube(1)" class="py-2 rounded text-xs font-semibold border transition-all bg-slate-800 text-slate-400 border-slate-700">C2</button>
+                            <button id="cube-btn-2" onclick="toggleCube(2)" class="py-2 rounded text-xs font-semibold border transition-all bg-slate-800 text-slate-400 border-slate-700">C3</button>
+                            <button id="cube-btn-3" onclick="toggleCube(3)" class="py-2 rounded text-xs font-semibold border transition-all bg-slate-800 text-slate-400 border-slate-700">C4</button>
+                            <button id="cube-btn-4" onclick="toggleCube(4)" class="py-2 rounded text-xs font-semibold border transition-all bg-slate-800 text-slate-400 border-slate-700">C5</button>
+                            <button id="cube-btn-5" onclick="toggleCube(5)" class="py-2 rounded text-xs font-semibold border transition-all bg-slate-800 text-slate-400 border-slate-700">C6</button>
+                            <button id="cube-btn-6" onclick="toggleCube(6)" class="py-2 rounded text-xs font-semibold border transition-all bg-slate-800 text-slate-400 border-slate-700">C7</button>
+                            <button id="cube-btn-7" onclick="toggleCube(7)" class="py-2 rounded text-xs font-semibold border transition-all bg-slate-800 text-slate-400 border-slate-700">C8</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer Guided Controls (Stays pinned at bottom) -->
+            <div class="p-4 border-t border-slate-800 bg-slate-950/80 backdrop-blur-md shrink-0">
+                <div class="flex items-center justify-between" id="guided-actions">
+                    <button id="prev-btn" onclick="prevStep()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold rounded-lg transition disabled:opacity-30 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-chevron-left mr-1.5"></i> Back
+                    </button>
+                    <span id="step-dots" class="flex space-x-1.5">
+                        <!-- Dot indicators generated dynamically -->
+                    </span>
+                    <button id="next-btn" onclick="nextStep()" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-black rounded-lg shadow-lg transition shadow-amber-500/10">
+                        Next <i class="fa-solid fa-chevron-right ml-1.5"></i>
+                    </button>
+                </div>
+                
+                <div class="hidden text-center" id="sandbox-actions">
+                    <button onclick="goToStep(1)" class="w-full py-2 bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold rounded-lg hover:bg-slate-700 transition">
+                        <i class="fa-solid fa-rotate-left mr-1.5"></i> Return to Guided Mode
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 3D VIEWPORT CANVAS PANEL (8 cols) -->
+        <div class="lg:col-span-8 h-[55vh] lg:h-full relative flex flex-col bg-slate-950">
+            
+            <!-- Three.js Canvas Container -->
+            <div id="canvas-container" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
+
+            <!-- Floating Top HUD Statistics Card -->
+            <div class="absolute top-4 left-4 right-4 md:right-auto flex flex-col md:flex-row gap-3 pointer-events-none">
+                <!-- Live Enclosure Card -->
+                <div class="bg-slate-900/90 border border-slate-800/80 p-3 rounded-xl shadow-xl flex items-center space-x-3 pointer-events-auto backdrop-blur-md">
+                    <div class="p-2.5 bg-sky-500/10 rounded-lg text-sky-400">
+                        <i class="fa-solid fa-cube text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Active Volume</div>
+                        <div id="stat-enclosure" class="text-sm font-black text-sky-400 font-mono">1 / 8 Cubes Enclosed</div>
+                    </div>
+                </div>
+
+                <!-- Live Solid Angle Card -->
+                <div class="bg-slate-900/90 border border-slate-800/80 p-3 rounded-xl shadow-xl flex items-center space-x-3 pointer-events-auto backdrop-blur-md">
+                    <div class="p-2.5 bg-amber-500/10 rounded-lg text-amber-400">
+                        <i class="fa-solid fa-circle-notch text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Enclosed Solid Angle</div>
+                        <div id="stat-angle" class="text-sm font-black text-amber-400 font-mono">π / 2 sr (12.5%)</div>
+                    </div>
+                </div>
+
+                <!-- Enclosed Flux Card -->
+                <div class="bg-slate-900/90 border border-slate-800/80 p-3 rounded-xl shadow-xl flex items-center space-x-3 pointer-events-auto backdrop-blur-md">
+                    <div class="p-2.5 bg-emerald-500/10 rounded-lg text-emerald-400">
+                        <i class="fa-solid fa-wave-square text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Enclosed Flux (Φ)</div>
+                        <div id="stat-flux" class="text-sm font-black text-emerald-400 font-mono">q / (8ε₀)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right-Side Floating Actions (Camera Reset, Legend) -->
+            <div class="absolute right-4 top-4 flex flex-col space-y-2">
+                <button onclick="resetCamera()" class="p-3 bg-slate-900/90 border border-slate-800 rounded-xl hover:bg-slate-800 text-slate-300 shadow-xl pointer-events-auto backdrop-blur-md transition flex items-center justify-center" title="Reset Viewport">
+                    <i class="fa-solid fa-camera-rotate"></i>
+                </button>
+                <button id="show-legend-btn" onclick="toggleLegend()" class="p-3 bg-slate-900/90 border border-slate-800 rounded-xl hover:bg-slate-800 text-slate-300 shadow-xl pointer-events-auto backdrop-blur-md transition flex items-center justify-center" title="Toggle Legend">
+                    <i class="fa-solid fa-list"></i>
+                </button>
+            </div>
+
+            <!-- Floating Legend Panel -->
+            <div id="legend-panel" class="absolute right-4 top-20 w-52 bg-slate-900/95 border border-slate-800 rounded-xl p-4 shadow-2xl pointer-events-auto backdrop-blur-md transition-all duration-300 flex flex-col space-y-3">
+                <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">3D Scene Legend</span>
+                    <button onclick="toggleLegend()" class="text-slate-500 hover:text-slate-300 text-xs"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <!-- Items -->
+                <div class="flex items-center text-xs space-x-2.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-red-500 border border-red-300 inline-block animate-pulse"></span>
+                    <span class="text-slate-300 font-medium">Point Charge (q)</span>
+                </div>
+                <div class="flex items-center text-xs space-x-2.5">
+                    <span class="w-3.5 h-3.5 rounded bg-amber-500 border border-amber-400 opacity-60 inline-block"></span>
+                    <span class="text-slate-300 font-medium">Primary Cube (C1)</span>
+                </div>
+                <div class="flex items-center text-xs space-x-2.5">
+                    <span class="w-3.5 h-3.5 rounded bg-sky-500 border border-sky-400 opacity-40 inline-block"></span>
+                    <span class="text-slate-300 font-medium">Enclosing Cubes</span>
+                </div>
+                <div class="flex items-center text-xs space-x-2.5">
+                    <span class="w-3.5 h-3.5 rounded bg-rose-500 border border-rose-400 inline-block"></span>
+                    <span class="text-slate-300 font-medium">Rose C1 Solid Wedge (12.5%)</span>
+                </div>
+                <div class="flex items-center text-xs space-x-2.5">
+                    <span class="w-3.5 h-3.5 rounded bg-yellow-500 border border-yellow-400 inline-block"></span>
+                    <span class="text-slate-300 font-medium">Gold C2-8 Solid Wedges</span>
+                </div>
+                <div class="flex items-center text-xs space-x-2.5">
+                    <div class="flex space-x-0.5">
+                        <span class="w-1 h-3 bg-red-500 rounded-sm"></span>
+                        <span class="w-1 h-3 bg-emerald-500 rounded-sm"></span>
+                    </div>
+                    <span class="text-slate-300 font-medium">Shared (Red) vs Outer (Green) Faces</span>
+                </div>
+                <div class="flex items-center text-xs space-x-2.5">
+                    <i class="fa-solid fa-arrow-right text-amber-500 text-xs"></i>
+                    <span class="text-slate-300 font-medium">Enclosed Flux Vectors</span>
+                </div>
+                <div class="pt-1.5 border-t border-slate-800 text-[10px] text-slate-400 flex items-center">
+                    <i class="fa-solid fa-hand-pointer mr-1.5 text-sky-400"></i>
+                    <span>Click cubes in 3D to toggle</span>
+                </div>
+            </div>
+
+            <!-- Quick View Mode Bar (Bottom) -->
+            <div class="absolute bottom-4 left-4 right-4 flex justify-center space-x-2 pointer-events-none">
+                <div class="bg-slate-900/90 border border-slate-800/80 p-1.5 rounded-xl shadow-xl flex items-center space-x-1 pointer-events-auto backdrop-blur-md">
+                    <span class="text-xs text-slate-400 px-2 font-semibold">Presets:</span>
+                    <button onclick="setClusterPreset(1)" class="px-2.5 py-1 bg-slate-800 text-[10px] font-bold text-slate-300 rounded hover:bg-slate-700 transition">1 Cube</button>
+                    <button onclick="setClusterPreset(4)" class="px-2.5 py-1 bg-slate-800 text-[10px] font-bold text-slate-300 rounded hover:bg-slate-700 transition">4 Cubes</button>
+                    <button onclick="setClusterPreset(8)" class="px-2.5 py-1 bg-slate-800 text-[10px] font-bold text-slate-300 rounded hover:bg-slate-700 transition">8 Cubes (Enclosed)</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MAIN JAVASCRIPT LOGIC -->
+    <script>
+        // Setup state variables
+        let scene, camera, renderer, controls;
+        let cubeGroups = [];
+        let chargeMesh;
+        let lineObjects = [];
+        let particleObjects = [];
+        let faceGroup;
+        let faceMeshes = [];
+
+        // App state
+        let currentTab = 'guided';
+        let currentStep = 1;
+        const L = 3.0; // Single Cube Side Length
+        
+        // Sandbox controllable parameters
+        let activeCubes = [true, false, false, false, false, false, false, false];
+        let explodeDistance = 0.0;
+        let cubeOpacity = 0.35;
+        let sectorRadius = 1.2;
+        let showFieldLines = false;
+        let showParticles = true;
+        let showSectors = false;
+        let highlightFaces = false;
+
+        // Symmetric sign permutations for the 8 cubes in 3D (Cube 0 sits at quadrant +X, +Y, +Z)
+        const octantSigns = [
+            [1, 1, 1],    // 0: Primary Cube (Top-Front-Right)
+            [-1, 1, 1],   // 1
+            [1, -1, 1],   // 2
+            [-1, -1, 1],  // 3
+            [1, 1, -1],   // 4
+            [-1, 1, -1],  // 5
+            [1, -1, -1],  // 6
+            [-1, -1, -1]  // 7
+        ];
+
+        // Explanatory texts for the 8 steps in KaTeX formatting
+        const stepsData = [
+            {
+                title: "<i class='fa-solid fa-cube mr-2 text-amber-500'></i>The Corner Charge",
+                text: "Imagine a single cube of side $L$. A point charge $q$ is placed exactly on one of its corner vertices.<br><br>Because the charge sits precisely on the shared boundary, we cannot immediately apply Gauss's Law because the charge is not cleanly 'enclosed' inside the cube's volume."
+            },
+            {
+                title: "<i class='fa-solid fa-atom mr-2 text-amber-500 animate-spin-slow'></i>Electric Field & Flux",
+                text: "A point charge radiates its electric field uniformly in all directions ($4\\pi$ steradians of solid angle).<br><br>Notice the field vectors passing through space. Most vectors escape into the surrounding void. Only a small fraction is captured and directed inside our primary cube."
+            },
+            {
+                title: "<i class='fa-solid fa-circle-notch mr-2 text-amber-500'></i>The Spherical Octant",
+                text: "If we surround the charge with a small sphere of radius $R$, only a **capped 3D spherical octant** ($1/8$-th of a sphere, highlighted here in <b class='text-rose-400'>Vibrant Rose Pink</b>) is captured inside the primary cube's interior solid angle.<br><br>The solid angle of a complete sphere is $4\\pi$ steradians. The corner of our single cube sweeps out precisely:<br>$$\\Omega = \\frac{1}{8}(4\\pi) = \\frac{\\pi}{2} \\text{ steradians}$$"
+            },
+            {
+                title: "<i class='fa-solid fa-layer-group mr-2 text-amber-500'></i>Expanding in 2D Plane",
+                text: "To enclose the charge, we must add more cubes. Let's add 3 identical adjacent cubes to surround the charge in a horizontal plane.<br><br>Now, 4 cubes meet at the shared corner. Notice the flat capped faces of each solid octant locking cleanly together to form a perfect 3D solid hemisphere segment."
+            },
+            {
+                title: "<i class='fa-solid fa-cubes mr-2 text-amber-500'></i>Full Enclosure (8 Cubes)",
+                text: "By stacking 4 more identical cubes on the other side of the plane, we completely seal the point charge $q$ inside a larger $2L \\times 2L \\times 2L$ **super-cube**.<br><br>The charge $q$ sits symmetrically at the exact dead center of this super-cube, which consists of exactly $8$ identical cubes enclosing a complete solid sphere."
+            },
+            {
+                title: "<i class='fa-solid fa-check-double mr-2 text-amber-500'></i>Applying Gauss's Law",
+                text: "By Gauss's Law, the total electric flux $\\Phi_{\\text{total}}$ crossing the boundaries of the entire super-cube is:<br>$$\\Phi_{\\text{total}} = \\frac{q}{\\varepsilon_0}$$<br>By perfect geometric symmetry, the flux is distributed equally through all 8 identical cubes. Therefore, the flux through our original cube is:<br>$$\\Phi_{\\text{cube}} = \\frac{1}{8}\\Phi_{\\text{total}} = \\frac{q}{8\\varepsilon_0}$$"
+            },
+            {
+                title: "<i class='fa-solid fa-up-down-left-right mr-2 text-amber-500 animate-pulse'></i>The Exploded View",
+                text: "Use the slider to 'explode' the cubes. Observe how each cube carries away its corresponding solid 3D capped wedge, styled in contrasting <b class='text-rose-400'>Rose Pink</b> and <b class='text-yellow-400'>Electric Gold</b>.<br><br>This visualizes the direct, clean division of space. Each octant acts as an independent solid angle channel, capturing exactly $12.5\\%$ of the point charge's electric flux."
+            },
+            {
+                title: "<i class='fa-solid fa-signature mr-2 text-amber-500'></i>Flux Through Individual Faces",
+                text: "Let's inspect the 6 faces of our single cube. The 3 faces meeting at the charge vertex ($x=0$, $y=0$, $z=0$, highlighted in <b class='text-red-400'>Red</b>) are **parallel** to the radial electric field vectors:<br>$$\\mathbf{E} \\cdot d\\mathbf{A} = 0 \\implies \\Phi_{\\text{shared}} = 0$$<br>The entire flux must exit only through the 3 opposite outer faces (highlighted in <b class='text-emerald-400'>Green</b>). By symmetry, each outer face carries:<br>$$\\Phi_{\\text{face}} = \\frac{1}{3} \\Phi_{\\text{cube}} = \\frac{q}{24\\varepsilon_0}$$"
+            }
+        ];
+
+        // On window load, initialize Three.js and event listeners
+        window.onload = function() {
+            initThree();
+            initCubes();
+            initFieldsAndParticles();
+            createCube0Faces();
+            
+            // Build guided dots
+            buildStepDots();
+            
+            // Go to step 1 initially
+            goToStep(1);
+
+            // Register Window Resize Event
+            window.addEventListener('resize', onWindowResize);
+            
+            // Setup DOM triggers
+            setupControlsListeners();
+
+            // Render formulas
+            triggerKaTex();
+            
+            // Start rendering loop
+            animate();
+        };
+
+        // Initialize Three.js Viewport
+        function initThree() {
+            const container = document.getElementById('canvas-container');
+            
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x020617); // Slate-950
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 50);
+            resetCamera();
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            // Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxDistance = 25;
+            controls.minDistance = 3;
+            // Center the rotation target on the charge (origin)
+            controls.target.set(0, 0, 0);
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+            scene.add(ambientLight);
+
+            const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.85);
+            dirLight1.position.set(10, 15, 10);
+            scene.add(dirLight1);
+
+            const dirLight2 = new THREE.DirectionalLight(0x38bdf8, 0.4); // Cool rim light
+            dirLight2.position.set(-10, -5, -10);
+            scene.add(dirLight2);
+
+            // Glowing Red Point Charge Representation
+            const chargeGeo = new THREE.SphereGeometry(0.2, 32, 32);
+            const chargeMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+            chargeMesh = new THREE.Mesh(chargeGeo, chargeMat);
+            scene.add(chargeMesh);
+
+            // Point light inside charge to illuminate interior surfaces beautifully
+            const pointLight = new THREE.PointLight(0xef4444, 2.0, 10);
+            pointLight.position.set(0,0,0);
+            scene.add(pointLight);
+
+            // 3D Grid Planes helper centered at the origin
+            const gridHelperXY = new THREE.GridHelper(12, 12, 0x1e293b, 0x0f172a);
+            gridHelperXY.rotation.x = Math.PI / 2;
+            gridHelperXY.position.z = -0.01; // offset slightly
+            scene.add(gridHelperXY);
+
+            // Color-Coded Coordinate Axis Lines
+            createCoordinateAxes();
+
+            // Add click support inside canvas to toggle cubes manually
+            renderer.domElement.addEventListener('click', onCanvasClick);
+        }
+
+        // Draw RGB axes
+        function createCoordinateAxes() {
+            const axisLength = 6.0;
+            const axesGroup = new THREE.Group();
+
+            const xGeom = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-axisLength, 0, 0), new THREE.Vector3(axisLength, 0, 0)]);
+            const xMat = new THREE.LineDashedMaterial({ color: 0xf43f5e, dashSize: 0.25, gapSize: 0.15 });
+            const xAxis = new THREE.Line(xGeom, xMat);
+            xAxis.computeLineDistances();
+            axesGroup.add(xAxis);
+
+            const yGeom = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, -axisLength, 0), new THREE.Vector3(0, axisLength, 0)]);
+            const yMat = new THREE.LineDashedMaterial({ color: 0x10b981, dashSize: 0.25, gapSize: 0.15 });
+            const yAxis = new THREE.Line(yGeom, yMat);
+            yAxis.computeLineDistances();
+            axesGroup.add(yAxis);
+
+            const zGeom = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, -axisLength), new THREE.Vector3(0, 0, axisLength)]);
+            const zMat = new THREE.LineDashedMaterial({ color: 0x3b82f6, dashSize: 0.25, gapSize: 0.15 });
+            const zAxis = new THREE.Line(zGeom, zMat);
+            zAxis.computeLineDistances();
+            axesGroup.add(zAxis);
+
+            scene.add(axesGroup);
+        }
+
+        // Helper function to build custom flat quarter-circle sector caps in 3D
+        function createQuarterCircleGeo(p0, pA, pB, segments = 32) {
+            const vertices = [];
+            const indices = [];
+            
+            // Center is at index 0
+            vertices.push(p0.x, p0.y, p0.z);
+            
+            // Generate radial coordinates spanning the orthogonal axes mapping
+            for (let i = 0; i <= segments; i++) {
+                const t = i / segments;
+                const angle = t * Math.PI / 2;
+                
+                // Vector parametric equation: interpolating between orthogonal vectors of length L
+                const x = Math.cos(angle) * pA.x + Math.sin(angle) * pB.x;
+                const y = Math.cos(angle) * pA.y + Math.sin(angle) * pB.y;
+                const z = Math.cos(angle) * pA.z + Math.sin(angle) * pB.z;
+                
+                vertices.push(x, y, z);
+                
+                if (i > 0) {
+                    indices.push(0, i, i + 1);
+                }
+            }
+            
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            geo.setIndex(indices);
+            geo.computeVertexNormals();
+            return geo;
+        }
+
+        // Create the 8 Cubes & Solid Capped Spherical Sectors
+        function initCubes() {
+            for (let i = 0; i < 8; i++) {
+                const group = new THREE.Group();
+
+                const dx = octantSigns[i][0];
+                const dy = octantSigns[i][1];
+                const dz = octantSigns[i][2];
+
+                // Box geometry
+                const boxGeo = new THREE.BoxGeometry(L, L, L);
+                const isPrimary = (i === 0);
+                const color = isPrimary ? 0xf59e0b : 0x0ea5e9; // Amber vs Sky Blue
+
+                // Premium transparent material
+                const boxMat = new THREE.MeshStandardMaterial({
+                    color: color,
+                    transparent: true,
+                    opacity: cubeOpacity,
+                    roughness: 0.1,
+                    metalness: 0.15,
+                    side: THREE.DoubleSide
+                });
+
+                const mesh = new THREE.Mesh(boxGeo, boxMat);
+                // Offset mesh inside group so its corner sits precisely at group's local origin (0,0,0)
+                mesh.position.set(dx * L/2, dy * L/2, dz * L/2);
+                group.add(mesh);
+
+                // Elegant wireframe lines
+                const edges = new THREE.EdgesGeometry(boxGeo);
+                const lineMat = new THREE.LineBasicMaterial({
+                    color: isPrimary ? 0xf59e0b : 0x38bdf8,
+                    linewidth: isPrimary ? 2 : 1,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const edgeLine = new THREE.LineSegments(edges, lineMat);
+                edgeLine.position.set(dx * L/2, dy * L/2, dz * L/2);
+                group.add(edgeLine);
+
+                // Spherical octant generation setup
+                const thetaStart = (dy > 0) ? 0 : Math.PI / 2;
+                let phiStart = 0;
+                
+                // Align azimuthal phiStart to correct quadrants under Three.js's specific formula:
+                // x = -r * cos(phi) * sin(theta)
+                // z = r * sin(phi) * sin(theta)
+                if (dx > 0 && dz > 0) {
+                    phiStart = Math.PI / 2;           // Quadrant 1 (+X, +Z): x >= 0, z >= 0
+                } else if (dx < 0 && dz > 0) {
+                    phiStart = 0;                     // Quadrant 4 (-X, +Z): x <= 0, z >= 0
+                } else if (dx > 0 && dz < 0) {
+                    phiStart = Math.PI;               // Quadrant 2 (+X, -Z): x >= 0, z <= 0
+                } else if (dx < 0 && dz < 0) {
+                    phiStart = 3 * Math.PI / 2;       // Quadrant 3 (-X, -Z): x <= 0, z <= 0
+                }
+
+                // Create a consolidated Solid Octant Group containing curved shell + side caps
+                const solidOctantGroup = new THREE.Group();
+                const sectorColor = isPrimary ? 0xf43f5e : 0xeab308; // High Contrast Rose Pink vs Electric Gold/Yellow
+
+                // Material for a beautiful solid, slightly glossy look
+                const sectorMat = new THREE.MeshStandardMaterial({
+                    color: sectorColor,
+                    transparent: true,
+                    opacity: 0.85, // Higher opacity so it clearly looks like a solid chunk
+                    roughness: 0.2,
+                    metalness: 0.15,
+                    side: THREE.DoubleSide
+                });
+
+                // 1. Outer curved spherical shell (unit radius, scaled dynamically by radius slider)
+                const sphereGeo = new THREE.SphereGeometry(1.0, 32, 32, phiStart, Math.PI/2, thetaStart, Math.PI/2);
+                const shellMesh = new THREE.Mesh(sphereGeo, sectorMat);
+                solidOctantGroup.add(shellMesh);
+
+                // Setup unit local vectors to generate flat caps
+                const p0 = new THREE.Vector3(0, 0, 0);
+                const pX = new THREE.Vector3(dx, 0, 0);
+                const pY = new THREE.Vector3(0, dy, 0);
+                const pZ = new THREE.Vector3(0, 0, dz);
+
+                // 2. Cap XY Flat plane (bounded by pX and pY)
+                const capXYGeo = createQuarterCircleGeo(p0, pX, pY);
+                const capXY = new THREE.Mesh(capXYGeo, sectorMat);
+                solidOctantGroup.add(capXY);
+
+                // 3. Cap YZ Flat plane (bounded by pY and pZ)
+                const capYZGeo = createQuarterCircleGeo(p0, pY, pZ);
+                const capYZ = new THREE.Mesh(capYZGeo, sectorMat);
+                solidOctantGroup.add(capYZ);
+
+                // 4. Cap ZX Flat plane (bounded by pZ and pX)
+                const capZXGeo = createQuarterCircleGeo(p0, pZ, pX);
+                const capZX = new THREE.Mesh(capZXGeo, sectorMat);
+                solidOctantGroup.add(capZX);
+
+                // Add solid group to main local system
+                group.add(solidOctantGroup);
+
+                // Save properties for transformations
+                group.userData = {
+                    index: i,
+                    dx: dx,
+                    dy: dy,
+                    dz: dz,
+                    mesh: mesh,
+                    edgeLine: edgeLine,
+                    sphereMesh: solidOctantGroup // points to the 3D solid capped group
+                };
+
+                scene.add(group);
+                cubeGroups.push(group);
+            }
+        }
+
+        // Initialize Field Lines & Animated Flux Flow Particles
+        function initFieldsAndParticles() {
+            const numLines = 96; 
+            const radiusLength = 7.0;
+            const goldenRatio = (1 + Math.sqrt(5)) / 2;
+            const angleIncrement = Math.PI * 2 * goldenRatio;
+
+            for (let i = 0; i < numLines; i++) {
+                const t = i / numLines;
+                const inclination = Math.acos(1 - 2 * t);
+                const azimuth = angleIncrement * i;
+
+                const x = Math.sin(inclination) * Math.cos(azimuth);
+                const y = Math.cos(inclination);
+                const z = Math.sin(inclination) * Math.sin(azimuth);
+
+                const dir = new THREE.Vector3(x, y, z).normalize();
+
+                // Vector Line
+                const points = [new THREE.Vector3(0,0,0), dir.clone().multiplyScalar(radiusLength)];
+                const geom = new THREE.BufferGeometry().setFromPoints(points);
+                const mat = new THREE.LineBasicMaterial({ color: 0x475569, transparent: true, opacity: 0.15 });
+                const lineMesh = new THREE.Line(geom, mat);
+                scene.add(lineMesh);
+
+                // Flow Particle
+                const partGeom = new THREE.SphereGeometry(0.05, 8, 8);
+                const partMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const particleMesh = new THREE.Mesh(partGeom, partMat);
+                scene.add(particleMesh);
+
+                // Map vector to correct octant
+                const octantIndex = getOctantIndex(dir);
+
+                lineObjects.push({
+                    line: lineMesh,
+                    dir: dir,
+                    length: radiusLength,
+                    octant: octantIndex
+                });
+
+                particleObjects.push({
+                    mesh: particleMesh,
+                    dir: dir,
+                    progress: Math.random(), // scatter positions
+                    speed: 0.005 + Math.random() * 0.006,
+                    octant: octantIndex
+                });
+            }
+        }
+
+        // Utility to map a 3D vector to its octant quadrant [0 - 7]
+        function getOctantIndex(dir) {
+            const dx = dir.x >= 0 ? 1 : -1;
+            const dy = dir.y >= 0 ? 1 : -1;
+            const dz = dir.z >= 0 ? 1 : -1;
+
+            for (let i = 0; i < 8; i++) {
+                if (octantSigns[i][0] === dx && octantSigns[i][1] === dy && octantSigns[i][2] === dz) {
+                    return i;
+                }
+            }
+            return 0;
+        }
+
+        // Create individual faces for Cube 0 to show shared vs. outer planes
+        function createCube0Faces() {
+            const size = L;
+
+            // Materials
+            const sharedMat = new THREE.MeshStandardMaterial({
+                color: 0xef4444, // Red for zero flux
+                transparent: true,
+                opacity: 0.65,
+                side: THREE.DoubleSide,
+                roughness: 0.1,
+                metalness: 0.1
+            });
+
+            const outerMat = new THREE.MeshStandardMaterial({
+                color: 0x10b981, // Green/Teal for active flux
+                transparent: true,
+                opacity: 0.65,
+                side: THREE.DoubleSide,
+                roughness: 0.1,
+                metalness: 0.1
+            });
+
+            // The 3 shared faces meeting at origin (0,0,0)
+            const planeXY = new THREE.Mesh(new THREE.PlaneGeometry(size, size), sharedMat);
+            planeXY.position.set(size/2, size/2, 0);
+
+            const planeYZ = new THREE.Mesh(new THREE.PlaneGeometry(size, size), sharedMat);
+            planeYZ.rotateY(Math.PI / 2);
+            planeYZ.position.set(0, size/2, size/2);
+
+            const planeZX = new THREE.Mesh(new THREE.PlaneGeometry(size, size), sharedMat);
+            planeZX.rotateX(Math.PI / 2);
+            planeZX.position.set(size/2, 0, size/2);
+
+            // The 3 outer faces at coordinate size L
+            const planeOuterZ = new THREE.Mesh(new THREE.PlaneGeometry(size, size), outerMat);
+            planeOuterZ.position.set(size/2, size/2, size);
+
+            const planeOuterX = new THREE.Mesh(new THREE.PlaneGeometry(size, size), outerMat);
+            planeOuterX.rotateY(Math.PI / 2);
+            planeOuterX.position.set(size, size/2, size/2);
+
+            const planeOuterY = new THREE.Mesh(new THREE.PlaneGeometry(size, size), outerMat);
+            planeOuterY.rotateX(Math.PI / 2);
+            planeOuterY.position.set(size/2, size, size/2);
+
+            const faces = [
+                { mesh: planeXY, isShared: true },
+                { mesh: planeYZ, isShared: true },
+                { mesh: planeZX, isShared: true },
+                { mesh: planeOuterZ, isShared: false },
+                { mesh: planeOuterX, isShared: false },
+                { mesh: planeOuterY, isShared: false }
+            ];
+
+            faceGroup = new THREE.Group();
+
+            faces.forEach(item => {
+                faceGroup.add(item.mesh);
+                faceMeshes.push(item.mesh);
+
+                // Border outline
+                const edgeGeom = new THREE.EdgesGeometry(item.mesh.geometry);
+                const edgeMat = new THREE.LineBasicMaterial({
+                    color: item.isShared ? 0xf87171 : 0x34d399,
+                    linewidth: 1.5
+                });
+                const outline = new THREE.LineSegments(edgeGeom, edgeMat);
+                outline.position.copy(item.mesh.position);
+                outline.rotation.copy(item.mesh.rotation);
+                faceGroup.add(outline);
+            });
+
+            // Nest face group inside Cube 0 group so they transform together
+            cubeGroups[0].add(faceGroup);
+            faceGroup.visible = false;
+        }
+
+        // Raycast logic: clicking a cube in 3D toggles its visibility
+        function onCanvasClick(event) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            const mouse = new THREE.Vector2();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, camera);
+
+            // Collect active meshes
+            const intersectTargets = [];
+            cubeGroups.forEach(group => {
+                if (group.userData.mesh.visible) {
+                    intersectTargets.push(group.userData.mesh);
+                }
+            });
+
+            const intersects = raycaster.intersectObjects(intersectTargets);
+
+            if (intersects.length > 0) {
+                const clickedMesh = intersects[0].object;
+                
+                // Find matching group index
+                cubeGroups.forEach(group => {
+                    if (group.userData.mesh === clickedMesh) {
+                        const idx = group.userData.index;
+                        
+                        // Limit interaction inside specific tutorial steps
+                        if (currentStep === 8 && idx !== 0) return; 
+
+                        activeCubes[idx] = !activeCubes[idx];
+                        
+                        // Switch to sandbox tab to avoid breaking guided layout
+                        if (currentTab === 'guided') {
+                            switchTab('sandbox');
+                        }
+                        
+                        updateVisuals();
+                        syncControlUI();
+                    }
+                });
+            }
+        }
+
+        // UI Event Listeners Registration
+        function setupControlsListeners() {
+            // Slider Explode
+            document.getElementById('explode-slider').addEventListener('input', (e) => {
+                explodeDistance = parseFloat(e.target.value);
+                document.getElementById('explode-val').innerText = explodeDistance.toFixed(2) + "x";
+                updateVisuals();
+            });
+
+            // Slider Radius
+            document.getElementById('radius-slider').addEventListener('input', (e) => {
+                sectorRadius = parseFloat(e.target.value);
+                document.getElementById('radius-val').innerText = sectorRadius.toFixed(2);
+                updateVisuals();
+            });
+
+            // Slider Opacity
+            document.getElementById('opacity-slider').addEventListener('input', (e) => {
+                cubeOpacity = parseFloat(e.target.value);
+                document.getElementById('opacity-val').innerText = Math.round(cubeOpacity * 100) + "%";
+                updateVisuals();
+            });
+
+            // Checkboxes
+            document.getElementById('show-lines-cb').addEventListener('change', (e) => {
+                showFieldLines = e.target.checked;
+                updateVisuals();
+            });
+
+            document.getElementById('animate-flux-cb').addEventListener('change', (e) => {
+                showParticles = e.target.checked;
+                updateVisuals();
+            });
+
+            document.getElementById('show-sector-cb').addEventListener('change', (e) => {
+                showSectors = e.target.checked;
+                updateVisuals();
+            });
+
+            document.getElementById('highlight-faces-cb').addEventListener('change', (e) => {
+                highlightFaces = e.target.checked;
+                updateVisuals();
+            });
+        }
+
+        // Synchronize state with controls elements in Sandbox
+        function syncControlUI() {
+            document.getElementById('explode-slider').value = explodeDistance;
+            document.getElementById('explode-val').innerText = explodeDistance.toFixed(2) + "x";
+
+            document.getElementById('radius-slider').value = sectorRadius;
+            document.getElementById('radius-val').innerText = sectorRadius.toFixed(2);
+
+            document.getElementById('opacity-slider').value = cubeOpacity;
+            document.getElementById('opacity-val').innerText = Math.round(cubeOpacity * 100) + "%";
+
+            document.getElementById('show-lines-cb').checked = showFieldLines;
+            document.getElementById('animate-flux-cb').checked = showParticles;
+            document.getElementById('show-sector-cb').checked = showSectors;
+            document.getElementById('highlight-faces-cb').checked = highlightFaces;
+
+            // Sync matrix buttons UI
+            for (let i = 0; i < 8; i++) {
+                const btn = document.getElementById(`cube-btn-${i}`);
+                if (activeCubes[i]) {
+                    btn.className = `py-2 rounded text-xs font-semibold border transition-all ${
+                        i === 0 ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md' : 'bg-sky-500 text-slate-950 border-sky-400 shadow-md'
+                    }`;
+                } else {
+                    btn.className = "py-2 rounded text-xs font-semibold border transition-all bg-slate-800 text-slate-400 border-slate-700";
+                }
+            }
+        }
+
+        // Toggle Cube states
+        function toggleCube(index) {
+            activeCubes[index] = !activeCubes[index];
+            updateVisuals();
+            syncControlUI();
+        }
+
+        // Activate/deactivate all cubes
+        function toggleAllCubes(state) {
+            activeCubes = activeCubes.map(() => state);
+            updateVisuals();
+            syncControlUI();
+        }
+
+        // Trigger Preset Layouts quickly
+        function setClusterPreset(count) {
+            if (currentTab === 'guided') {
+                switchTab('sandbox');
+            }
+            if (count === 1) {
+                activeCubes = [true, false, false, false, false, false, false, false];
+            } else if (count === 4) {
+                activeCubes = [true, true, true, true, false, false, false, false];
+            } else {
+                activeCubes = [true, true, true, true, true, true, true, true];
+            }
+            updateVisuals();
+            syncControlUI();
+        }
+
+        // Core visual update pipeline based on state settings
+        function updateVisuals() {
+            // 1. Process Cube transformations & visibility
+            cubeGroups.forEach((group, i) => {
+                const isActive = activeCubes[i];
+                const dx = group.userData.dx;
+                const dy = group.userData.dy;
+                const dz = group.userData.dz;
+
+                // Position transformation based on Exploded Distance
+                group.position.set(
+                    dx * explodeDistance,
+                    dy * explodeDistance,
+                    dz * explodeDistance
+                );
+
+                // Configure standard cube meshes
+                const standardMesh = group.userData.mesh;
+                const edgeLine = group.userData.edgeLine;
+
+                if (i === 0 && highlightFaces) {
+                    standardMesh.visible = false;
+                    edgeLine.visible = false;
+                    faceGroup.visible = true;
+                } else {
+                    standardMesh.visible = isActive;
+                    edgeLine.visible = isActive;
+                    if (i === 0) faceGroup.visible = false;
+                }
+
+                // Adjust transparency
+                standardMesh.material.opacity = cubeOpacity;
+
+                // Adjust Spherical Octants
+                const sphereMesh = group.userData.sphereMesh;
+                sphereMesh.visible = isActive && showSectors;
+                
+                // Re-scale sector mesh based on state radius
+                sphereMesh.scale.set(sectorRadius, sectorRadius, sectorRadius);
+            });
+
+            // 2. Adjust Field Lines
+            lineObjects.forEach(item => {
+                const octantActive = activeCubes[item.octant];
+                const isPrimary = (item.octant === 0);
+
+                item.line.visible = showFieldLines;
+
+                if (octantActive) {
+                    if (isPrimary) {
+                        item.line.material.color.setHex(0xf59e0b); // Vibrant Amber
+                        item.line.material.opacity = 0.85;
+                    } else {
+                        item.line.material.color.setHex(0x0ea5e9); // Sky Blue
+                        item.line.material.opacity = 0.45;
+                    }
+                } else {
+                    item.line.material.color.setHex(0x475569); // Dark grey
+                    item.line.material.opacity = 0.08;
+                }
+            });
+
+            // 3. Adjust particles
+            particleObjects.forEach(item => {
+                const octantActive = activeCubes[item.octant];
+                const isPrimary = (item.octant === 0);
+
+                if (showFieldLines && showParticles) {
+                    item.mesh.visible = true;
+                    if (octantActive) {
+                        if (isPrimary) {
+                            item.mesh.material.color.setHex(0xfbbf24); // Solid gold
+                            item.mesh.material.opacity = 1.0;
+                        } else {
+                            item.mesh.material.color.setHex(0x38bdf8); // Sky Blue
+                            item.mesh.material.opacity = 0.8;
+                        }
+                    } else {
+                        // escape into void
+                        item.mesh.material.color.setHex(0x64748b);
+                        item.mesh.material.opacity = 0.15;
+                    }
+                } else {
+                    item.mesh.visible = false;
+                }
+            });
+
+            // 4. Update HUD Statistics
+            const activeCount = activeCubes.filter(v => v).length;
+            document.getElementById('stat-enclosure').innerText = `${activeCount} / 8 Cubes Enclosed`;
+
+            const fraction = activeCount / 8;
+            const percentStr = (fraction * 100).toFixed(1) + "%";
+            let angleStr = "0 sr";
+            if (activeCount > 0) {
+                if (activeCount === 8) angleStr = "4π sr (100%)";
+                else angleStr = `${activeCount}π/2 sr (${percentStr})`;
+            }
+            document.getElementById('stat-angle').innerText = angleStr;
+
+            let fluxStr = "0";
+            if (activeCount > 0) {
+                if (activeCount === 8) fluxStr = "q / ε₀";
+                else fluxStr = `${activeCount}q / (8ε₀)`;
+            }
+            document.getElementById('stat-flux').innerText = fluxStr;
+        }
+
+        // Animation Frame loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Controls update
+            controls.update();
+
+            // Render Charge pulse glow
+            const time = Date.now() * 0.005;
+            const pulse = 1.0 + 0.15 * Math.sin(time);
+            chargeMesh.scale.set(pulse, pulse, pulse);
+
+            // Animate moving flux particles along lines
+            particleObjects.forEach(item => {
+                item.progress += item.speed;
+                if (item.progress > 1.0) {
+                    item.progress = 0;
+                }
+                // Animate vector outward from origin
+                item.mesh.position.copy(item.dir).multiplyScalar(item.progress * item.length);
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        // Handle browser window resize smoothly
+        function onWindowResize() {
+            const container = document.getElementById('canvas-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        // Reset Camera back to standard educational 3D view
+        function resetCamera() {
+            camera.position.set(7, 5, 8.5);
+            if (controls) {
+                controls.target.set(0, 0, 0);
+            }
+        }
+
+        // Show/Hide Floating Legend panel
+        function toggleLegend() {
+            const panel = document.getElementById('legend-panel');
+            panel.classList.toggle('hidden');
+        }
+
+        // Tab Switching logic
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            const btnGuided = document.getElementById('tab-guided');
+            const btnSandbox = document.getElementById('tab-sandbox');
+            const contGuided = document.getElementById('content-guided');
+            const contSandbox = document.getElementById('content-sandbox');
+            
+            const guidedActions = document.getElementById('guided-actions');
+            const sandboxActions = document.getElementById('sandbox-actions');
+
+            if (tab === 'guided') {
+                btnGuided.className = "flex-1 py-2.5 text-xs font-semibold text-center border-b-2 border-amber-500 text-amber-400 transition-all duration-200";
+                btnSandbox.className = "flex-1 py-2.5 text-xs font-semibold text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all duration-200";
+                
+                contGuided.classList.remove('hidden');
+                contSandbox.classList.add('hidden');
+                
+                guidedActions.classList.remove('hidden');
+                sandboxActions.classList.add('hidden');
+                
+                // Return parameters to active step variables
+                goToStep(currentStep);
+            } else {
+                btnGuided.className = "flex-1 py-2.5 text-xs font-semibold text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all duration-200";
+                btnSandbox.className = "flex-1 py-2.5 text-xs font-semibold text-center border-b-2 border-sky-500 text-sky-400 transition-all duration-200";
+                
+                contGuided.classList.add('hidden');
+                contSandbox.classList.remove('hidden');
+                
+                guidedActions.classList.add('hidden');
+                sandboxActions.classList.remove('hidden');
+                
+                syncControlUI();
+            }
+        }
+
+        // Step-by-Step guided walkthrough state modifiers
+        function goToStep(step) {
+            currentStep = step;
+
+            // Handle back/forward buttons disabled attributes
+            document.getElementById('prev-btn').disabled = (step === 1);
+            document.getElementById('next-btn').disabled = (step === 8);
+
+            // Update Progress bar width
+            const percent = ((step) / 8) * 100;
+            document.getElementById('step-progress').style.width = `${percent}%`;
+            document.getElementById('step-number-badge').innerText = `Step ${step} of 8`;
+
+            // Style Guided Dots
+            updateStepDotsUI();
+
+            // Apply step preset visuals
+            switch(step) {
+                case 1: // Primary Cube only, no lines, no sectors
+                    activeCubes = [true, false, false, false, false, false, false, false];
+                    explodeDistance = 0;
+                    showFieldLines = false;
+                    showSectors = false;
+                    highlightFaces = false;
+                    break;
+                case 2: // Show radiating vectors
+                    activeCubes = [true, false, false, false, false, false, false, false];
+                    explodeDistance = 0;
+                    showFieldLines = true;
+                    showSectors = false;
+                    highlightFaces = false;
+                    break;
+                case 3: // Show Gaussian Sphere Sector
+                    activeCubes = [true, false, false, false, false, false, false, false];
+                    explodeDistance = 0;
+                    showFieldLines = true;
+                    showSectors = true;
+                    highlightFaces = false;
+                    break;
+                case 4: // Flat plane (4 cubes)
+                    activeCubes = [true, true, true, true, false, false, false, false];
+                    explodeDistance = 0;
+                    showFieldLines = true;
+                    showSectors = true;
+                    highlightFaces = false;
+                    break;
+                case 5: // Stack 3D cluster (8 cubes)
+                    activeCubes = [true, true, true, true, true, true, true, true];
+                    explodeDistance = 0;
+                    showFieldLines = true;
+                    showSectors = true;
+                    highlightFaces = false;
+                    break;
+                case 6: // Symmetry details
+                    activeCubes = [true, true, true, true, true, true, true, true];
+                    explodeDistance = 0;
+                    showFieldLines = true;
+                    showSectors = true;
+                    highlightFaces = false;
+                    break;
+                case 7: // Exploded layout
+                    activeCubes = [true, true, true, true, true, true, true, true];
+                    explodeDistance = 1.35;
+                    showFieldLines = true;
+                    showSectors = true;
+                    highlightFaces = false;
+                    break;
+                case 8: // Flux through faces (Reset view to Cube 0 specifically)
+                    activeCubes = [true, false, false, false, false, false, false, false];
+                    explodeDistance = 0;
+                    showFieldLines = true;
+                    showSectors = false;
+                    highlightFaces = true;
+                    break;
+            }
+
+            // Write HTML and trigger KaTeX re-compile
+            const stepTitleEl = document.getElementById('step-title');
+            const stepTextEl = document.getElementById('step-text');
+            
+            stepTitleEl.innerHTML = stepsData[step - 1].title;
+            stepTextEl.innerHTML = stepsData[step - 1].text;
+
+            triggerKaTex();
+            updateVisuals();
+            syncControlUI(); // Ensure controls in sandbox state match the step transitions perfectly
+        }
+
+        // Guided navigation triggers
+        function prevStep() {
+            if (currentStep > 1) {
+                goToStep(currentStep - 1);
+            }
+        }
+
+        // Forward navigation triggers
+        function nextStep() {
+            if (currentStep < 8) {
+                goToStep(currentStep + 1);
+            } else {
+                // Switch to Sandbox Mode on tutorial completion
+                switchTab('sandbox');
+            }
+        }
+
+        // Step Dot Indicators builder
+        function buildStepDots() {
+            const container = document.getElementById('step-dots');
+            container.innerHTML = "";
+            for (let i = 1; i <= 8; i++) {
+                const dot = document.createElement('button');
+                dot.id = `step-dot-${i}`;
+                dot.className = "w-2 h-2 rounded-full bg-slate-700 transition-all";
+                dot.onclick = () => goToStep(i);
+                container.appendChild(dot);
+            }
+        }
+
+        // Apply visual updates to guided dot indicators
+        function updateStepDotsUI() {
+            for (let i = 1; i <= 8; i++) {
+                const dot = document.getElementById(`step-dot-${i}`);
+                if (dot) {
+                    if (i === currentStep) {
+                        dot.className = "w-4 h-2 rounded-full bg-amber-500 transition-all";
+                    } else if (i < currentStep) {
+                        dot.className = "w-2 h-2 rounded-full bg-amber-500/50 transition-all";
+                    } else {
+                        dot.className = "w-2 h-2 rounded-full bg-slate-700 transition-all";
+                    }
+                }
+            }
+        }
+
+        // Triggers KaTeX rendering on text containers
+        function triggerKaTex() {
+            if (window.renderMathInElement) {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: "$$", right: "$$", display: true},
+                        {left: "$", right: "$", display: false}
+                    ],
+                    throwOnError : false
+                });
+            }
+        }
+    </script>
+</body>
+</html>
