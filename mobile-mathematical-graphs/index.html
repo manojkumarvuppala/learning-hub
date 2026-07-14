@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JEE Advanced Graph Master</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    /* Premium custom scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.2);
+      border-radius: 9999px;
+    }
+    .light ::-webkit-scrollbar-thumb {
+      background: rgba(15, 23, 42, 0.1);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.4);
+    }
+    /* Smooth transitions for theme toggles */
+    * {
+      transition: background-color 0.2s ease, border-color 0.2s ease, text-decoration 0.2s ease;
+    }
+    /* Hide scrollbar utility */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Beautiful CSS Math Fraction Typesetting Engine */
+    .math-fraction {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      vertical-align: middle;
+      padding: 0 4px;
+      line-height: 1.1;
+    }
+    .math-numerator {
+      border-bottom: 1.5px solid currentColor;
+      padding-bottom: 2px;
+      width: 100%;
+      text-align: center;
+    }
+    .math-denominator {
+      padding-top: 2px;
+      width: 100%;
+      text-align: center;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-indigo-500/30 selection:text-indigo-200">
+
+  <!-- Header Section -->
+  <header class="border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 transition-colors duration-200" id="header-bar">
+    <div class="max-w-[1600px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-lg shadow-indigo-500/20">
+          <i data-lucide="activity" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="text-xs font-bold text-indigo-400 tracking-widest uppercase">Preparation Sandbox</span>
+          <h1 class="text-lg font-extrabold tracking-tight" id="main-title">JEE GRAPHS</h1>
+        </div>
+      </div>
+
+      <!-- Header Action Controls -->
+      <div class="flex items-center gap-3">
+        <!-- Theme Toggle Button -->
+        <button id="theme-toggle-btn" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-sm font-medium transition-all" title="Toggle Theme">
+          <i data-lucide="sun" id="theme-icon-sun" class="w-4 h-4 hidden"></i>
+          <i data-lucide="moon" id="theme-icon-moon" class="w-4 h-4"></i>
+          <span id="theme-label" class="hidden sm:inline">Dark Mode</span>
+        </button>
+
+        <!-- Master Global Reset -->
+        <button id="master-reset-btn" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-950/40 hover:bg-red-900/30 border border-red-900/50 text-red-300 hover:text-red-200 text-sm font-medium transition-all">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Reset All</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sticky Double-Decker Category/Curve Selector -->
+  <section class="border-b border-slate-900 bg-slate-950/60 backdrop-blur-sm z-40" id="selection-bar">
+    <div class="max-w-[1600px] mx-auto px-4 py-2 flex flex-col gap-2">
+      <!-- Category Selection Tabs -->
+      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1" id="category-tabs-container">
+        <!-- Filled dynamically by JavaScript -->
+      </div>
+      <!-- Specific Curves Selection Buttons -->
+      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 border-t border-slate-900/60 pt-2" id="curves-tabs-container">
+        <!-- Filled dynamically by JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Sandbox Grid Dashboard Layout -->
+  <main class="max-w-[1600px] w-full mx-auto p-4 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- LEFT COLUMN: Parameter Adjusters and Mechanical Solvers (lg:col-span-4) -->
+    <section class="lg:col-span-4 flex flex-col gap-6 order-2 lg:order-1">
+      
+      <!-- Box 1: Dynamic Parameter Control Deck -->
+      <div class="rounded-2xl border border-slate-900 bg-slate-950 p-5 shadow-xl shadow-black/30 flex flex-col gap-5" id="controls-box">
+        <!-- Dynamic Header -->
+        <div class="flex items-center justify-between border-b border-slate-900 pb-3">
+          <div class="flex items-center gap-2">
+            <div class="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+              <i data-lucide="sliders" class="w-4 h-4"></i>
+            </div>
+            <h2 class="font-bold text-sm tracking-wide uppercase text-slate-300" id="controls-title">Mathematical Controls</h2>
+          </div>
+          <!-- Local Panel Reset Button -->
+          <button id="panel-reset-btn" class="text-xs flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition-all">
+            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+            <span>Default</span>
+          </button>
+        </div>
+
+        <!-- Section A: Standard Functional Transformations -->
+        <div id="standard-transformations-panel" class="flex flex-col gap-5">
+          <!-- Horizontal Shifts (h) -->
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400 font-semibold">Horizontal Translation (h)</span>
+              <span class="font-mono bg-slate-900 px-2 py-0.5 rounded text-indigo-400" id="val-h">0.0</span>
+            </div>
+            <input type="range" id="slide-h" min="-5" max="5" step="0.1" value="0" class="w-full h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>Left (-5)</span>
+              <span>f(x - h)</span>
+              <span>Right (+5)</span>
+            </div>
+          </div>
+
+          <!-- Vertical Shifts (k) -->
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400 font-semibold">Vertical Translation (k)</span>
+              <span class="font-mono bg-slate-900 px-2 py-0.5 rounded text-indigo-400" id="val-k">0.0</span>
+            </div>
+            <input type="range" id="slide-k" min="-5" max="5" step="0.1" value="0" class="w-full h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>Down (-5)</span>
+              <span>f(x) + k</span>
+              <span>Up (+5)</span>
+            </div>
+          </div>
+
+          <!-- Vertical Scaling Amplitude (a) -->
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400 font-semibold">Vertical Scale / Amplitude (a)</span>
+              <span class="font-mono bg-slate-900 px-2 py-0.5 rounded text-indigo-400" id="val-a">1.0</span>
+            </div>
+            <input type="range" id="slide-a" min="-4" max="4" step="0.1" value="1" class="w-full h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>Invert/Compress</span>
+              <span>a * f(x)</span>
+              <span>Stretch</span>
+            </div>
+          </div>
+
+          <!-- Horizontal Frequency (b) -->
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400 font-semibold">Horizontal Scale / Frequency (b)</span>
+              <span class="font-mono bg-slate-900 px-2 py-0.5 rounded text-indigo-400" id="val-b">1.0</span>
+            </div>
+            <input type="range" id="slide-b" min="0.2" max="4" step="0.1" value="1" class="w-full h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>Compress (0.2)</span>
+              <span>f(b * x)</span>
+              <span>Stretch (4.0)</span>
+            </div>
+          </div>
+
+          <!-- Advanced Transformations Stack (Checkboxes) -->
+          <div class="border-t border-slate-900/60 pt-4 flex flex-col gap-3">
+            <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Functional Modifiers</h3>
+            
+            <label class="flex items-start gap-3 cursor-pointer group">
+              <input type="checkbox" id="chk-abs-out" class="mt-0.5 rounded border-slate-800 text-indigo-600 focus:ring-indigo-500 bg-slate-900">
+              <div>
+                <span class="text-xs font-semibold text-slate-300 group-hover:text-white">Absolute Output Transformation</span>
+                <p class="text-[10px] text-slate-500 font-mono">y = | f(x) | (Reflects negative parts upward)</p>
+              </div>
+            </label>
+
+            <label class="flex items-start gap-3 cursor-pointer group">
+              <input type="checkbox" id="chk-abs-in" class="mt-0.5 rounded border-slate-800 text-indigo-600 focus:ring-indigo-500 bg-slate-900">
+              <div>
+                <span class="text-xs font-semibold text-slate-300 group-hover:text-white">Absolute Input Symmetry</span>
+                <p class="text-[10px] text-slate-500 font-mono">y = f( |x| ) (Symmetric across Y-axis)</p>
+              </div>
+            </label>
+
+            <label class="flex items-start gap-3 cursor-pointer group">
+              <input type="checkbox" id="chk-ref-y" class="mt-0.5 rounded border-slate-800 text-indigo-600 focus:ring-indigo-500 bg-slate-900">
+              <div>
+                <span class="text-xs font-semibold text-slate-300 group-hover:text-white">Coordinate Reflection</span>
+                <p class="text-[10px] text-slate-500 font-mono">y = f(-x) (Reflects horizontally over Y-axis)</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Section B: Parabola Mechanics Panel -->
+        <div id="parabola-mechanics-panel" class="hidden flex flex-col gap-5">
+          <!-- Leading Coefficient (a) -->
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400 font-semibold">Leading Coefficient (a)</span>
+              <span class="font-mono bg-slate-900 px-2 py-0.5 rounded text-amber-400" id="para-val-a">1.0</span>
+            </div>
+            <input type="range" id="para-slide-a" min="-3" max="3" step="0.1" value="1" class="w-full h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-amber-500">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>Downwards</span>
+              <span>a ≠ 0</span>
+              <span>Upwards</span>
+            </div>
+          </div>
+
+          <!-- Linear Coefficient (b) -->
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400 font-semibold">Linear Coefficient (b)</span>
+              <span class="font-mono bg-slate-900 px-2 py-0.5 rounded text-amber-400" id="para-val-b">0.0</span>
+            </div>
+            <input type="range" id="para-slide-b" min="-5" max="5" step="0.1" value="0" class="w-full h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-amber-500">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>Left Vertex Shift</span>
+              <span>bx</span>
+              <span>Right Vertex Shift</span>
+            </div>
+          </div>
+
+          <!-- Constant Term (c) -->
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400 font-semibold">Constant C (Y-Intercept)</span>
+              <span class="font-mono bg-slate-900 px-2 py-0.5 rounded text-amber-400" id="para-val-c">0.0</span>
+            </div>
+            <input type="range" id="para-slide-c" min="-5" max="5" step="0.1" value="0" class="w-full h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-amber-500">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>Shift Down</span>
+              <span>c = y(0)</span>
+              <span>Shift Up</span>
+            </div>
+          </div>
+
+          <!-- Bidirectional Discriminant (D) Slider -->
+          <div class="border-t border-slate-900/60 pt-4 flex flex-col gap-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-amber-400 font-bold uppercase tracking-wider">Discriminant (D) Solver</span>
+              <span class="font-mono bg-slate-900 px-2 py-0.5 rounded text-amber-400" id="para-val-d">0.0</span>
+            </div>
+            <input type="range" id="para-slide-d" min="-20" max="20" step="0.5" value="0" class="w-full h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-amber-500">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>D &lt; 0 (No Real Roots)</span>
+              <span>b² - 4ac</span>
+              <span>D &gt; 0 (2 Real Roots)</span>
+            </div>
+            <p class="text-[10px] text-slate-400 italic bg-amber-500/10 p-2 rounded border border-amber-500/20 mt-1">
+              * Shifting the D slider automatically solves for the matching C-intercept value to reshape the parabola instantly!
+            </p>
+          </div>
+        </div>
+
+        <!-- Section C: Conics Mechanics Parameter Panel -->
+        <div id="conics-mechanics-panel" class="hidden flex flex-col gap-5">
+          <!-- Center Coordinate H -->
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400 font-semibold">Center Offset X (h_c)</span>
+              <span class="font-mono bg-slate-900 px-2 py-0.5 rounded text-emerald-400" id="conic-val-h">0.0</span>
+            </div>
+            <input type="range" id="conic-slide-h" min="-4" max="4" step="0.1" value="0" class="w-full h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+          </div>
+
+          <!-- Center Coordinate K -->
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400 font-semibold">Center Offset Y (k_c)</span>
+              <span class="font-mono bg-slate-900 px-2 py-0.5 rounded text-emerald-400" id="conic-val-k">0.0</span>
+            </div>
+            <input type="range" id="conic-slide-k" min="-4" max="4" step="0.1" value="0" class="w-full h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+          </div>
+
+          <!-- Horizontal Radius / Semi-Major (a) -->
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400 font-semibold" id="conic-label-a">Horizontal Axis / Radius (a)</span>
+              <span class="font-mono bg-slate-900 px-2 py-0.5 rounded text-emerald-400" id="conic-val-a">2.0</span>
+            </div>
+            <input type="range" id="conic-slide-a" min="0.5" max="5" step="0.1" value="2" class="w-full h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+          </div>
+
+          <!-- Vertical Radius / Semi-Minor (b) -->
+          <div id="conic-b-wrapper" class="flex flex-col gap-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400 font-semibold">Vertical Axis (b)</span>
+              <span class="font-mono bg-slate-900 px-2 py-0.5 rounded text-emerald-400" id="conic-val-b">1.5</span>
+            </div>
+            <input type="range" id="conic-slide-b" min="0.5" max="5" step="0.1" value="1.5" class="w-full h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+          </div>
+        </div>
+      </div>
+
+      <!-- Box 2: Diagnostic & Analytic Realtime Solver Panel -->
+      <div class="rounded-2xl border border-slate-900 bg-slate-950 p-5 shadow-xl shadow-black/30 flex flex-col gap-4">
+        <div class="flex items-center gap-2 border-b border-slate-900 pb-3">
+          <div class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+            <i data-lucide="calculator" class="w-4 h-4"></i>
+          </div>
+          <h2 class="font-bold text-sm tracking-wide uppercase text-slate-300">Calculus Diagnostic Console</h2>
+        </div>
+
+        <!-- Formula Display Card -->
+        <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-900 flex flex-col gap-1.5">
+          <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active System Equation</span>
+          <div class="font-mono text-sm font-bold text-indigo-300 break-words flex items-center justify-start min-h-[40px]" id="active-formula-text">
+            y = f(x)
+          </div>
+        </div>
+
+        <!-- Metric Readout Coordinates -->
+        <div class="grid grid-cols-2 gap-3 text-xs" id="standard-diagnostics-metrics">
+          <div class="p-3 rounded-xl border border-slate-900 bg-slate-950/60 flex flex-col gap-1">
+            <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Calculated Domain</span>
+            <span class="font-mono font-bold text-slate-300" id="diagnostic-domain">ℝ</span>
+          </div>
+          <div class="p-3 rounded-xl border border-slate-900 bg-slate-950/60 flex flex-col gap-1">
+            <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Calculated Range</span>
+            <span class="font-mono font-bold text-slate-300" id="diagnostic-range">[-1, 1]</span>
+          </div>
+          <div class="p-3 rounded-xl border border-slate-900 bg-slate-950/60 flex flex-col gap-1">
+            <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Periodicity</span>
+            <span class="font-mono font-bold text-slate-300 text-indigo-400" id="diagnostic-period">2π</span>
+          </div>
+          <div class="p-3 rounded-xl border border-slate-900 bg-slate-950/60 flex flex-col gap-1">
+            <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Critical Sharp Points</span>
+            <span class="font-mono font-bold text-red-400" id="diagnostic-sharp">None</span>
+          </div>
+        </div>
+
+        <!-- Alternative Conic System Solver Outputs -->
+        <div class="hidden grid grid-cols-1 gap-3 text-xs" id="conics-diagnostics-metrics">
+          <div class="p-3 rounded-xl border border-slate-900 bg-slate-950/60 flex flex-col gap-1">
+            <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Conic General Equation</span>
+            <span class="font-mono font-bold text-indigo-300 text-[11px]" id="conic-general-eq">x² + y² = r²</span>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="p-3 rounded-xl border border-slate-900 bg-slate-950/60 flex flex-col gap-1">
+              <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Eccentricity (e)</span>
+              <span class="font-mono font-bold text-slate-300" id="conic-eccentricity">0.00</span>
+            </div>
+            <div class="p-3 rounded-xl border border-slate-900 bg-slate-950/60 flex flex-col gap-1">
+              <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Latus Rectum Length</span>
+              <span class="font-mono font-bold text-slate-300" id="conic-lr-len">N/A</span>
+            </div>
+          </div>
+          <div class="p-3 rounded-xl border border-slate-900 bg-slate-950/60 flex flex-col gap-1">
+            <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Critical Real-world Coordinate Targets</span>
+            <div class="font-mono text-[10px] text-slate-400 mt-1 flex flex-col gap-1">
+              <div><strong class="text-slate-300">Center:</strong> <span id="conic-out-center">(0,0)</span></div>
+              <div id="conic-foci-container"><strong class="text-slate-300">Foci Points:</strong> <span id="conic-out-foci">N/A</span></div>
+              <div id="conic-directrix-container"><strong class="text-slate-300">Directrix Axis:</strong> <span id="conic-out-directrix">N/A</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Educational Focus Box -->
+        <div class="p-3 rounded-xl bg-indigo-500/5 border border-indigo-500/10 text-xs text-indigo-300/90 leading-relaxed flex items-start gap-2.5">
+          <i data-lucide="info" class="w-4 h-4 text-indigo-400 shrink-0 mt-0.5"></i>
+          <div>
+            <span class="font-bold text-indigo-200 block mb-0.5">JEE Advanced Calculus Insight</span>
+            <p id="learning-insight-text">Transformations change domain boundary intervals and create non-differentiable sharp cusps where the curve mirrors off-axis.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT COLUMN: Immersive 2D Graph Sandbox Display (lg:col-span-8) -->
+    <section class="lg:col-span-8 flex flex-col gap-4 order-1 lg:order-2">
+      <div class="relative rounded-2xl border border-slate-900 bg-[#020617] overflow-hidden shadow-2xl h-[350px] lg:h-[620px] flex flex-col" id="canvas-container">
+        
+        <!-- Canvas Canvas Element -->
+        <canvas id="graph-canvas" class="w-full flex-1 block cursor-crosshair touch-pan-y"></canvas>
+
+        <!-- Canvas Action Toolbar (Top-Right HUD Overlays) -->
+        <div class="absolute top-4 right-4 flex items-center gap-2">
+          <!-- Recenter View Button -->
+          <button id="btn-recenter" class="p-2.5 rounded-xl border border-slate-850 bg-slate-950/90 text-slate-300 hover:text-white hover:bg-slate-900 transition-all shadow-lg flex items-center gap-1.5 text-xs font-bold" title="Recenter grid viewport scale">
+            <i data-lucide="focus" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Recenter</span>
+          </button>
+          
+          <!-- Zoom In -->
+          <button id="btn-zoom-in" class="p-2.5 rounded-xl border border-slate-850 bg-slate-950/90 text-slate-300 hover:text-white hover:bg-slate-900 transition-all shadow-lg" title="Zoom coordinates in">
+            <i data-lucide="zoom-in" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Zoom Out -->
+          <button id="btn-zoom-out" class="p-2.5 rounded-xl border border-slate-850 bg-slate-950/90 text-slate-300 hover:text-white hover:bg-slate-900 transition-all shadow-lg" title="Zoom coordinates out">
+            <i data-lucide="zoom-out" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Axis Overlay toggle -->
+          <button id="btn-toggle-glow" class="p-2.5 rounded-xl border border-indigo-900/60 bg-indigo-950/30 text-indigo-400 hover:text-indigo-200 transition-all shadow-lg" title="Toggle Domain & Range Glow overlays">
+            <i data-lucide="eye" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- MOBILE TOUCH-INTERACTION MODE SWITCHER HUD (Bottom-Right) -->
+        <div class="absolute bottom-4 right-4 z-10">
+          <button id="btn-touch-mode" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 border border-indigo-500 text-white text-xs font-bold shadow-lg transition-all" title="Toggle Touch Mode: Scroll Page or Move Graph">
+            <i data-lucide="scroll" id="icon-touch-scroll" class="w-3.5 h-3.5"></i>
+            <i data-lucide="move" id="icon-touch-pan" class="w-3.5 h-3.5 hidden"></i>
+            <span id="label-touch-mode">Mode: 📜 Scroll Page</span>
+          </button>
+        </div>
+
+        <!-- COLLAPSIBLE GLASSMORPHIC FLOATING LEGEND -->
+        <div id="floating-legend" class="absolute bottom-4 left-4 transition-all duration-300 ease-in-out">
+          <!-- Minimized Circular Button -->
+          <button id="legend-expand-btn" class="hidden p-3 rounded-full border border-slate-800/60 bg-slate-950/60 backdrop-blur-md text-indigo-400 hover:text-indigo-300 hover:bg-slate-900/80 transition-all shadow-lg shadow-black/40" title="Expand Graph Legend">
+            <i data-lucide="info" class="w-5 h-5"></i>
+          </button>
+
+          <!-- Expanded Translucent Glass Card -->
+          <div id="legend-card" class="p-3.5 rounded-xl border border-slate-800/40 bg-slate-950/40 backdrop-blur-md shadow-xl flex flex-col gap-2 max-w-[280px]">
+            <div class="flex items-center justify-between border-b border-slate-800/50 pb-2 mb-1 gap-8">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Graph Legend</span>
+              <!-- Collapse Button -->
+              <button id="legend-collapse-btn" class="p-1 rounded bg-slate-950/50 hover:bg-slate-900/60 text-slate-400 hover:text-slate-200 transition-all" title="Collapse Legend">
+                <i data-lucide="minus" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+            
+            <div class="flex flex-col gap-2 text-[11px] text-slate-300">
+              <div class="flex items-center gap-2.5">
+                <span class="w-4 h-1 rounded bg-indigo-500 block shrink-0"></span>
+                <span>Active Curve: <strong class="text-indigo-300" id="legend-active-name">g(x)</strong></span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="w-4 h-0.5 border-t border-dashed border-slate-500 block shrink-0"></span>
+                <span>Original Base Function: <strong class="text-slate-400">f(x)</strong></span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="w-4 h-1.5 rounded bg-cyan-500/40 border border-cyan-400/80 block shrink-0"></span>
+                <span>Domain Projection Glow (X-axis)</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="w-4 h-1.5 rounded bg-emerald-500/40 border border-emerald-400/80 block shrink-0"></span>
+                <span>Range Projection Glow (Y-axis)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="border-t border-slate-900 bg-slate-950 py-3 text-center text-xs text-slate-500 transition-colors">
+    <div class="max-w-[1600px] mx-auto px-4">
+      JEE Advanced Master Function Grapher &bull; Fully Interactive Sandbox &bull; Perfect for Calculus Visualization
+    </div>
+  </footer>
+
+  <!-- Application Logic Code -->
+  <script>
+    // --- APP DATABASE & DATA DICTIONARIES ---
+    const CATEGORIES = [
+      { id: 'piecewise', label: 'Piecewise & Calculus', icon: 'split' },
+      { id: 'algebraic', label: 'Algebraic & Rational', icon: 'variable' },
+      { id: 'exponential', label: 'Exp & Log', icon: 'trending-up' },
+      { id: 'trig', label: 'Trig & ITF', icon: 'triangle' },
+      { id: 'conics', label: 'Conics Sections', icon: 'circle-dot' }
+    ];
+
+    const CURVES = {
+      piecewise: [
+        { id: 'mod', label: 'Modulus |x|', formula: 'y = |x|', domain: 'ℝ', range: '[0, ∞)', period: 'Non-Periodic', sharp: 'x = 0', insight: 'Continuous everywhere but non-differentiable at its sharp corner vertex at x = 0.' },
+        { id: 'gif', label: 'Greatest Integer [x]', formula: 'y = [x]', domain: 'ℝ', range: 'ℤ (Integers)', period: 'Non-Periodic', sharp: 'All x ∈ ℤ', insight: 'Discontinuous step graph at every single integer boundary. Limit does not exist at integral limits.' },
+        { id: 'sif', label: 'Smallest Integer ⌈x⌉', formula: 'y = ⌈x⌉', domain: 'ℝ', range: 'ℤ (Integers)', period: 'Non-Periodic', sharp: 'All x ∈ ℤ', insight: 'Ceiling function step boundaries. Open on left, solid closed node indicators on right intervals.' },
+        { id: 'fpf', label: 'Fractional Part {x}', formula: 'y = {x} = x - [x]', domain: 'ℝ', range: '[0, 1)', period: 'T = 1 (Periodic)', sharp: 'All x ∈ ℤ', insight: 'Symmetric sawtooth pattern. Periodic with fundamental interval T=1. Breaks sharply at whole integers.' },
+        { id: 'sgn', label: 'Signum sgn(x)', formula: 'y = sgn(x) = x/|x|', domain: 'ℝ', range: '{-1, 0, 1}', period: 'Non-Periodic', sharp: 'x = 0', insight: 'Has a jump discontinuity of length 2 at x=0. The coordinate point is isolated at (0,0).' }
+      ],
+      algebraic: [
+        { id: 'linear', label: 'Linear Line', formula: 'y = mx + c', domain: 'ℝ', range: 'ℝ', period: 'Non-Periodic', sharp: 'None', insight: 'Constant slope everywhere. The straight-line trajectory form makes up standard boundaries.' },
+        { id: 'quad_parent', label: 'Quadratic Parent x^2', formula: 'y = x^2', domain: 'ℝ', range: '[0, ∞)', period: 'Non-Periodic', sharp: 'None', insight: 'Base parabolic trajectory curve. Concave up with a localized vertex global minimum point.' },
+        { id: 'parabola_mechanics', label: 'Parabola Mechanics (ax²+bx+c)', formula: 'y = ax^2 + bx + c', domain: 'ℝ', range: '[-D/4a, ∞)', period: 'Non-Periodic', sharp: 'None', insight: 'Advanced parabola simulator with bidirectional Discriminant solver. Computes precise vertex and focus details.' },
+        { id: 'cubic', label: 'Cubic Curve x^3', formula: 'y = x^3', domain: 'ℝ', range: 'ℝ', period: 'Non-Periodic', sharp: 'None', insight: 'Origin point (0,0) represents a point of inflection where concavity direction swaps smoothly.' },
+        { id: 'reciprocal', label: 'Reciprocal 1/x', formula: 'y = 1/x', domain: 'ℝ \\ {0}', range: 'ℝ \\ {0}', period: 'Non-Periodic', sharp: 'None', insight: 'Rectangular Hyperbola profile. Possesses horizontal asymptote along Y=0 and vertical asymptote at X=0.' },
+        { id: 'rec_square', label: 'Reciprocal Square 1/x^2', formula: 'y = 1/x^2', domain: 'ℝ \\ {0}', range: '(0, ∞)', period: 'Non-Periodic', sharp: 'None', insight: 'Symmetric "Volcano" shape. High asymptotes near zero. Stays completely positive in Quadrants I and II.' }
+      ],
+      exponential: [
+        { id: 'exp_e', label: 'Exp (base e > 1)', formula: 'y = e^x', domain: 'ℝ', range: '(0, ∞)', period: 'Non-Periodic', sharp: 'None', insight: 'Strictly increasing growth rate. Smoothly approaches x-axis as horizontal asymptote as x → -∞.' },
+        { id: 'exp_frac', label: 'Exp (0 < base < 1)', formula: 'y = (0.5)^x', domain: 'ℝ', range: '(0, ∞)', period: 'Non-Periodic', sharp: 'None', insight: 'Strictly decreasing exponential decay rate. Mirror profile of base exponential curves across Y-axis.' },
+        { id: 'log_e', label: 'Natural Log ln(x)', formula: 'y = ln(x)', domain: '(0, ∞)', range: 'ℝ', period: 'Non-Periodic', sharp: 'None', insight: 'Inverse function of e^x. Asymptotic down the negative Y-axis. Strictly positive input domain required.' },
+        { id: 'log_frac', label: 'Log (base < 1)', formula: 'y = log_0.5(x)', domain: '(0, ∞)', range: 'ℝ', period: 'Non-Periodic', sharp: 'None', insight: 'Log profile with fractional base. Mirror coordinate curves reflect inverted outputs. Flips equations inequality signs.' }
+      ],
+      trig: [
+        { id: 'sine', label: 'Sine Wave sin(x)', formula: 'y = sin(x)', domain: 'ℝ', range: '[-1, 1]', period: 'T = 2π', sharp: 'None', insight: 'Classic symmetric periodic wave passing through origin. Odd function symmetry.' },
+        { id: 'cosine', label: 'Cosine Wave cos(x)', formula: 'y = cos(x)', domain: 'ℝ', range: '[-1, 1]', period: 'T = 2π', sharp: 'None', insight: 'Symmetric periodic wave starting at peak amplitude. Even function symmetry across the Y-axis.' },
+        { id: 'tangent', label: 'Tangent tan(x)', formula: 'y = tan(x)', domain: 'ℝ \\ { (2n+1)π/2 }', range: 'ℝ', period: 'T = π', sharp: 'None', insight: 'Symmetric vertical asymptotic ribbons shooting to infinity at odd multiples of π/2.' },
+        { id: 'cotangent', label: 'Cotangent cot(x)', formula: 'y = cot(x)', domain: 'ℝ \\ { nπ }', range: 'ℝ', period: 'T = π', sharp: 'None', insight: 'Decreasing rational asymptotes shooting to infinity at whole integer multiples of π.' },
+        { id: 'secant', label: 'Secant sec(x)', formula: 'y = sec(x)', domain: 'ℝ \\ { (2n+1)π/2 }', range: '(-∞, -1] ∪ [1, ∞)', period: 'T = 2π', sharp: 'None', insight: 'Periodic localized U-shaped cup boundaries tangent to peaks and troughs of cosine waves.' },
+        { id: 'cosecant', label: 'Cosecant csc(x)', formula: 'y = csc(x)', domain: 'ℝ \\ { nπ }', range: '(-∞, -1] ∪ [1, ∞)', period: 'T = 2π', sharp: 'None', insight: 'Periodic localized cups tangent to sine wave peaks. Discontinuities trace along whole nπ multiples.' },
+        { id: 'arcsin', label: 'arcsin (ITF)', formula: 'y = sin^-1(x)', domain: '[-1, 1]', range: '[-π/2, π/2]', period: 'Non-Periodic', sharp: 'None', insight: 'Inverted snapshot slice of sine curve. Bounded tightly inside domain interval [-1, 1].' },
+        { id: 'arccos', label: 'arccos (ITF)', formula: 'y = cos^-1(x)', domain: '[-1, 1]', range: '[0, π]', period: 'Non-Periodic', sharp: 'None', insight: 'Decreasing inverse trig profile. Bounded in principal value branch values between 0 and π.' },
+        { id: 'arctan', label: 'arctan (ITF)', formula: 'y = tan^-1(x)', domain: 'ℝ', range: '(-π/2, π/2)', period: 'Non-Periodic', sharp: 'None', insight: 'Continuous S-shaped horizontal ribbon bounded by horizontal asymptotes at y = ±π/2.' },
+        { id: 'arccot', label: 'arccot (ITF)', formula: 'y = cot^-1(x)', domain: 'ℝ', range: '(0, π)', period: 'Non-Periodic', sharp: 'None', insight: 'Continuous downward S-curve bounded asymptotically between horizontal heights Y = 0 and Y = π.' },
+        { id: 'arcsec', label: 'arcsec (ITF)', formula: 'y = sec^-1(x)', domain: '(-∞, -1] ∪ [1, ∞]', range: '[0, π] \\ {π/2}', period: 'Non-Periodic', sharp: 'None', insight: 'Split discontinuous inverse curve with horizontal asymptotic gap at height Y = π/2.' },
+        { id: 'arccsc', label: 'arccsc (ITF)', formula: 'y = csc^-1(x)', domain: '(-∞, -1] ∪ [1, ∞]', range: '[-π/2, π/2] \\ {0}', period: 'Non-Periodic', sharp: 'None', insight: 'Split discontinuous inverse curve. Restricts output results around the Y = 0 horizontal axis line.' }
+      ],
+      conics: [
+        { id: 'conic_circle', label: 'Circle', formula: '(x-h)^2 + (y-k)^2 = r^2', domain: 'Bounded', range: 'Bounded', period: 'Relation', sharp: 'None', insight: 'Uniform radial distance from center. Constant eccentricity e = 0.' },
+        { id: 'conic_ellipse', label: 'Ellipse', formula: 'x^2/a^2 + y^2/b^2 = 1', domain: 'Bounded', range: 'Bounded', period: 'Relation', sharp: 'None', insight: 'Set of all points with constant sum of focal distances. Eccentricity satisfies 0 < e < 1.' },
+        { id: 'conic_hyperbola', label: 'Hyperbola', formula: 'x^2/a^2 - y^2/b^2 = 1', domain: 'Disjoint', range: 'ℝ', period: 'Relation', sharp: 'None', insight: 'Opens outwards asymptotically. Eccentricity exceeds unity (e > 1). Directrix lines are located inside branches.' }
+      ]
+    };
+
+    // --- APPLICATION GLOBAL STATE CONTROLLERS ---
+    const state = {
+      theme: 'dark', 
+      activeCategory: 'piecewise',
+      activeCurveId: 'mod',
+      glowEnabled: true,
+      touchMode: 'scroll', 
+      
+      // Global Grid Zoom & Panning Coordinates
+      scale: 45, 
+      offsetX: 0, 
+      offsetY: 0,
+
+      // Standard Transformation Parameters
+      h: 0,
+      k: 0,
+      a: 1,
+      b: 1,
+      absOut: false,
+      absIn: false,
+      refY: false,
+
+      // Parabola Mechanics Specialized Parameters
+      para_a: 1.0,
+      para_b: 0.0,
+      para_c: 0.0,
+      para_d: 0.0, 
+
+      // Conics Section Specialized Parameters
+      conic_h: 0,
+      conic_k: 0,
+      conic_a: 2,
+      conic_b: 1.5,
+
+      // Mobile Touch Gesture state
+      isDragging: false,
+      dragStartX: 0,
+      dragStartY: 0,
+      touchStartDist: 0,
+      isPinching: false
+    };
+
+    // --- ELEMENT SELECTOR MAPPING ---
+    const el = {
+      themeBtn: document.getElementById('theme-toggle-btn'),
+      themeIconSun: document.getElementById('theme-icon-sun'),
+      themeIconMoon: document.getElementById('theme-icon-moon'),
+      themeLabel: document.getElementById('theme-label'),
+      masterResetBtn: document.getElementById('master-reset-btn'),
+      categoryTabs: document.getElementById('category-tabs-container'),
+      curveTabs: document.getElementById('curves-tabs-container'),
+      
+      controlsTitle: document.getElementById('controls-title'),
+      panelResetBtn: document.getElementById('panel-reset-btn'),
+      
+      // Functional Transformation Panels
+      standardTransPanel: document.getElementById('standard-transformations-panel'),
+      parabolaPanel: document.getElementById('parabola-mechanics-panel'),
+      conicsPanel: document.getElementById('conics-mechanics-panel'),
+
+      // Input Sliders
+      slideH: document.getElementById('slide-h'),
+      slideK: document.getElementById('slide-k'),
+      slideA: document.getElementById('slide-a'),
+      slideB: document.getElementById('slide-b'),
+      valH: document.getElementById('val-h'),
+      valK: document.getElementById('val-k'),
+      valA: document.getElementById('val-a'),
+      valB: document.getElementById('val-b'),
+
+      chkAbsOut: document.getElementById('chk-abs-out'),
+      chkAbsIn: document.getElementById('chk-abs-in'),
+      chkRefY: document.getElementById('chk-ref-y'),
+
+      // Parabola Inputs
+      paraSlideA: document.getElementById('para-slide-a'),
+      paraSlideB: document.getElementById('para-slide-b'),
+      paraSlideC: document.getElementById('para-slide-c'),
+      paraSlideD: document.getElementById('para-slide-d'),
+      paraValA: document.getElementById('para-val-a'),
+      paraValB: document.getElementById('para-val-b'),
+      paraValC: document.getElementById('para-val-c'),
+      paraValD: document.getElementById('para-val-d'),
+
+      // Conic Inputs
+      conicSlideH: document.getElementById('conic-slide-h'),
+      conicSlideK: document.getElementById('conic-slide-k'),
+      conicSlideA: document.getElementById('conic-slide-a'),
+      conicSlideB: document.getElementById('conic-slide-b'),
+      conicValH: document.getElementById('conic-val-h'),
+      conicValK: document.getElementById('conic-val-k'),
+      conicValA: document.getElementById('conic-val-a'),
+      conicValB: document.getElementById('conic-val-b'),
+      conicLabelA: document.getElementById('conic-label-a'),
+      conicBWrapper: document.getElementById('conic-b-wrapper'),
+
+      // Diagnostic Readouts
+      activeFormula: document.getElementById('active-formula-text'),
+      standardDiagnostics: document.getElementById('standard-diagnostics-metrics'),
+      conicsDiagnostics: document.getElementById('conics-diagnostics-metrics'),
+      diagnosticDomain: document.getElementById('diagnostic-domain'),
+      diagnosticRange: document.getElementById('diagnostic-range'),
+      diagnosticPeriod: document.getElementById('diagnostic-period'),
+      diagnosticSharp: document.getElementById('diagnostic-sharp'),
+      conicGeneralEq: document.getElementById('conic-general-eq'),
+      conicEccentricity: document.getElementById('conic-eccentricity'),
+      conicLrLen: document.getElementById('conic-lr-len'),
+      conicOutCenter: document.getElementById('conic-out-center'),
+      conicOutFoci: document.getElementById('conic-out-foci'),
+      conicOutDirectrix: document.getElementById('conic-out-directrix'),
+      conicFociContainer: document.getElementById('conic-foci-container'),
+      conicDirectrixContainer: document.getElementById('conic-directrix-container'),
+      insightText: document.getElementById('learning-insight-text'),
+
+      // Canvas Layer Components
+      canvas: document.getElementById('graph-canvas'),
+      canvasContainer: document.getElementById('canvas-container'),
+      btnRecenter: document.getElementById('btn-recenter'),
+      btnZoomIn: document.getElementById('btn-zoom-in'),
+      btnZoomOut: document.getElementById('btn-zoom-out'),
+      btnToggleGlow: document.getElementById('btn-toggle-glow'),
+      btnTouchMode: document.getElementById('btn-touch-mode'),
+      iconTouchScroll: document.getElementById('icon-touch-scroll'),
+      iconTouchPan: document.getElementById('icon-touch-pan'),
+      labelTouchMode: document.getElementById('label-touch-mode'),
+
+      // Floating Legend
+      legendCard: document.getElementById('legend-card'),
+      legendExpandBtn: document.getElementById('legend-expand-btn'),
+      legendCollapseBtn: document.getElementById('legend-collapse-btn'),
+      legendActiveName: document.getElementById('legend-active-name')
+    };
+
+    // Get 2D Rendering Context
+    const ctx = el.canvas.getContext('2d');
+
+    // --- SYSTEM THEME CONTROLLERS ---
+    function initTheme() {
+      if (state.theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+        el.themeIconSun.classList.add('hidden');
+        el.themeIconMoon.classList.remove('hidden');
+        el.themeLabel.textContent = 'Dark Mode';
+      } else {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+        el.themeIconMoon.classList.add('hidden');
+        el.themeIconSun.classList.remove('hidden');
+        el.themeLabel.textContent = 'Light Mode';
+      }
+      resizeCanvas();
+    }
+
+    el.themeBtn.addEventListener('click', () => {
+      state.theme = (state.theme === 'dark') ? 'light' : 'dark';
+      initTheme();
+    });
+
+    // --- FLOATING LEGEND INTERACTION ---
+    function initLegend() {
+      if (window.innerWidth < 768) {
+        collapseLegend();
+      } else {
+        expandLegend();
+      }
+    }
+
+    function collapseLegend() {
+      el.legendCard.classList.add('hidden');
+      el.legendExpandBtn.classList.remove('hidden');
+    }
+
+    function expandLegend() {
+      el.legendCard.classList.remove('hidden');
+      el.legendExpandBtn.classList.add('hidden');
+    }
+
+    el.legendCollapseBtn.addEventListener('click', collapseLegend);
+    el.legendExpandBtn.addEventListener('click', expandLegend);
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth < 768) {
+        collapseLegend();
+      } else {
+        expandLegend();
+      }
+    });
+
+    // --- RE-CENTER & VIEW ZOOMING ---
+    function centerView() {
+      state.offsetX = el.canvas.width / 2;
+      state.offsetY = el.canvas.height / 2;
+      state.scale = 45; 
+      requestAnimationFrame(draw);
+    }
+
+    el.btnRecenter.addEventListener('click', centerView);
+    el.btnZoomIn.addEventListener('click', () => { state.scale *= 1.2; requestAnimationFrame(draw); });
+    el.btnZoomOut.addEventListener('click', () => { state.scale /= 1.2; requestAnimationFrame(draw); });
+    el.btnToggleGlow.addEventListener('click', () => {
+      state.glowEnabled = !state.glowEnabled;
+      if (state.glowEnabled) {
+        el.btnToggleGlow.classList.remove('bg-slate-900', 'text-slate-400');
+        el.btnToggleGlow.classList.add('bg-indigo-950/30', 'text-indigo-400', 'border-indigo-900/60');
+      } else {
+        el.btnToggleGlow.classList.add('bg-slate-900', 'text-slate-400');
+        el.btnToggleGlow.classList.remove('bg-indigo-950/30', 'text-indigo-400', 'border-indigo-900/60');
+      }
+      requestAnimationFrame(draw);
+    });
+
+    // --- TOUCH NAVIGATION TOGGLE ---
+    function updateTouchModeUI() {
+      if (state.touchMode === 'scroll') {
+        el.canvas.style.touchAction = 'pan-y'; 
+        el.iconTouchScroll.classList.remove('hidden');
+        el.iconTouchPan.classList.add('hidden');
+        el.labelTouchMode.textContent = 'Mode: 📜 Scroll Page';
+        el.btnTouchMode.classList.add('bg-indigo-600', 'border-indigo-500');
+        el.btnTouchMode.classList.remove('bg-emerald-600', 'border-emerald-500');
+      } else {
+        el.canvas.style.touchAction = 'none'; 
+        el.iconTouchScroll.classList.add('hidden');
+        el.iconTouchPan.classList.remove('hidden');
+        el.labelTouchMode.textContent = 'Mode: 🖐️ Pan Graph';
+        el.btnTouchMode.classList.remove('bg-indigo-600', 'border-indigo-500');
+        el.btnTouchMode.classList.add('bg-emerald-600', 'border-emerald-500');
+      }
+    }
+
+    el.btnTouchMode.addEventListener('click', () => {
+      state.touchMode = (state.touchMode === 'scroll') ? 'pan' : 'scroll';
+      updateTouchModeUI();
+    });
+
+    // --- CANVAS SCALING ENGINE ---
+    function resizeCanvas() {
+      const rect = el.canvasContainer.getBoundingClientRect();
+      el.canvas.width = rect.width;
+      el.canvas.height = rect.height;
+      
+      if (state.offsetX === 0 && state.offsetY === 0) {
+        state.offsetX = el.canvas.width / 2;
+        state.offsetY = el.canvas.height / 2;
+      }
+      requestAnimationFrame(draw);
+    }
+
+    // --- MATHEMATICAL BASE ENGINE (f(x) Definitions) ---
+    function evaluateBaseFunction(x, id) {
+      switch(id) {
+        // --- Piecewise category ---
+        case 'mod': return Math.abs(x);
+        case 'gif': return Math.floor(x);
+        case 'sif': return Math.ceil(x);
+        case 'fpf': return x - Math.floor(x);
+        case 'sgn': return x === 0 ? 0 : (x > 0 ? 1 : -1);
+
+        // --- Algebraic & Rational ---
+        case 'linear': return x; 
+        case 'quad_parent': return x * x;
+        case 'cubic': return x * x * x;
+        case 'reciprocal': return 1 / x;
+        case 'rec_square': return 1 / (x * x);
+
+        // --- Exponential & Logarithmic ---
+        case 'exp_e': return Math.exp(x);
+        case 'exp_frac': return Math.pow(0.5, x);
+        case 'log_e': return x > 0 ? Math.log(x) : NaN;
+        case 'log_frac': return x > 0 ? (Math.log(x) / Math.log(0.5)) : NaN;
+
+        // --- Trigonometric & ITF ---
+        case 'sine': return Math.sin(x);
+        case 'cosine': return Math.cos(x);
+        case 'tangent': return Math.tan(x);
+        case 'cotangent': return 1 / Math.tan(x);
+        case 'secant': return 1 / Math.cos(x);
+        case 'cosecant': return 1 / Math.sin(x);
+        
+        case 'arcsin': return (x >= -1 && x <= 1) ? Math.asin(x) : NaN;
+        case 'arccos': return (x >= -1 && x <= 1) ? Math.acos(x) : NaN;
+        case 'arctan': return Math.atan(x);
+        case 'arccot': return (Math.PI / 2) - Math.atan(x);
+        case 'arcsec': return (Math.abs(x) >= 1) ? Math.acos(1 / x) : NaN;
+        case 'arccsc': return (Math.abs(x) >= 1) ? Math.asin(1 / x) : NaN;
+
+        default: return 0;
+      }
+    }
+
+    // --- TRANSFORMATION TRANSLATOR PIPELINE ---
+    function evaluateTransformedFunction(x) {
+      if (state.activeCurveId === 'parabola_mechanics') {
+        return (state.para_a * x * x) + (state.para_b * x) + state.para_c;
+      }
+
+      if (state.activeCategory === 'conics') {
+        return NaN; 
+      }
+
+      let input = x;
+
+      // 1. Horiz shift transformation: f(x - h)
+      input = input - state.h;
+
+      // 2. Horiz Frequency scaling: f(b * (x - h))
+      input = input * state.b;
+
+      // 3. Horizontal Coordinate Reflection: f(-x)
+      if (state.refY) {
+        input = -input;
+      }
+
+      // 4. Absolute Input symmetry: f(|x|)
+      if (state.absIn) {
+        input = Math.abs(input);
+      }
+
+      // Compute base function result
+      let output = evaluateBaseFunction(input, state.activeCurveId);
+
+      // 5. Amplitude / Scaling multiplier: a * f(x)
+      output = output * state.a;
+
+      // 6. Absolute Output folding: | a * f(x) |
+      if (state.absOut) {
+        output = Math.abs(output);
+      }
+
+      // 7. Vertical offset translate: f(x) + k
+      output = output + state.k;
+
+      return output;
+    }
+
+    // --- GRAPH SYSTEM COORDINATE SOLVER ---
+    function toCoordX(px) { return (px - state.offsetX) / state.scale; }
+    function toCoordY(py) { return (state.offsetY - py) / state.scale; }
+    function toPxX(x) { return state.offsetX + (x * state.scale); }
+    function toPxY(y) { return state.offsetY - (y * state.scale); }
+
+    // --- RENDER ROUTINES ---
+    function draw() {
+      const isDark = state.theme === 'dark';
+      ctx.fillStyle = isDark ? '#020617' : '#ffffff';
+      ctx.fillRect(0, 0, el.canvas.width, el.canvas.height);
+
+      // 1. Draw Grid Lines & Numbers
+      drawGridAndAxes(isDark);
+
+      // 2. Conics or Standard Function Processing
+      if (state.activeCategory === 'conics') {
+        drawConicSystem(isDark);
+      } else {
+        drawStandardCurve(isDark);
+      }
+    }
+
+    // --- GRID LAYOUT DESIGN ENGINE ---
+    function drawGridAndAxes(isDark) {
+      const w = el.canvas.width;
+      const h = el.canvas.height;
+      
+      const gridColor = isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(226, 232, 240, 0.8)';
+      const subGridColor = isDark ? 'rgba(15, 23, 42, 0.3)' : 'rgba(241, 245, 249, 0.6)';
+      const axisColor = isDark ? 'rgba(148, 163, 184, 0.8)' : 'rgba(15, 23, 42, 0.8)';
+      const labelColor = isDark ? '#64748b' : '#475569';
+
+      const unitStep = getDynamicGridStep();
+      const subStep = unitStep / 5;
+
+      // 1. Draw Minor Subgrids
+      ctx.lineWidth = 0.5;
+      ctx.strokeStyle = subGridColor;
+      ctx.beginPath();
+      
+      let xStart = Math.floor(toCoordX(0) / subStep) * subStep;
+      let xEnd = Math.ceil(toCoordX(w) / subStep) * subStep;
+      for (let x = xStart; x <= xEnd; x += subStep) {
+        let px = toPxX(x);
+        ctx.moveTo(px, 0);
+        ctx.lineTo(px, h);
+      }
+      let yStart = Math.floor(toCoordY(h) / subStep) * subStep;
+      let yEnd = Math.ceil(toCoordY(0) / subStep) * subStep;
+      for (let y = yStart; y <= yEnd; y += subStep) {
+        let py = toPxY(y);
+        ctx.moveTo(0, py);
+        ctx.lineTo(w, py);
+      }
+      ctx.stroke();
+
+      // 2. Draw Major Grid Lines
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = gridColor;
+      ctx.beginPath();
+      for (let x = Math.floor(toCoordX(0) / unitStep) * unitStep; x <= xEnd; x += unitStep) {
+        let px = toPxX(x);
+        ctx.moveTo(px, 0);
+        ctx.lineTo(px, h);
+      }
+      for (let y = Math.floor(toCoordY(h) / unitStep) * unitStep; y <= yEnd; y += unitStep) {
+        let py = toPxY(y);
+        ctx.moveTo(0, py);
+        ctx.lineTo(w, py);
+      }
+      ctx.stroke();
+
+      // 3. Draw Axis Lines
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = axisColor;
+      ctx.beginPath();
+      ctx.moveTo(state.offsetX, 0);
+      ctx.lineTo(state.offsetX, h);
+      ctx.moveTo(0, state.offsetY);
+      ctx.lineTo(w, state.offsetY);
+      ctx.stroke();
+
+      // 4. Draw Domain & Range projection glows if activated
+      if (state.glowEnabled) {
+        drawDomainAndRangeGlow(isDark);
+      }
+
+      // 5. Draw Axis Numerical Labels
+      ctx.fillStyle = labelColor;
+      ctx.font = '10px JetBrains Mono';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+
+      for (let x = Math.floor(toCoordX(0) / unitStep) * unitStep; x <= xEnd; x += unitStep) {
+        if (Math.abs(x) < 1e-10) continue; 
+        let px = toPxX(x);
+        ctx.fillText(Number(x.toFixed(2)), px, state.offsetY + 6);
+      }
+
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      for (let y = Math.floor(toCoordY(h) / unitStep) * unitStep; y <= yEnd; y += unitStep) {
+        if (Math.abs(y) < 1e-10) continue;
+        let py = toPxY(y);
+        ctx.fillText(Number(y.toFixed(2)), state.offsetX - 8, py);
+      }
+
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'top';
+      ctx.fillText('0', state.offsetX - 6, state.offsetY + 6);
+    }
+
+    function getDynamicGridStep() {
+      const zoom = state.scale;
+      if (zoom < 15) return 5;
+      if (zoom < 35) return 2;
+      if (zoom < 100) return 1;
+      if (zoom < 250) return 0.5;
+      return 0.1;
+    }
+
+    // --- DOMAIN & RANGE GLOW PROJECTIONS ---
+    function drawDomainAndRangeGlow(isDark) {
+      if (state.activeCategory === 'conics') {
+        drawConicGlowProjections(isDark);
+        return;
+      }
+
+      let dMin = -Infinity, dMax = Infinity;
+      let rMin = -Infinity, rMax = Infinity;
+      const curveId = state.activeCurveId;
+
+      if (curveId === 'arcsin' || curveId === 'arccos') {
+        const bVal = Math.abs(state.b);
+        dMin = state.h - (1 / bVal);
+        dMax = state.h + (1 / bVal);
+        
+        if (curveId === 'arcsin') {
+          const aVal = Math.abs(state.a);
+          rMin = state.k - (Math.PI / 2) * aVal;
+          rMax = state.k + (Math.PI / 2) * aVal;
+        } else {
+          rMin = state.k;
+          rMax = state.k + Math.PI * Math.abs(state.a);
+        }
+      } else if (curveId === 'arcsec' || curveId === 'arccsc') {
+        const bVal = Math.abs(state.b);
+        const halfSpan = 1 / bVal;
+        const leftLimit = state.h - halfSpan;
+        const rightLimit = state.h + halfSpan;
+
+        drawXGlowSegment(toPxX(toCoordX(0)), toPxX(leftLimit), isDark);
+        drawXGlowSegment(toPxX(rightLimit), toPxX(toCoordX(el.canvas.width)), isDark);
+        
+        if (curveId === 'arcsec') {
+          drawYGlowSegment(toPxY(state.k), toPxY(state.k + Math.PI * Math.abs(state.a)), isDark);
+        } else {
+          drawYGlowSegment(toPxY(state.k - (Math.PI / 2) * Math.abs(state.a)), toPxY(state.k + (Math.PI / 2) * Math.abs(state.a)), isDark);
+        }
+        return;
+      } else if (curveId.startsWith('log_')) {
+        if (state.refY) {
+          dMax = state.h;
+        } else {
+          dMin = state.h;
+        }
+      } else if (curveId === 'parabola_mechanics') {
+        const d = state.para_b * state.para_b - 4 * state.para_a * state.para_c;
+        const vertexY = -d / (4 * state.para_a);
+        if (state.para_a > 0) {
+          rMin = vertexY;
+        } else {
+          rMax = vertexY;
+        }
+      } else if (curveId === 'mod') {
+        rMin = state.k;
+      } else if (curveId === 'exp_e' || curveId === 'exp_frac') {
+        rMin = state.k;
+      }
+
+      const leftPx = dMin === -Infinity ? 0 : Math.max(0, toPxX(dMin));
+      const rightPx = dMax === Infinity ? el.canvas.width : Math.min(el.canvas.width, toPxX(dMax));
+      if (leftPx < rightPx) {
+        drawXGlowSegment(leftPx, rightPx, isDark);
+      }
+
+      const bottomPx = rMin === -Infinity ? el.canvas.height : Math.min(el.canvas.height, toPxY(rMin));
+      const topPx = rMax === Infinity ? 0 : Math.max(0, toPxY(rMax));
+      if (topPx < bottomPx) {
+        drawYGlowSegment(topPx, bottomPx, isDark);
+      }
+    }
+
+    function drawXGlowSegment(startPx, endPx, isDark) {
+      ctx.save();
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = isDark ? 'rgba(6, 182, 212, 0.25)' : 'rgba(6, 182, 212, 0.4)';
+      ctx.beginPath();
+      ctx.moveTo(startPx, state.offsetY);
+      ctx.lineTo(endPx, state.offsetY);
+      ctx.stroke();
+
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#06b6d4'; 
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawYGlowSegment(topPx, bottomPx, isDark) {
+      ctx.save();
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = isDark ? 'rgba(16, 185, 129, 0.25)' : 'rgba(16, 185, 129, 0.4)';
+      ctx.beginPath();
+      ctx.moveTo(state.offsetX, topPx);
+      ctx.lineTo(state.offsetX, bottomPx);
+      ctx.stroke();
+
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#10b981'; 
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawConicGlowProjections(isDark) {
+      const id = state.activeCurveId;
+      const h_c = state.conic_h;
+      const k_c = state.conic_k;
+      const a = state.conic_a;
+      const b = state.conic_b;
+
+      if (id === 'conic_circle') {
+        drawXGlowSegment(toPxX(h_c - a), toPxX(h_c + a), isDark);
+        drawYGlowSegment(toPxY(k_c - a), toPxY(k_c + a), isDark);
+      } else if (id === 'conic_ellipse') {
+        drawXGlowSegment(toPxX(h_c - a), toPxX(h_c + a), isDark);
+        drawYGlowSegment(toPxY(k_c - b), toPxY(k_c + b), isDark);
+      } else if (id === 'conic_hyperbola') {
+        drawXGlowSegment(0, toPxX(h_c - a), isDark);
+        drawXGlowSegment(toPxX(h_c + a), el.canvas.width, isDark);
+        drawYGlowSegment(0, el.canvas.height, isDark);
+      }
+    }
+
+    // --- STANDARD FUNCTION PLOTTING ENGINE ---
+    function drawStandardCurve(isDark) {
+      const w = el.canvas.width;
+      const step = 1.5; 
+
+      // Draw dashed reference original parent curve f(x)
+      if (state.activeCurveId !== 'parabola_mechanics') {
+        ctx.save();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = isDark ? 'rgba(100, 116, 139, 0.4)' : 'rgba(100, 116, 139, 0.6)';
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        let firstBase = true;
+        for (let px = 0; px <= w; px += step) {
+          let x = toCoordX(px);
+          let y = evaluateBaseFunction(x, state.activeCurveId);
+          if (!isNaN(y) && isFinite(y)) {
+            let py = toPxY(y);
+            if (firstBase) {
+              ctx.moveTo(px, py);
+              firstBase = false;
+            } else {
+              ctx.lineTo(px, py);
+            }
+          } else {
+            firstBase = true;
+          }
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Draw transformed curve g(x)
+      ctx.save();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#6366f1'; 
+      ctx.shadowBlur = isDark ? 6 : 0;
+      ctx.shadowColor = 'rgba(99, 102, 241, 0.5)';
+      
+      ctx.beginPath();
+      let firstTrans = true;
+      let lastY = null;
+      let lastX = null;
+
+      for (let px = 0; px <= w; px += step) {
+        let x = toCoordX(px);
+        let y = evaluateTransformedFunction(x);
+
+        const isAsymptoteStep = detectAsymptoteLeap(x, y, lastX, lastY);
+
+        if (!isNaN(y) && isFinite(y) && !isAsymptoteStep) {
+          let py = toPxY(y);
+          
+          if (firstTrans) {
+            ctx.moveTo(px, py);
+            firstTrans = false;
+          } else {
+            ctx.lineTo(px, py);
+          }
+        } else {
+          firstTrans = true;
+        }
+
+        lastX = x;
+        lastY = y;
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      if (state.activeCategory === 'piecewise') {
+        drawPiecewiseEndpoints(isDark);
+      }
+    }
+
+    function detectAsymptoteLeap(x, y, lastX, lastY) {
+      if (lastY === null) return false;
+      const curveId = state.activeCurveId;
+      
+      if (curveId === 'reciprocal' || curveId === 'rec_square' || curveId === 'cotangent' || curveId === 'cosecant') {
+        const shiftX = state.h;
+        if ((lastX < shiftX && x >= shiftX) || (lastX > shiftX && x <= shiftX)) {
+          return true;
+        }
+      }
+      
+      if (curveId === 'tangent' || curveId === 'secant') {
+        const b = state.b;
+        const h = state.h;
+        const input1 = b * (lastX - h);
+        const input2 = b * (x - h);
+        const p1 = Math.floor((input1 + Math.PI/2) / Math.PI);
+        const p2 = Math.floor((input2 + Math.PI/2) / Math.PI);
+        if (p1 !== p2) return true;
+      }
+
+      if (curveId === 'cotangent' || curveId === 'cosecant') {
+        const b = state.b;
+        const h = state.h;
+        const input1 = b * (lastX - h);
+        const input2 = b * (x - h);
+        const p1 = Math.floor(input1 / Math.PI);
+        const p2 = Math.floor(input2 / Math.PI);
+        if (p1 !== p2) return true;
+      }
+
+      const deltaLimit = 35; 
+      if (Math.abs(y - lastY) > deltaLimit) {
+        return true;
+      }
+
+      return false;
+    }
+
+    function drawPiecewiseEndpoints(isDark) {
+      const startX = Math.floor(toCoordX(0));
+      const endX = Math.ceil(toCoordX(el.canvas.width));
+      const curveId = state.activeCurveId;
+
+      ctx.save();
+      for (let xInt = startX - 2; xInt <= endX + 2; xInt++) {
+        if (curveId === 'gif') {
+          const leftY = evaluateTransformedFunction(xInt);
+          const rightY = evaluateTransformedFunction(xInt + 1 - 1e-4);
+
+          if (!isNaN(leftY)) drawEndpointNode(toPxX(xInt), toPxY(leftY), true, isDark);
+          if (!isNaN(rightY)) drawEndpointNode(toPxX(xInt + 1), toPxY(rightY), false, isDark);
+        }
+        else if (curveId === 'sif') {
+          const leftY = evaluateTransformedFunction(xInt + 1e-4);
+          const rightY = evaluateTransformedFunction(xInt);
+
+          if (!isNaN(leftY)) drawEndpointNode(toPxX(xInt), toPxY(leftY), false, isDark);
+          if (!isNaN(rightY)) drawEndpointNode(toPxX(xInt), toPxY(rightY), true, isDark);
+        }
+        else if (curveId === 'fpf') {
+          const leftY = evaluateTransformedFunction(xInt);
+          const rightY = evaluateTransformedFunction(xInt + 1 - 1e-4);
+
+          if (!isNaN(leftY)) drawEndpointNode(toPxX(xInt), toPxY(leftY), true, isDark);
+          if (!isNaN(rightY)) drawEndpointNode(toPxX(xInt + 1), toPxY(rightY), false, isDark);
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawEndpointNode(px, py, isClosed, isDark) {
+      if (px < 0 || px > el.canvas.width || py < 0 || py > el.canvas.height) return;
+
+      ctx.beginPath();
+      ctx.arc(px, py, 4, 0, 2 * Math.PI);
+      if (isClosed) {
+        ctx.fillStyle = '#6366f1'; 
+        ctx.fill();
+        ctx.strokeStyle = isDark ? '#ffffff' : '#0f172a';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = isDark ? '#020617' : '#ffffff';
+        ctx.fill();
+        ctx.strokeStyle = '#6366f1'; 
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    // --- CONICS DRAWING ENGINE ---
+    function drawConicSystem(isDark) {
+      const id = state.activeCurveId;
+      const h_c = state.conic_h;
+      const k_c = state.conic_k;
+      const a = state.conic_a;
+      const b = state.conic_b;
+
+      ctx.save();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#10b981'; 
+      ctx.shadowBlur = isDark ? 6 : 0;
+      ctx.shadowColor = 'rgba(16, 185, 129, 0.5)';
+
+      const cx = toPxX(h_c);
+      const cy = toPxY(k_c);
+      const rx = a * state.scale;
+      const ry = b * state.scale;
+
+      if (id === 'conic_circle') {
+        ctx.beginPath();
+        ctx.arc(cx, cy, rx, 0, 2 * Math.PI);
+        ctx.stroke();
+      } 
+      else if (id === 'conic_ellipse') {
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx, ry, 0, 0, 2 * Math.PI);
+        ctx.stroke();
+      } 
+      else if (id === 'conic_hyperbola') {
+        drawHyperbolaBranches(h_c, k_c, a, b, isDark);
+      }
+      ctx.restore();
+
+      drawConicOverlays(cx, cy, h_c, k_c, a, b, isDark);
+    }
+
+    function drawHyperbolaBranches(h_c, k_c, a, b, isDark) {
+      ctx.beginPath();
+      let first = true;
+      for (let t = -2.5; t <= 2.5; t += 0.05) {
+        let x = h_c + a * Math.cosh(t);
+        let y = k_c + b * Math.sinh(t);
+        let px = toPxX(x);
+        let py = toPxY(y);
+        if (first) {
+          ctx.moveTo(px, py);
+          first = false;
+        } else {
+          ctx.lineTo(px, py);
+        }
+      }
+      ctx.stroke();
+
+      ctx.beginPath();
+      first = true;
+      for (let t = -2.5; t <= 2.5; t += 0.05) {
+        let x = h_c - a * Math.cosh(t);
+        let y = k_c + b * Math.sinh(t);
+        let px = toPxX(x);
+        let py = toPxY(y);
+        if (first) {
+          ctx.moveTo(px, py);
+          first = false;
+        } else {
+          ctx.lineTo(px, py);
+        }
+      }
+      ctx.stroke();
+
+      ctx.save();
+      ctx.strokeStyle = isDark ? 'rgba(148, 163, 184, 0.3)' : 'rgba(15, 23, 42, 0.2)';
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1;
+      
+      const cx = toPxX(h_c);
+      const cy = toPxY(k_c);
+      
+      ctx.beginPath();
+      ctx.moveTo(0, cy - (b / a) * (0 - cx));
+      ctx.lineTo(el.canvas.width, cy - (b / a) * (el.canvas.width - cx));
+      ctx.moveTo(0, cy + (b / a) * (0 - cx));
+      ctx.lineTo(el.canvas.width, cy + (b / a) * (el.canvas.width - cx));
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawConicOverlays(cx, cy, h_c, k_c, a, b, isDark) {
+      const id = state.activeCurveId;
+      ctx.save();
+      
+      ctx.fillStyle = '#10b981';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 4, 0, 2 * Math.PI);
+      ctx.fill();
+
+      if (id === 'conic_ellipse') {
+        const e = (a >= b) ? Math.sqrt(1 - (b*b)/(a*a)) : Math.sqrt(1 - (a*a)/(b*b));
+        if (a >= b) {
+          const ae = a * e;
+          drawFocusNode(toPxX(h_c - ae), cy);
+          drawFocusNode(toPxX(h_c + ae), cy);
+        } else {
+          const be = b * e;
+          drawFocusNode(cx, toPxY(k_c - be));
+          drawFocusNode(cx, toPxY(k_c + be));
+        }
+      } 
+      else if (id === 'conic_hyperbola') {
+        const e = Math.sqrt(1 + (b*b)/(a*a));
+        const ae = a * e;
+        drawFocusNode(toPxX(h_c - ae), cy);
+        drawFocusNode(toPxX(h_c + ae), cy);
+      }
+      ctx.restore();
+    }
+
+    function drawFocusNode(px, py) {
+      ctx.fillStyle = '#06b6d4'; 
+      ctx.beginPath();
+      ctx.arc(px, py, 4, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    // --- CONICS SYMBOLS REPLACEMENT SOLVER ---
+    function formatConicTerm(variable, val) {
+      if (Math.abs(val) < 1e-9) return `${variable}<sup>2</sup>`;
+      const sign = val > 0 ? '-' : '+';
+      return `(${variable} ${sign} ${Math.abs(val).toFixed(1)})<sup>2</sup>`;
+    }
+
+    // --- LIVE DIAGNOSTICS CALCULATOR & FORMULA BUILDER ---
+    function updateCalculusDiagnostics() {
+      const curveId = state.activeCurveId;
+      const category = state.activeCategory;
+
+      if (category === 'conics') {
+        el.standardDiagnostics.classList.add('hidden');
+        el.conicsDiagnostics.classList.remove('hidden');
+        
+        const h_c = state.conic_h;
+        const k_c = state.conic_k;
+        const a = state.conic_a;
+        const b = state.conic_b;
+
+        if (curveId === 'conic_circle') {
+          el.activeFormula.innerHTML = `
+            <div class="inline-flex items-center gap-1 font-mono text-xs sm:text-sm">
+              <span>${formatConicTerm('x', h_c)}</span>
+              <span class="text-indigo-400 font-bold">+</span>
+              <span>${formatConicTerm('y', k_c)}</span>
+              <span class="text-indigo-400 font-bold">= ${(a*a).toFixed(2)}</span>
+            </div>
+          `;
+          el.conicGeneralEq.textContent = 'Constant curvature: Eccentricity (e) = 0';
+          el.conicEccentricity.textContent = '0.00 (Perfect)';
+          el.conicLrLen.textContent = `${(2*a).toFixed(2)} (Diameter)`;
+          el.conicOutCenter.textContent = `(${h_c.toFixed(1)}, ${k_c.toFixed(1)})`;
+          
+          el.conicFociContainer.classList.add('hidden');
+          el.conicDirectrixContainer.classList.add('hidden');
+          el.insightText.textContent = 'A circle is an ellipse with matching focal points sitting directly on center.';
+        } 
+        else if (curveId === 'conic_ellipse') {
+          el.activeFormula.innerHTML = `
+            <div class="inline-flex items-center gap-2 font-mono text-xs sm:text-sm">
+              <div class="math-fraction">
+                <span class="math-numerator">${formatConicTerm('x', h_c)}</span>
+                <span class="math-denominator">${(a*a).toFixed(2)}</span>
+              </div>
+              <span class="text-indigo-400 font-bold">+</span>
+              <div class="math-fraction">
+                <span class="math-numerator">${formatConicTerm('y', k_c)}</span>
+                <span class="math-denominator">${(b*b).toFixed(2)}</span>
+              </div>
+              <span class="text-indigo-400 font-bold">= 1</span>
+            </div>
+          `;
+          
+          const e = (a >= b) ? Math.sqrt(1 - (b*b)/(a*a)) : Math.sqrt(1 - (a*a)/(b*b));
+          const lr = (a >= b) ? (2*b*b)/a : (2*a*a)/b;
+          
+          el.conicGeneralEq.textContent = 'Bounded System: Eccentricity 0 < e < 1';
+          el.conicEccentricity.textContent = e.toFixed(3);
+          el.conicLrLen.textContent = lr.toFixed(2);
+          el.conicOutCenter.textContent = `(${h_c.toFixed(1)}, ${k_c.toFixed(1)})`;
+          
+          el.conicFociContainer.classList.remove('hidden');
+          el.conicDirectrixContainer.classList.remove('hidden');
+
+          if (a >= b) {
+            const ae = a * e;
+            el.conicOutFoci.textContent = `F₁(${ (h_c - ae).toFixed(2) }, ${k_c}), F₂(${ (h_c + ae).toFixed(2) }, ${k_c})`;
+            el.conicOutDirectrix.textContent = `x = ${(h_c - a/e).toFixed(2)}, x = ${(h_c + a/e).toFixed(2)}`;
+          } else {
+            const be = b * e;
+            el.conicOutFoci.textContent = `F₁(${h_c}, ${ (k_c - be).toFixed(2) }), F₂(${h_c}, ${ (k_c + be).toFixed(2) })`;
+            el.conicOutDirectrix.textContent = `y = ${(k_c - b/e).toFixed(2)}, y = ${(k_c + b/e).toFixed(2)}`;
+          }
+          el.insightText.textContent = 'Ellipse eccentricity measures circular distortion. As e approaches 1, ellipse flattens.';
+        } 
+        else if (curveId === 'conic_hyperbola') {
+          el.activeFormula.innerHTML = `
+            <div class="inline-flex items-center gap-2 font-mono text-xs sm:text-sm">
+              <div class="math-fraction">
+                <span class="math-numerator">${formatConicTerm('x', h_c)}</span>
+                <span class="math-denominator">${(a*a).toFixed(2)}</span>
+              </div>
+              <span class="text-indigo-400 font-bold">-</span>
+              <div class="math-fraction">
+                <span class="math-numerator">${formatConicTerm('y', k_c)}</span>
+                <span class="math-denominator">${(b*b).toFixed(2)}</span>
+              </div>
+              <span class="text-indigo-400 font-bold">= 1</span>
+            </div>
+          `;
+          
+          const e = Math.sqrt(1 + (b*b)/(a*a));
+          const lr = (2*b*b)/a;
+          const ae = a * e;
+
+          el.conicGeneralEq.textContent = 'Unbounded Branches: Eccentricity e > 1';
+          el.conicEccentricity.textContent = e.toFixed(3);
+          el.conicLrLen.textContent = lr.toFixed(2);
+          el.conicOutCenter.textContent = `(${h_c.toFixed(1)}, ${k_c.toFixed(1)})`;
+          
+          el.conicFociContainer.classList.remove('hidden');
+          el.conicDirectrixContainer.classList.remove('hidden');
+          el.conicOutFoci.textContent = `F₁(${ (h_c - ae).toFixed(2) }, ${k_c}), F₂(${ (h_c + ae).toFixed(2) }, ${k_c})`;
+          el.conicOutDirectrix.textContent = `x = ${(h_c - a/e).toFixed(2)}, x = ${(h_c + a/e).toFixed(2)}`;
+          
+          el.insightText.textContent = 'Hyperbolas approach straight diagonal lines called asymptotes at extreme visual coordinates.';
+        }
+        return;
+      }
+
+      el.conicsDiagnostics.classList.add('hidden');
+      el.standardDiagnostics.classList.remove('hidden');
+
+      if (curveId === 'parabola_mechanics') {
+        const signB = state.para_b >= 0 ? '+' : '-';
+        const signC = state.para_c >= 0 ? '+' : '-';
+        el.activeFormula.innerHTML = `
+          <div class="inline-flex items-center gap-1 font-mono text-xs sm:text-sm">
+            <span class="text-slate-500 font-bold mr-1">g(x) =</span>
+            <span>${state.para_a.toFixed(1)}x<sup>2</sup></span>
+            <span>${signB} ${Math.abs(state.para_b).toFixed(1)}x</span>
+            <span>${signC} ${Math.abs(state.para_c).toFixed(1)}</span>
+          </div>
+        `;
+        
+        const d = state.para_b * state.para_b - 4 * state.para_a * state.para_c;
+        const vertexX = -state.para_b / (2 * state.para_a);
+        const vertexY = -d / (4 * state.para_a);
+
+        el.diagnosticDomain.textContent = 'ℝ';
+        el.diagnosticRange.textContent = state.para_a > 0 ? `[${vertexY.toFixed(2)}, ∞)` : `(-∞, ${vertexY.toFixed(2)}]`;
+        el.diagnosticPeriod.textContent = 'Non-Periodic';
+        el.diagnosticSharp.textContent = 'None';
+        el.insightText.textContent = `Vertex peak sits exactly at (${vertexX.toFixed(2)}, ${vertexY.toFixed(2)}). Discriminant is D = ${d.toFixed(2)}.`;
+        return;
+      }
+
+      const activeObj = CURVES[category].find(c => c.id === curveId);
+      el.activeFormula.innerHTML = formatEquationMath(activeObj.formula);
+      el.diagnosticDomain.textContent = activeObj.domain;
+      el.diagnosticRange.textContent = activeObj.range;
+      el.diagnosticPeriod.textContent = activeObj.period;
+      el.diagnosticSharp.textContent = activeObj.sharp;
+      el.insightText.textContent = activeObj.insight;
+    }
+
+    // --- MATH SYMBOLS FORMULA PARSER ---
+    function formatEquationMath(baseString) {
+      return baseString
+        .replace('y =', '<span class="text-slate-500 font-bold mr-1">g(x) =</span>')
+        .replace(/\|([^|]+)\|/g, '<span class="text-indigo-400">| $1 |</span>')
+        .replace(/\[([^\]]+)\]/g, '<span class="text-indigo-400">[ $1 ]</span>')
+        .replace(/\{([^}]+)\}/g, '<span class="text-indigo-400">{ $1 }</span>')
+        .replace(/\^([0-9a-zA-Z\-]+)/g, '<sup>$1</sup>')
+        .replace(/_([0-9a-zA-Z\.]+)/g, '<sub>$1</sub>');
+    }
+
+    // --- SELECTION TABS & PANEL WORKFLOWS ---
+    function renderTabs() {
+      el.categoryTabs.innerHTML = '';
+      CATEGORIES.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = `flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 ${
+          state.activeCategory === cat.id 
+            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' 
+            : 'bg-slate-900/60 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-900'
+        }`;
+        
+        let iconMarkup = '';
+        if (cat.id === 'piecewise') iconMarkup = `<i data-lucide="split" class="w-3.5 h-3.5"></i>`;
+        if (cat.id === 'algebraic') iconMarkup = `<i data-lucide="variable" class="w-3.5 h-3.5"></i>`;
+        if (cat.id === 'exponential') iconMarkup = `<i data-lucide="trending-up" class="w-3.5 h-3.5"></i>`;
+        if (cat.id === 'trig') iconMarkup = `<i data-lucide="triangle" class="w-3.5 h-3.5"></i>`;
+        if (cat.id === 'conics') iconMarkup = `<i data-lucide="circle-dot" class="w-3.5 h-3.5"></i>`;
+
+        btn.innerHTML = `${iconMarkup}<span>${cat.label}</span>`;
+        
+        btn.addEventListener('click', () => {
+          state.activeCategory = cat.id;
+          state.activeCurveId = CURVES[cat.id][0].id;
+          
+          resetStandardSliders();
+          renderTabs();
+          updateInterfacePanels();
+          centerView();
+        });
+        el.categoryTabs.appendChild(btn);
+      });
+
+      el.curveTabs.innerHTML = '';
+      const list = CURVES[state.activeCategory];
+      list.forEach(curve => {
+        const btn = document.createElement('button');
+        btn.className = `px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all duration-150 ${
+          state.activeCurveId === curve.id
+            ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+            : 'bg-slate-950 hover:bg-slate-900 text-slate-500 hover:text-slate-300 border border-slate-900/60'
+        }`;
+        btn.textContent = curve.label;
+        
+        btn.addEventListener('click', () => {
+          state.activeCurveId = curve.id;
+          
+          resetStandardSliders();
+          renderTabs();
+          updateInterfacePanels();
+          centerView();
+        });
+        el.curveTabs.appendChild(btn);
+      });
+
+      lucide.createIcons();
+    }
+
+    function updateInterfacePanels() {
+      const id = state.activeCurveId;
+      const category = state.activeCategory;
+
+      if (id === 'parabola_mechanics') {
+        el.controlsTitle.textContent = 'Parabola Mechanics';
+        el.standardTransPanel.classList.add('hidden');
+        el.conicsPanel.classList.add('hidden');
+        el.parabolaPanel.classList.remove('hidden');
+      } 
+      else if (category === 'conics') {
+        el.controlsTitle.textContent = 'Conic Parameter Mechanics';
+        el.standardTransPanel.classList.add('hidden');
+        el.parabolaPanel.classList.add('hidden');
+        el.conicsPanel.classList.remove('hidden');
+
+        if (id === 'conic_circle') {
+          el.conicLabelA.textContent = 'Radius (r)';
+          el.conicBWrapper.classList.add('hidden');
+        } else {
+          el.conicLabelA.textContent = 'Horizontal Axis (a)';
+          el.conicBWrapper.classList.remove('hidden');
+        }
+      } 
+      else {
+        el.controlsTitle.textContent = 'Mathematical Transformations';
+        el.parabolaPanel.classList.add('hidden');
+        el.conicsPanel.classList.add('hidden');
+        el.standardTransPanel.classList.remove('hidden');
+      }
+
+      el.legendActiveName.textContent = id === 'parabola_mechanics' ? 'y = ax² + bx + c' : (category === 'conics' ? id.split('_')[1].toUpperCase() : 'g(x)');
+
+      syncInputsWithState();
+      updateCalculusDiagnostics();
+      requestAnimationFrame(draw);
+    }
+
+    // --- SLIDER VALUE SYNCHRONIZER ENGINE ---
+    function syncInputsWithState() {
+      el.slideH.value = state.h; el.valH.textContent = state.h.toFixed(1);
+      el.slideK.value = state.k; el.valK.textContent = state.k.toFixed(1);
+      el.slideA.value = state.a; el.valA.textContent = state.a.toFixed(1);
+      el.slideB.value = state.b; el.valB.textContent = state.b.toFixed(1);
+
+      el.chkAbsOut.checked = state.absOut;
+      el.chkAbsIn.checked = state.absIn;
+      el.chkRefY.checked = state.refY;
+
+      el.paraSlideA.value = state.para_a; el.paraValA.textContent = state.para_a.toFixed(1);
+      el.paraSlideB.value = state.para_b; el.paraValB.textContent = state.para_b.toFixed(1);
+      el.paraSlideC.value = state.para_c; el.paraValC.textContent = state.para_c.toFixed(1);
+      el.paraSlideD.value = state.para_d; el.paraValD.textContent = state.para_d.toFixed(1);
+
+      el.conicSlideH.value = state.conic_h; el.conicValH.textContent = state.conic_h.toFixed(1);
+      el.conicSlideK.value = state.conic_k; el.conicValK.textContent = state.conic_k.toFixed(1);
+      el.conicSlideA.value = state.conic_a; el.conicValA.textContent = state.conic_a.toFixed(1);
+      el.conicSlideB.value = state.conic_b; el.conicValB.textContent = state.conic_b.toFixed(1);
+    }
+
+    function resetStandardSliders() {
+      state.h = 0;
+      state.k = 0;
+      state.a = 1;
+      state.b = 1;
+      state.absOut = false;
+      state.absIn = false;
+      state.refY = false;
+
+      state.para_a = 1.0;
+      state.para_b = 0.0;
+      state.para_c = 0.0;
+      state.para_d = 0.0;
+
+      state.conic_h = 0;
+      state.conic_k = 0;
+      state.conic_a = 2.0;
+      state.conic_b = 1.5;
+
+      syncInputsWithState();
+    }
+
+    // --- EVENT LISTENERS ---
+    el.slideH.addEventListener('input', (e) => { state.h = parseFloat(e.target.value); syncInputsWithState(); updateCalculusDiagnostics(); requestAnimationFrame(draw); });
+    el.slideK.addEventListener('input', (e) => { state.k = parseFloat(e.target.value); syncInputsWithState(); updateCalculusDiagnostics(); requestAnimationFrame(draw); });
+    el.slideA.addEventListener('input', (e) => { state.a = parseFloat(e.target.value); syncInputsWithState(); updateCalculusDiagnostics(); requestAnimationFrame(draw); });
+    el.slideB.addEventListener('input', (e) => { state.b = parseFloat(e.target.value); syncInputsWithState(); updateCalculusDiagnostics(); requestAnimationFrame(draw); });
+    
+    el.chkAbsOut.addEventListener('change', (e) => { state.absOut = e.target.checked; syncInputsWithState(); updateCalculusDiagnostics(); requestAnimationFrame(draw); });
+    el.chkAbsIn.addEventListener('change', (e) => { state.absIn = e.target.checked; syncInputsWithState(); updateCalculusDiagnostics(); requestAnimationFrame(draw); });
+    el.chkRefY.addEventListener('change', (e) => { state.refY = e.target.checked; syncInputsWithState(); updateCalculusDiagnostics(); requestAnimationFrame(draw); });
+
+    el.paraSlideA.addEventListener('input', (e) => { 
+      state.para_a = parseFloat(e.target.value); 
+      if (state.para_a === 0) state.para_a = 0.1; 
+      state.para_d = (state.para_b * state.para_b) - (4 * state.para_a * state.para_c);
+      syncInputsWithState(); 
+      updateCalculusDiagnostics(); 
+      requestAnimationFrame(draw); 
+    });
+    el.paraSlideB.addEventListener('input', (e) => { 
+      state.para_b = parseFloat(e.target.value); 
+      state.para_d = (state.para_b * state.para_b) - (4 * state.para_a * state.para_c);
+      syncInputsWithState(); 
+      updateCalculusDiagnostics(); 
+      requestAnimationFrame(draw); 
+    });
+    el.paraSlideC.addEventListener('input', (e) => { 
+      state.para_c = parseFloat(e.target.value); 
+      state.para_d = (state.para_b * state.para_b) - (4 * state.para_a * state.para_c);
+      syncInputsWithState(); 
+      updateCalculusDiagnostics(); 
+      requestAnimationFrame(draw); 
+    });
+    
+    el.paraSlideD.addEventListener('input', (e) => {
+      state.para_d = parseFloat(e.target.value);
+      state.para_c = ((state.para_b * state.para_b) - state.para_d) / (4 * state.para_a);
+      syncInputsWithState();
+      updateCalculusDiagnostics();
+      requestAnimationFrame(draw);
+    });
+
+    el.conicSlideH.addEventListener('input', (e) => { state.conic_h = parseFloat(e.target.value); syncInputsWithState(); updateCalculusDiagnostics(); requestAnimationFrame(draw); });
+    el.conicSlideK.addEventListener('input', (e) => { state.conic_k = parseFloat(e.target.value); syncInputsWithState(); updateCalculusDiagnostics(); requestAnimationFrame(draw); });
+    el.conicSlideA.addEventListener('input', (e) => { state.conic_a = parseFloat(e.target.value); syncInputsWithState(); updateCalculusDiagnostics(); requestAnimationFrame(draw); });
+    el.conicSlideB.addEventListener('input', (e) => { state.conic_b = parseFloat(e.target.value); syncInputsWithState(); updateCalculusDiagnostics(); requestAnimationFrame(draw); });
+
+    el.panelResetBtn.addEventListener('click', () => {
+      resetStandardSliders();
+      updateInterfacePanels();
+    });
+
+    el.masterResetBtn.addEventListener('click', () => {
+      state.activeCategory = 'piecewise';
+      state.activeCurveId = 'mod';
+      resetStandardSliders();
+      renderTabs();
+      updateInterfacePanels();
+      centerView();
+    });
+
+    // --- MOUSE & PANNING EVENTS ---
+    el.canvas.addEventListener('mousemove', (e) => {
+      if (state.isDragging) {
+        state.offsetX += (e.clientX - state.dragStartX);
+        state.offsetY += (e.clientY - state.dragStartY);
+        state.dragStartX = e.clientX;
+        state.dragStartY = e.clientY;
+        requestAnimationFrame(draw);
+      }
+    });
+
+    el.canvas.addEventListener('mousedown', (e) => {
+      state.isDragging = true;
+      state.dragStartX = e.clientX;
+      state.dragStartY = e.clientY;
+    });
+
+    window.addEventListener('mouseup', () => {
+      state.isDragging = false;
+    });
+
+    el.canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+      
+      const rect = el.canvas.getBoundingClientRect();
+      const cursorX = e.clientX - rect.left;
+      const cursorY = e.clientY - rect.top;
+
+      const coordX = toCoordX(cursorX);
+      const coordY = toCoordY(cursorY);
+
+      state.scale *= zoomFactor;
+      state.scale = Math.max(5, Math.min(800, state.scale));
+
+      state.offsetX = cursorX - (coordX * state.scale);
+      state.offsetY = cursorY + (coordY * state.scale);
+
+      requestAnimationFrame(draw);
+    }, { passive: false });
+
+
+    // --- MOBILE GESTURES & SCROLL BYPASS ENGINE ---
+    el.canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        if (state.touchMode === 'pan') {
+          state.isDragging = true;
+          state.dragStartX = e.touches[0].clientX;
+          state.dragStartY = e.touches[0].clientY;
+        }
+      } 
+      else if (e.touches.length === 2) {
+        state.isDragging = false;
+        state.isPinching = true;
+        state.touchStartDist = getTouchDistance(e.touches);
+      }
+    }, { passive: true });
+
+    el.canvas.addEventListener('touchmove', (e) => {
+      if (state.isDragging && e.touches.length === 1 && state.touchMode === 'pan') {
+        const clientX = e.touches[0].clientX;
+        const clientY = e.touches[0].clientY;
+        
+        state.offsetX += (clientX - state.dragStartX);
+        state.offsetY += (clientY - state.dragStartY);
+        
+        state.dragStartX = clientX;
+        state.dragStartY = clientY;
+        
+        requestAnimationFrame(draw);
+      } 
+      else if (state.isPinching && e.touches.length === 2) {
+        const currentDist = getTouchDistance(e.touches);
+        const zoomFactor = currentDist / state.touchStartDist;
+
+        if (Math.abs(zoomFactor - 1) > 0.01) {
+          const rect = el.canvas.getBoundingClientRect();
+          const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+          const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+
+          const coordX = toCoordX(midX);
+          const coordY = toCoordY(midY);
+
+          state.scale *= (zoomFactor > 1 ? 1.05 : 0.95);
+          state.scale = Math.max(8, Math.min(400, state.scale));
+
+          state.offsetX = midX - (coordX * state.scale);
+          state.offsetY = midY + (coordY * state.scale);
+
+          state.touchStartDist = currentDist;
+          requestAnimationFrame(draw);
+        }
+      }
+    }, { passive: true });
+
+    el.canvas.addEventListener('touchend', (e) => {
+      state.isDragging = false;
+      state.isPinching = false;
+      requestAnimationFrame(draw);
+    });
+
+    function getTouchDistance(touches) {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.sqrt(dx*dx + dy*dy);
+    }
+
+
+    // --- APPLICATION BOOT SYSTEM ---
+    window.onload = function() {
+      window.addEventListener('resize', resizeCanvas);
+      
+      initTheme();
+      initLegend();
+      renderTabs();
+      updateInterfacePanels();
+      updateTouchModeUI();
+      
+      centerView();
+      resizeCanvas();
+    };
+  </script>
+</body>
+</html>
