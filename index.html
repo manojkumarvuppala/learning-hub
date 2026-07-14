@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive STEM Learning Hub</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --web-color: #38bdf8;
+            --web-gradient: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            --mobile-color: #fb923c;
+            --mobile-gradient: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 50px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #38bdf8, #a78bfa, #fb923c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            margin: 40px 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 2px solid var(--card-border);
+            padding-bottom: 10px;
+        }
+
+        .web-title { color: var(--web-color); }
+        .mobile-title { color: var(--mobile-color); }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 25px;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .icon-wrapper {
+            width: 55px;
+            height: 55px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .web-card .icon-wrapper { background: var(--web-gradient); }
+        .mobile-card .icon-wrapper { background: var(--mobile-gradient); }
+
+        .icon-wrapper svg {
+            width: 28px;
+            height: 28px;
+            fill: white;
+        }
+
+        .card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 2.2rem; }
+            body { padding: 30px 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Interactive Visual Learning Hub</h1>
+            <p>Select an application below to explore and experiment with STEM concepts</p>
+        </header>
+
+        <!-- WEB SECTION -->
+        <h2 class="section-title web-title">
+            <svg style="width:24px; height:24px; fill:currentColor" viewBox="0 0 24 24"><path d="M19,4H5A2,2 0 0,0 3,6V18A2,2 0 0,0 5,20H19A2,2 0 0,0 21,18V6A2,2 0 0,0 19,4M19,18H5V8H19V18Z"/></svg>
+            Web-Based Visualizations
+        </h2>
+        <div class="grid">
+            <a href="./periodic-table-game/" class="card web-card">
+                <div class="icon-wrapper">
+                    <!-- Periodic Table Element Icon -->
+                    <svg viewBox="0 0 24 24"><path d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M9,17H7V10H9V17M17,17H11V15H17V17M17,13H11V10H17V13Z"/></svg>
+                </div>
+                <h3>Periodic Table Game</h3>
+                <p>Interactive element matching puzzle designed for absolute conceptual mastery.</p>
+            </a>
+
+            <a href="./electron-valence-3d/" class="card web-card">
+                <div class="icon-wrapper">
+                    <!-- Atom Icon -->
+                    <svg viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z"/></svg>
+                </div>
+                <h3>Electron Valence Shell 3D</h3>
+                <p>3D animated planetary orbit display showcasing specific shell configurations.</p>
+            </a>
+
+            <a href="./point-charge-cube/" class="card web-card">
+                <div class="icon-wrapper">
+                    <!-- Physics Flux/Cube Icon -->
+                    <svg viewBox="0 0 24 24"><path d="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15M5,9.15V15.65L11,19V12.5L5,9.15M19,9.15L13,12.5V19L19,15.65V9.15Z"/></svg>
+                </div>
+                <h3>Point Charge on Cube</h3>
+                <p>Electric field lines and Gaussian flux simulations through symmetrical vectors.</p>
+            </a>
+
+            <a href="./mathematical-graphs/" class="card web-card">
+                <div class="icon-wrapper">
+                    <!-- Graph Icon -->
+                    <svg viewBox="0 0 24 24"><path d="M16,11.78L20.22,4.44L21.78,5.34L17.22,13.22L14,8L9,16.5L3,7.7L4.62,6.58L9.22,13.29L14,5.12L16,11.78M2,20H22V22H2V20Z"/></svg>
+                </div>
+                <h3>Mathematical Graphs</h3>
+                <p>Plot algebraic, trigonometric, and complex exponential equations in real time.</p>
+            </a>
+        </div>
+
+        <!-- MOBILE FRIENDLY SECTION -->
+        <h2 class="section-title mobile-title">
+            <svg style="width:24px; height:24px; fill:currentColor" viewBox="0 0 24 24"><path d="M17,19H7V5H17M17,1H7C5.89,1 5,1.89 5,3V21C5,22.1 5.89,23 7,23H17C18.1,23 19,22.1 19,21V3C19,1.89 18.1,1 17,1Z"/></svg>
+            Mobile-Friendly Tools
+        </h2>
+        <div class="grid">
+            <a href="./3d-math-shapes/" class="card mobile-card">
+                <div class="icon-wrapper">
+                    <!-- Geometry Icon -->
+                    <svg viewBox="0 0 24 24"><path d="M12,2L1,21H23L12,2M12,6L18.8,18H5.2L12,6Z"/></svg>
+                </div>
+                <h3>3D Mathematical Shapes</h3>
+                <p>Touch-optimized responsive rotations for prisms, spheres, and cylinders.</p>
+            </a>
+
+            <a href="./speed-maths/" class="card mobile-card">
+                <div class="icon-wrapper">
+                    <!-- Flash/Speed Icon -->
+                    <svg viewBox="0 0 24 24"><path d="M7,2H17A2,2 0 0,1 19,4V20A2,2 0 0,1 17,22H7A2,2 0 0,1 5,20V4A2,2 0 0,1 7,2M11,6V9H8V11H11V14H13V11H16V9H13V6H11M9,18H15V16H9V18Z"/></svg>
+                </div>
+                <h3>Speed Maths</h3>
+                <p>Rapid mental mathematics tests designed to elevate operational response metrics.</p>
+            </a>
+
+            <a href="./vedic-maths/" class="card mobile-card">
+                <div class="icon-wrapper">
+                    <!-- Lightning/Tricks Icon -->
+                    <svg viewBox="0 0 24 24"><path d="M11,15H6L13,1V9H18L11,23V15Z"/></svg>
+                </div>
+                <h3>Vedic Maths</h3>
+                <p>Step-by-step interactive shortcuts for cross-multiplication methods.</p>
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>
