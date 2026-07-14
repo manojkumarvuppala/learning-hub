@@ -1,0 +1,1940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JEE Graphs Master Sandbox & Simulator</title>
+    <!-- Tailwind CSS for high-performance responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for professional pedagogical iconography -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            950: 'rgb(var(--bg-950-rgb) / <alpha-value>)',
+                            900: 'rgb(var(--bg-900-rgb) / <alpha-value>)',
+                            800: 'rgb(var(--border-800-rgb) / <alpha-value>)',
+                            700: 'rgb(var(--border-700-rgb) / <alpha-value>)',
+                            100: 'rgb(var(--text-100-rgb) / <alpha-value>)',
+                            300: 'rgb(var(--text-300-rgb) / <alpha-value>)',
+                            400: 'rgb(var(--text-400-rgb) / <alpha-value>)',
+                            500: 'rgb(var(--text-500-rgb) / <alpha-value>)'
+                        },
+                        // Custom dynamic semantic accent classes to swap context colors programmatically
+                        cyan: {
+                            400: 'rgb(var(--color-cyan-rgb) / <alpha-value>)',
+                            950: 'rgb(var(--bg-cyan-pill-rgb) / <alpha-value>)'
+                        },
+                        emerald: {
+                            400: 'rgb(var(--color-emerald-rgb) / <alpha-value>)',
+                            950: 'rgb(var(--bg-emerald-pill-rgb) / <alpha-value>)'
+                        },
+                        indigo: {
+                            400: 'rgb(var(--color-indigo-rgb) / <alpha-value>)',
+                            600: '#4f46e5', /* Hard active button styling */
+                            500: '#6366f1'
+                        },
+                        rose: {
+                            400: 'rgb(var(--color-rose-rgb) / <alpha-value>)',
+                            950: 'rgb(var(--bg-rose-pill-rgb) / <alpha-value>)',
+                            'btn-bg': 'rgb(var(--bg-rose-btn-rgb) / <alpha-value>)',
+                            'btn-text': 'rgb(var(--text-rose-btn-rgb) / <alpha-value>)',
+                            'btn-border': 'rgb(var(--border-rose-btn-rgb) / <alpha-value>)'
+                        },
+                        purple: {
+                            400: 'rgb(var(--color-purple-rgb) / <alpha-value>)',
+                            950: 'rgb(var(--bg-purple-pill-rgb) / <alpha-value>)'
+                        },
+                        amber: {
+                            400: 'rgb(var(--color-amber-rgb) / <alpha-value>)',
+                            950: 'rgb(var(--bg-amber-pill-rgb) / <alpha-value>)'
+                        },
+                        pink: {
+                            400: 'rgb(var(--color-pink-rgb) / <alpha-value>)'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            /* Space-separated RGB variables for Tailwind opacity integration */
+            --bg-950-rgb: 2 6 23;      /* Deep Slate dark mode */
+            --bg-900-rgb: 15 23 42;     /* Panel Slate dark mode */
+            --border-800-rgb: 30 41 59; /* Slate-800 dark mode */
+            --border-700-rgb: 51 65 85; /* Slate-700 dark mode */
+            --text-100-rgb: 241 245 249;/* Light slate-100 */
+            --text-300-rgb: 203 213 225;/* Slate-300 */
+            --text-400-rgb: 148 163 184;/* Slate-400 */
+            --text-500-rgb: 100 116 139;/* Slate-500 */
+
+            /* Neons for dark theme graphics context */
+            --color-cyan-rgb: 34 211 238;     /* cyan-400 */
+            --color-emerald-rgb: 52 211 153;  /* emerald-400 */
+            --color-indigo-rgb: 129 140 248;  /* indigo-400 */
+            --color-rose-rgb: 244 63 94;      /* rose-400 */
+            --color-purple-rgb: 192 132 252;  /* purple-400 */
+            --color-amber-rgb: 251 191 36;    /* amber-400 */
+            --color-pink-rgb: 244 114 182;    /* pink-400 */
+
+            /* Pill backgrounds for dark mode indicators */
+            --bg-cyan-pill-rgb: 8 47 73;      /* cyan-950 */
+            --bg-emerald-pill-rgb: 6 78 59;   /* emerald-950 */
+            --bg-amber-pill-rgb: 69 26 3;     /* amber-950 */
+            --bg-rose-pill-rgb: 76 5 25;      /* rose-950 */
+            --bg-purple-pill-rgb: 88 28 135;  /* purple-950 */
+
+            /* Top Reset Button Variables in Dark Theme */
+            --bg-rose-btn-rgb: 76 5 25;       /* rose-950 */
+            --text-rose-btn-rgb: 254 205 211;  /* rose-200 */
+            --border-rose-btn-rgb: 159 18 57;  /* rose-800 */
+        }
+
+        body.light-theme {
+            --bg-950-rgb: 248 250 252;  /* slate-50 light background */
+            --bg-900-rgb: 255 255 255;  /* Pure white panels */
+            --border-800-rgb: 226 232 240;/* Slate-200 light borders */
+            --border-700-rgb: 203 213 225;/* Slate-300 elements */
+            --text-100-rgb: 15 23 42;    /* slate-900 main text */
+            --text-300-rgb: 51 65 85;    /* slate-700 primary labels */
+            --text-400-rgb: 71 85 105;   /* slate-600 sub labels */
+            --text-500-rgb: 100 116 139; /* slate-500 neutral text */
+
+            /* High Contrast Accents mapped cleanly for Light Theme */
+            --color-cyan-rgb: 14 116 144;      /* cyan-700 */
+            --color-emerald-rgb: 4 120 87;     /* emerald-700 */
+            --color-indigo-rgb: 67 56 202;     /* indigo-700 */
+            --color-rose-rgb: 190 24 74;       /* rose-700 */
+            --color-purple-rgb: 109 40 217;    /* purple-700 */
+            --color-amber-rgb: 180 83 9;       /* amber-700 */
+            --color-pink-rgb: 190 24 74;       /* pink-700 */
+
+            /* Soft pastel backgrounds for high readability */
+            --bg-cyan-pill-rgb: 236 254 255;   /* cyan-50 */
+            --bg-emerald-pill-rgb: 236 253 245;/* emerald-50 */
+            --bg-amber-pill-rgb: 254 243 199;  /* amber-50 */
+            --bg-rose-pill-rgb: 255 241 242;   /* rose-50 */
+            --bg-purple-pill-rgb: 245 243 255; /* purple-50 */
+
+            /* Top Reset Button Variables in Light Theme */
+            --bg-rose-btn-rgb: 254 226 226;   /* rose-100 */
+            --text-rose-btn-rgb: 153 27 27;    /* rose-800 */
+            --border-rose-btn-rgb: 248 113 113;/* rose-400 */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .mono-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Webkit scrollbar matching themes */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgb(var(--bg-950-rgb));
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgb(var(--border-800-rgb));
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgb(var(--border-700-rgb));
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-screen overflow-hidden flex flex-col text-[11px] select-none">
+
+    <div class="bg-slate-900 border-b border-slate-800 px-3 py-1.5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2 shrink-0 z-40">
+        <!-- Dashboard title & Category Selector -->
+        <div class="flex items-center gap-3 overflow-x-auto scrollbar-none">
+            <span class="text-[12px] font-black uppercase tracking-wider text-indigo-400 whitespace-nowrap mr-2">
+                JEE GRAPHS
+            </span>
+            <div class="flex gap-1">
+                <button id="tab-algebraic" class="category-tab px-2 py-0.5 text-[10px] font-bold rounded border border-slate-800/60 transition bg-slate-900 text-slate-400 hover:text-slate-100">Polynomials</button>
+                <button id="tab-piecewise" class="category-tab px-2 py-0.5 text-[10px] font-bold rounded border border-slate-800/60 transition bg-slate-900 text-slate-400 hover:text-slate-100">Piecewise</button>
+                <button id="tab-trig" class="category-tab px-2 py-0.5 text-[10px] font-bold rounded border border-slate-800/60 transition bg-slate-900 text-slate-400 hover:text-slate-100">Trig &amp; ITF</button>
+                <button id="tab-explog" class="category-tab px-2 py-0.5 text-[10px] font-bold rounded border border-slate-800/60 transition bg-slate-900 text-slate-400 hover:text-slate-100">Exp &amp; Log</button>
+                <button id="tab-conics" class="category-tab px-2 py-0.5 text-[10px] font-bold rounded border border-slate-800/60 transition bg-slate-900 text-slate-400 hover:text-slate-100">Conics</button>
+                <button id="tab-parabolaDeep" class="category-tab px-2 py-0.5 text-[10px] font-bold rounded border border-slate-800/60 transition bg-slate-900 text-slate-400 hover:text-slate-100">Parabola (a,b,c,D)</button>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2 justify-between md:justify-end flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 overflow-hidden flex-1 justify-start md:justify-end">
+                <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 whitespace-nowrap">
+                    <i class="fa-solid fa-bezier-curve text-emerald-400 mr-0.5"></i> CURVE:
+                </span>
+                <div id="function-selector-list" class="flex gap-1 overflow-x-auto py-0.5 max-w-[280px] md:max-w-[400px] lg:max-w-[550px] scrollbar-thin">
+                    <!-- Dynamic buttons injected here -->
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-1.5 shrink-0">
+                <!-- Theme Toggle Button -->
+                <button id="btn-toggle-theme" class="bg-slate-800 hover:bg-slate-700 text-slate-100 text-[10px] font-bold px-2.5 py-0.5 rounded transition duration-150 flex items-center gap-1 border border-slate-800" title="Toggle Light/Dark Theme">
+                    <i id="theme-icon" class="fa-solid fa-sun text-amber-400"></i> <span id="theme-text">Light</span>
+                </button>
+                
+                <button id="btn-reset-all" class="bg-rose-btn-bg hover:opacity-90 border border-rose-btn-border text-rose-btn-text text-[10px] font-bold px-2.5 py-0.5 rounded transition duration-150 flex items-center gap-1" title="Reset all parameter transformations">
+                    <i class="fa-solid fa-rotate-left"></i> Reset All
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <main class="flex-1 grid grid-cols-12 gap-3 p-2.5 overflow-hidden min-h-0">
+        
+        <!-- Left Column: Consolidated Diagnostics & Transformations Controls -->
+        <section class="col-span-12 lg:col-span-4 xl:col-span-3.5 flex flex-col gap-2.5 overflow-y-auto max-h-full pr-1 min-h-0">
+            
+            <!-- Panel 1: Real-Time Calculus & Mathematical Analytics -->
+            <div class="bg-slate-900 border border-slate-800 rounded-lg p-2.5 shadow-lg shrink-0">
+                <h3 class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 flex items-center gap-1 mb-1.5">
+                    <i class="fa-solid fa-square-poll-vertical text-emerald-400"></i> Curve Diagnostics &amp; Range
+                </h3>
+                
+                <div class="space-y-1">
+                    <div class="flex justify-between items-center px-2 py-1 rounded bg-slate-950 border border-slate-800/50">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase">DOMAIN</span>
+                        <span id="domain-text" class="mono-font text-[9px] font-bold text-cyan-400 bg-cyan-950 px-1.5 py-0.5 rounded border border-cyan-400/20">x ∈ ℝ</span>
+                    </div>
+                    <div class="flex justify-between items-center px-2 py-1 rounded bg-slate-950 border border-slate-800/50">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase">RANGE</span>
+                        <span id="range-text" class="mono-font text-[9px] font-bold text-emerald-400 bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-400/20">y ∈ ℝ</span>
+                    </div>
+                    <div class="flex justify-between items-center px-2 py-1 rounded bg-slate-950 border border-slate-800/50">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase">CONTINUITY</span>
+                        <span id="continuity-text" class="text-[9px] font-bold text-emerald-400 font-semibold">Continuous on Domain</span>
+                    </div>
+                    <div class="flex justify-between items-center px-2 py-1 rounded bg-slate-950 border border-slate-800/50">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase">DIFFERENTIABILITY</span>
+                        <span id="differentiability-text" class="text-[9px] font-bold text-emerald-400 font-semibold">Differentiable on Domain</span>
+                    </div>
+                </div>
+
+                <!-- JEE Dynamic Educator Insights Panel -->
+                <div class="mt-2 bg-slate-950 border border-slate-800 rounded p-2">
+                    <h4 class="text-[8px] font-black tracking-widest text-indigo-400 uppercase flex items-center gap-1.5 mb-1">
+                        <i class="fa-solid fa-graduation-cap"></i> JEE Insights &amp; Integration Tips
+                    </h4>
+                    <div id="educator-note-body" class="text-[10px] text-slate-300 leading-normal font-normal space-y-0.5">
+                        <!-- Dynamically injected math notations -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 2: Interactive Transformations Control Deck -->
+            <div id="transformation-panel" class="bg-slate-900 border border-slate-800 rounded-lg p-2.5 shadow-lg shrink-0">
+                <div class="flex items-center justify-between mb-1.5 border-b border-slate-800 pb-1.5">
+                    <h3 class="text-[10px] font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-wand-magic-sparkles text-pink-400"></i> Transformations
+                    </h3>
+                    
+                    <div class="flex items-center gap-2">
+                        <button id="btn-reset-trans" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[8px] font-black uppercase px-2 py-0.5 rounded border border-slate-800 transition" title="Restore default parameters">
+                            <i class="fa-solid fa-undo mr-0.5"></i> Default
+                        </button>
+                        <label class="inline-flex items-center cursor-pointer scale-75">
+                            <input type="checkbox" id="toggle-transformations" checked class="sr-only peer">
+                            <div class="relative w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:width-3 after:transition-all peer-checked:bg-pink-600"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="transformation-controls" class="space-y-2">
+                    <!-- Shift Left/Right (h) -->
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-0.5">
+                            <span class="text-slate-300 font-medium">Horizontal Shift <code class="text-cyan-400 bg-slate-950 px-1 py-0.2 rounded font-mono text-[9px]">f(x - h)</code></span>
+                            <span id="val-h" class="mono-font text-cyan-400 font-bold">0.0</span>
+                        </div>
+                        <input type="range" id="slider-h" min="-5" max="5" step="0.1" value="0" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500">
+                    </div>
+
+                    <!-- Shift Up/Down (k) -->
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-0.5">
+                            <span class="text-slate-300 font-medium">Vertical Shift <code class="text-emerald-400 bg-slate-950 px-1 py-0.2 rounded font-mono text-[9px]">f(x) + k</code></span>
+                            <span id="val-k" class="mono-font text-emerald-400 font-bold">0.0</span>
+                        </div>
+                        <input type="range" id="slider-k" min="-5" max="5" step="0.1" value="0" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                    </div>
+
+                    <!-- Vertical Scale (a) -->
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-0.5">
+                            <span class="text-slate-300 font-medium">Vertical Scaling <code class="text-purple-400 bg-slate-950 px-1 py-0.2 rounded font-mono text-[9px]">a · f(x)</code></span>
+                            <span id="val-a" class="mono-font text-purple-400 font-bold">1.0</span>
+                        </div>
+                        <input type="range" id="slider-a" min="-4" max="4" step="0.1" value="1" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500">
+                    </div>
+
+                    <!-- Horizontal Scale (b) -->
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-0.5">
+                            <span class="text-slate-300 font-medium">Horizontal Scaling <code class="text-amber-400 bg-slate-950 px-1 py-0.2 rounded font-mono text-[9px]">f(b · x)</code></span>
+                            <span id="val-b" class="mono-font text-amber-400 font-bold">1.0</span>
+                        </div>
+                        <input type="range" id="slider-b" min="0.1" max="4" step="0.1" value="1" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500">
+                    </div>
+
+                    <!-- Transformation Flags Grid -->
+                    <div class="grid grid-cols-2 gap-1 pt-2 border-t border-slate-800/80">
+                        <label class="flex items-center gap-1 cursor-pointer bg-slate-950 p-1.5 rounded border border-slate-800 hover:border-slate-700 transition">
+                            <input type="checkbox" id="chk-abs-out" class="rounded text-pink-600 focus:ring-0 bg-slate-800 border-slate-700 scale-90">
+                            <span class="text-[9px] font-semibold text-slate-300"><code class="text-pink-400">|f(x)|</code> Fold Up</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer bg-slate-950 p-1.5 rounded border border-slate-800 hover:border-slate-700 transition">
+                            <input type="checkbox" id="chk-abs-in" class="rounded text-pink-600 focus:ring-0 bg-slate-800 border-slate-700 scale-90">
+                            <span class="text-[9px] font-semibold text-slate-300"><code class="text-pink-400">f(|x|)</code> Mirror Y</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer bg-slate-950 p-1.5 rounded border border-slate-800 hover:border-slate-700 transition">
+                            <input type="checkbox" id="chk-neg-out" class="rounded text-pink-600 focus:ring-0 bg-slate-800 border-slate-700 scale-90">
+                            <span class="text-[9px] font-semibold text-slate-300"><code class="text-pink-400">-f(x)</code> Flip X</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer bg-slate-950 p-1.5 rounded border border-slate-800 hover:border-slate-700 transition">
+                            <input type="checkbox" id="chk-neg-in" class="rounded text-pink-600 focus:ring-0 bg-slate-800 border-slate-700 scale-90">
+                            <span class="text-[9px] font-semibold text-slate-300"><code class="text-pink-400">f(-x)</code> Flip Y</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="parabola-specific-panel" class="hidden bg-slate-900 border border-slate-800 rounded-lg p-2.5 shadow-lg border-t-2 border-t-rose-500 shrink-0">
+                <div class="flex items-center justify-between mb-1.5 border-b border-slate-800 pb-1.5">
+                    <h3 class="text-[10px] font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-compass-drafting"></i> Parabola Mechanics
+                    </h3>
+                    <div class="flex items-center gap-2">
+                        <!-- Default Reset Button for Parabola -->
+                        <button id="btn-reset-parab" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[8px] font-black uppercase px-2 py-0.5 rounded border border-slate-800 transition" title="Restore base parabola">
+                            <i class="fa-solid fa-undo mr-0.5"></i> Default
+                        </button>
+                        <span class="text-[8px] bg-slate-950 text-slate-400 px-1 rounded font-mono">y = ax² + bx + c</span>
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+                    <!-- Coefficient a -->
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-0.5">
+                            <span class="text-slate-300 font-medium">Coeff. of x² (a)</span>
+                            <span id="parabola-a-val" class="font-bold text-rose-400">1.0</span>
+                        </div>
+                        <input type="range" id="parabola-a" min="-3" max="3" step="0.1" value="1" class="w-full h-1 bg-slate-800 rounded-lg appearance-none accent-rose-500">
+                    </div>
+
+                    <!-- Coefficient b -->
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-0.5">
+                            <span class="text-slate-300 font-medium">Coeff. of x (b)</span>
+                            <span id="parabola-b-val" class="font-bold text-rose-400">0.0</span>
+                        </div>
+                        <input type="range" id="parabola-b" min="-5" max="5" step="0.1" value="0" class="w-full h-1 bg-slate-800 rounded-lg appearance-none accent-rose-500">
+                    </div>
+
+                    <!-- Constant c -->
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-0.5">
+                            <span class="text-slate-300 font-medium">Constant term (c)</span>
+                            <span id="parabola-c-val" class="font-bold text-rose-400">0.0</span>
+                        </div>
+                        <input type="range" id="parabola-c" min="-5" max="5" step="0.1" value="0" class="w-full h-1 bg-slate-800 rounded-lg appearance-none accent-rose-500">
+                    </div>
+
+                    <!-- Discriminant D-Based Realtime Transformations -->
+                    <div class="bg-slate-950 p-2 rounded border border-slate-800/85 space-y-1.5">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[9px] font-bold text-slate-300 uppercase tracking-wider">
+                                <i class="fa-solid fa-scale-balanced text-amber-400 mr-1"></i> Discriminant (D) Transform
+                            </span>
+                            <span id="parabola-d-val" class="mono-font text-[9px] font-bold text-amber-400 bg-amber-950 px-1 rounded border border-amber-400/20">0.0</span>
+                        </div>
+                        <p class="text-[8px] text-slate-500 leading-tight">
+                            Forces shift based on Discriminant: <code class="text-rose-400 font-mono text-[8px]">c = (b² - D)/(4a)</code>.
+                        </p>
+                        <input type="range" id="parabola-d" min="-20" max="25" step="0.5" value="0" class="w-full h-1 bg-slate-800 rounded-lg appearance-none accent-amber-500">
+                        
+                        <!-- Quick D Presets -->
+                        <div class="grid grid-cols-3 gap-1 pt-0.5">
+                            <button id="btn-preset-pos" class="bg-slate-900 hover:bg-slate-800 text-[8px] font-bold py-0.5 px-0.5 rounded border border-slate-800 text-slate-400 hover:text-white">D &gt; 0</button>
+                            <button id="btn-preset-zero" class="bg-slate-900 hover:bg-slate-800 text-[8px] font-bold py-0.5 px-0.5 rounded border border-slate-800 text-slate-400 hover:text-white">D = 0</button>
+                            <button id="btn-preset-neg" class="bg-slate-900 hover:bg-slate-800 text-[8px] font-bold py-0.5 px-0.5 rounded border border-slate-800 text-slate-400 hover:text-white">D &lt; 0</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Geometric Outputs (Focus, Directrix, Intercepts) -->
+                <div id="parabola-analytic-box" class="mt-2 bg-rose-950 border border-rose-400/10 rounded p-2 space-y-1">
+                    <h5 class="text-[9px] font-extrabold uppercase tracking-wider text-rose-400 flex items-center gap-1">
+                        <i class="fa-solid fa-shapes"></i> Parabola Attributes (D-Solved)
+                    </h5>
+                    <div class="grid grid-cols-2 gap-x-1.5 gap-y-0.5 text-[9px] mono-font text-slate-300">
+                        <div><span class="text-slate-400">D-value:</span> <span id="p-disc" class="text-rose-400 font-bold">0.00</span></div>
+                        <div><span class="text-slate-400">Vertex:</span> <span id="p-vertex" class="text-rose-400 font-bold">(0, 0)</span></div>
+                        <div><span class="text-slate-400">Focus:</span> <span id="p-focus" class="text-rose-400 font-bold">(0, 0)</span></div>
+                        <div><span class="text-slate-400">Directrix:</span> <span id="p-directrix" class="text-rose-400 font-bold">y = 0</span></div>
+                        <div class="col-span-2 border-t border-rose-400/20 pt-0.5 mt-0.5"><span class="text-slate-400">Roots:</span> <span id="p-roots" class="text-emerald-400 font-bold">None</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="conics-specific-panel" class="hidden bg-slate-900 border border-slate-800 rounded-lg p-2.5 shadow-lg border-t-2 border-t-purple-500 shrink-0">
+                <div class="flex items-center justify-between mb-1.5 border-b border-slate-800 pb-1.5">
+                    <h3 class="text-[10px] font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-nodes"></i> Conics Mechanics
+                    </h3>
+                    <button id="btn-reset-conic" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[8px] font-black uppercase px-2 py-0.5 rounded border border-slate-800 transition" title="Restore default conic parameters">
+                        <i class="fa-solid fa-undo mr-0.5"></i> Default
+                    </button>
+                </div>
+
+                <div class="space-y-2">
+                    <!-- Center X Coordinate (h_c) -->
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-0.5">
+                            <span class="text-slate-300 font-medium">Center X (<code class="text-purple-400 font-mono">h_c</code>)</span>
+                            <span id="conic-h-val" class="font-bold text-purple-400">0.0</span>
+                        </div>
+                        <input type="range" id="conic-h" min="-5" max="5" step="0.1" value="0" class="w-full h-1 bg-slate-800 rounded-lg appearance-none accent-purple-500">
+                    </div>
+
+                    <!-- Center Y Coordinate (k_c) -->
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-0.5">
+                            <span class="text-slate-300 font-medium">Center Y (<code class="text-purple-400 font-mono">k_c</code>)</span>
+                            <span id="conic-k-val" class="font-bold text-purple-400">0.0</span>
+                        </div>
+                        <input type="range" id="conic-k" min="-5" max="5" step="0.1" value="0" class="w-full h-1 bg-slate-800 rounded-lg appearance-none accent-purple-500">
+                    </div>
+
+                    <!-- Parameter a (Radius/Semi-major) -->
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-0.5">
+                            <span id="lbl-conic-a" class="text-slate-300 font-medium">Radius / Axis 'a'</span>
+                            <span id="conic-a-val" class="font-bold text-purple-400">3.0</span>
+                        </div>
+                        <input type="range" id="conic-a" min="0.5" max="5" step="0.1" value="3" class="w-full h-1 bg-slate-800 rounded-lg appearance-none accent-purple-500">
+                    </div>
+
+                    <!-- Parameter b (Semi-minor, hidden dynamically for circle) -->
+                    <div id="conic-b-wrapper">
+                        <div class="flex justify-between text-[10px] mb-0.5">
+                            <span class="text-slate-300 font-medium">Semi-Conjugate / Axis 'b'</span>
+                            <span id="conic-b-val" class="font-bold text-purple-400">2.0</span>
+                        </div>
+                        <input type="range" id="conic-b" min="0.5" max="5" step="0.1" value="2" class="w-full h-1 bg-slate-800 rounded-lg appearance-none accent-purple-500">
+                    </div>
+                </div>
+
+                <!-- Interactive Conic Solver Outputs -->
+                <div class="mt-2 bg-purple-950 border border-purple-400/20 rounded p-2 space-y-1">
+                    <h5 class="text-[9px] font-extrabold uppercase tracking-wider text-purple-400 flex items-center gap-1">
+                        <i class="fa-solid fa-brain"></i> Dynamic Conic Solver
+                    </h5>
+                    <div class="space-y-1 text-[9px] mono-font text-slate-300">
+                        <div class="border-b border-purple-400/20 pb-0.5"><span class="text-slate-400">Equation:</span> <span id="c-eq" class="text-purple-400 font-bold block whitespace-normal break-all"></span></div>
+                        <div><span class="text-slate-400">Eccentricity (e):</span> <span id="c-ecc" class="text-purple-400 font-bold"></span></div>
+                        <div><span class="text-slate-400">Foci:</span> <span id="c-foci" class="text-purple-400 font-bold"></span></div>
+                        <div><span class="text-slate-400">Directrices:</span> <span id="c-dir" class="text-purple-400 font-bold"></span></div>
+                        <div><span class="text-slate-400">Latus Rectum:</span> <span id="c-lr" class="text-purple-400 font-bold"></span></div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Right Column: Full Viewport Graphic Canvas Plane -->
+        <section class="col-span-12 lg:col-span-8 xl:col-span-8.5 flex flex-col h-full min-h-0 relative">
+            
+            <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow-2xl flex flex-col flex-1 min-h-0 relative">
+                <!-- Canvas Control Header -->
+                <div class="bg-slate-950/80 px-3 py-1.5 border-b border-slate-800 flex justify-between items-center shrink-0 z-10">
+                    <div class="flex items-center gap-1.5">
+                        <span class="h-1.5 w-1.5 rounded-full bg-indigo-500 shadow-md shadow-indigo-500/50 animate-pulse"></span>
+                        <h3 id="current-graph-label" class="text-[10px] font-bold text-slate-100 uppercase tracking-wide">Plotting: y = f(x)</h3>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button id="btn-recenter" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-800 transition text-[9px] font-bold flex items-center gap-1" title="Center Coordinates">
+                            <i class="fa-solid fa-crosshairs"></i> Recenter
+                        </button>
+                        <button id="btn-zoom-in" class="bg-slate-800 hover:bg-slate-700 text-slate-300 h-5 w-5 rounded border border-slate-800 transition flex items-center justify-center font-bold text-[9px]" title="Zoom In">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                        <button id="btn-zoom-out" class="bg-slate-800 hover:bg-slate-700 text-slate-300 h-5 w-5 rounded border border-slate-800 transition flex items-center justify-center font-bold text-[9px]" title="Zoom Out">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Active Graphic Coordinates Plane -->
+                <div class="relative bg-slate-950 flex-1 w-full flex items-center justify-center select-none cursor-grab active:cursor-grabbing min-h-0" id="canvas-container">
+                    <canvas id="graphCanvas" class="absolute inset-0 block h-full w-full"></canvas>
+
+                    <!-- Embedded Interactive Legend Overlay -->
+                    <div class="absolute bottom-2.5 left-2.5 bg-slate-900/95 border border-slate-800/80 rounded p-2 text-[9px] space-y-0.5 shadow-md pointer-events-none backdrop-blur-sm z-20">
+                        <div id="legend-trans" class="flex items-center gap-1">
+                            <span class="w-2.5 h-0.5 bg-indigo-400 inline-block rounded-full"></span>
+                            <span class="text-slate-300 font-bold">Transformed curve: <span id="transformed-eq-text" class="mono-font text-[8px] text-pink-400">g(x)</span></span>
+                        </div>
+                        <div id="original-curve-legend" class="flex items-center gap-1">
+                            <span class="w-2.5 h-0.5 border-t border-dashed border-slate-500 inline-block"></span>
+                            <span class="text-slate-400 font-medium">Original Base curve: f(x)</span>
+                        </div>
+                        <div id="legend-domain-glow" class="flex items-center gap-1">
+                            <span class="w-2.5 h-0.5 bg-cyan-400/40 border border-cyan-400/60 inline-block rounded-sm"></span>
+                            <span class="text-slate-300 font-bold">Domain Glow (X-axis)</span>
+                        </div>
+                        <div id="legend-range-glow" class="flex items-center gap-1">
+                            <span class="w-2.5 h-0.5 bg-emerald-400/40 border border-emerald-400/60 inline-block rounded-sm"></span>
+                            <span class="text-slate-300 font-bold">Range Glow (Y-axis)</span>
+                        </div>
+                    </div>
+
+                    <!-- Coordinate Trace Tag -->
+                    <div id="coord-trace" class="absolute hidden bg-slate-900/95 border border-slate-700 text-[9px] p-1.5 rounded shadow-lg pointer-events-none backdrop-blur-sm z-30 space-y-0.5">
+                        <div class="font-bold text-slate-200" id="trace-xy">X: 0.00 | Y: 0.00</div>
+                        <div class="text-indigo-300" id="trace-f-xy">g(x) = 0.00</div>
+                    </div>
+                </div>
+
+                <!-- Canvas Option Toggle Footer -->
+                <div class="bg-slate-900 border-t border-slate-800 px-3 py-1 flex items-center justify-between gap-3 text-[9px] shrink-0">
+                    <div class="flex items-center gap-2.5">
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" id="chk-show-orig" checked class="rounded text-indigo-600 bg-slate-800 border-slate-700 scale-90">
+                            <span class="text-slate-400 font-semibold">Show Base Curve</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" id="chk-show-bounds" checked class="rounded text-cyan-600 bg-slate-800 border-slate-700 scale-90">
+                            <span class="text-slate-400 font-semibold">Glow Domain/Range</span>
+                        </label>
+                    </div>
+                    <div class="text-slate-500 font-semibold text-[8.5px]">
+                        <i class="fa-solid fa-circle-info text-indigo-400 mr-0.5"></i> Hold &amp; Drag plane to Pan | Scroll wheel to Zoom
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+        // Canvas contexts & global layout configurations
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('canvas-container');
+
+        let scale = 40; // Pixels per coordinate unit
+        let offsetX = 0; // Coordinate origin horizontal offset
+        let offsetY = 0; // Coordinate origin vertical offset
+        let isDragging = false;
+        let startX, startY;
+
+        // Custom transformation variables
+        let paramH = 0;
+        let paramK = 0;
+        let paramA = 1;
+        let paramB = 1;
+        
+        let transformationEnabled = true;
+        let absoluteOutput = false;
+        let absoluteInput = false;
+        let negativeOutput = false;
+        let negativeInput = false;
+
+        // Theme Status
+        let isDarkMode = true;
+
+        // Parabola modifiers
+        let parabA = 1.0;
+        let parabB = 0.0;
+        let parabC = 0.0;
+
+        // Conics modifiers
+        let conicH = 0.0;
+        let conicK = 0.0;
+        let conicA = 3.0; // Radius or horizontal semi-axis
+        let conicB = 2.0; // Vertical semi-axis
+
+        let currentCategory = 'algebraic';
+        let currentFunctionId = 'linear';
+
+        // Master JEE Math Database (Piecewise, Algebraics, Trigonometry & ITF, Exponential, Conics)
+        const functionDatabase = {
+            algebraic: [
+                { id: 'linear', name: 'y = x', baseName: 'Linear', domain: 'x ∈ ℝ', range: 'y ∈ ℝ', note: 'Standard parent linear identity function. Constant slope value: dy/dx = 1.' },
+                { id: 'quadratic', name: 'y = x²', baseName: 'Quadratic Parent', domain: 'x ∈ ℝ', range: 'y ∈ [0, ∞)', note: 'Vertical parent parabola. Symmetric across the positive vertical Y-axis.' },
+                { id: 'cubic', name: 'y = x³', baseName: 'Cubic', domain: 'x ∈ ℝ', range: 'y ∈ ℝ', note: 'The origin (0,0) represents a Point of Inflection where concavity flips.' },
+                { id: 'reciprocal', name: 'y = 1/x', baseName: 'Reciprocal', domain: 'x ∈ ℝ \\ {0}', range: 'y ∈ ℝ \\ {0}', note: 'Rectangular Hyperbola. Discontinuous at x = 0 (infinite asymptotes).' },
+                { id: 'reciprocal-sq', name: 'y = 1/x²', baseName: 'Reciprocal Square', domain: 'x ∈ ℝ \\ {0}', range: 'y ∈ (0, ∞)', note: 'Symmetric about Y-axis. Diverges to +∞ as input approaches zero.' }
+            ],
+            piecewise: [
+                { id: 'modulus', name: 'y = |x|', baseName: 'Modulus', domain: 'x ∈ ℝ', range: 'y ∈ [0, ∞)', note: 'Continuous everywhere, but non-differentiable at x = 0 due to sharp corner.' },
+                { id: 'gif', name: 'y = [x]', baseName: 'GIF (Greatest Integer)', domain: 'x ∈ ℝ', range: 'y ∈ ℤ', note: 'Step curve. Discontinuous at all integer values of x. Hollow circles on right boundaries.' },
+                { id: 'sif', name: 'y = ⌈x⌉', baseName: 'SIF (Ceiling)', domain: 'x ∈ ℝ', range: 'y ∈ ℤ', note: 'Smallest integer step function. Left boundary is open (hollow), right is closed.' },
+                { id: 'fpf', name: 'y = {x}', baseName: 'FPF (Fractional Part)', domain: 'x ∈ ℝ', range: 'y ∈ [0, 1)', note: 'Sawtooth profile with period T=1. Non-differentiable at all integers.' },
+                { id: 'signum', name: 'y = sgn(x)', baseName: 'Signum', domain: 'x ∈ ℝ', range: 'y ∈ {-1, 0, 1}', note: 'Irremovable step discontinuity at the origin. Bounded strictly to three discrete values.' }
+            ],
+            trig: [
+                { id: 'sin', name: 'y = sin(x)', baseName: 'Sine Wave', domain: 'x ∈ ℝ', range: 'y ∈ [-1, 1]', note: 'Periodic wave profile with period T = 2π. Continuous & differentiable everywhere.' },
+                { id: 'cos', name: 'y = cos(x)', baseName: 'Cosine Wave', domain: 'x ∈ ℝ', range: 'y ∈ [-1, 1]', note: 'Even periodic function. Symmetric about the vertical coordinate axis.' },
+                { id: 'tan', name: 'y = tan(x)', baseName: 'Tangent', domain: 'x ∈ ℝ \\ {(2n+1)π/2}', range: 'y ∈ ℝ', note: 'Asymptotic lines at odd multiples of π/2. Strictly increasing across intervals.' },
+                { id: 'cot', name: 'y = cot(x)', baseName: 'Cotangent', domain: 'x ∈ ℝ \\ {nπ}', range: 'y ∈ ℝ', note: 'Symmetric vertical asymptotes at integer multiples of π. Strictly decreasing.' },
+                { id: 'sec', name: 'y = sec(x)', baseName: 'Secant', domain: 'x ∈ ℝ \\ {(2n+1)π/2}', range: 'y ∈ (-∞, -1] ∪ [1, ∞)', note: 'U-shaped curves sitting above and below the gap region (-1, 1).' },
+                { id: 'csc', name: 'y = csc(x)', baseName: 'Cosecant', domain: 'x ∈ ℝ \\ {nπ}', range: 'y ∈ (-∞, -1] ∪ [1, ∞)', note: 'Relative coordinate extrema tracking inverse sine values.' },
+                { id: 'arcsin', name: 'y = sin⁻¹(x)', baseName: 'arcsin (ITF)', domain: 'x ∈ [-1, 1]', range: 'y ∈ [-π/2, π/2]', note: 'Principal value branch. Strictly increasing. Slope diverges to ∞ at boundaries.' },
+                { id: 'arccos', name: 'y = cos⁻¹(x)', baseName: 'arccos (ITF)', domain: 'x ∈ [-1, 1]', range: 'y ∈ [0, π]', note: 'Principal value branch. Strictly decreasing curve across domain.' },
+                { id: 'arctan', name: 'y = tan⁻¹(x)', baseName: 'arctan (ITF)', domain: 'x ∈ ℝ', range: 'y ∈ (-π/2,  π/2)', note: 'Asymptotic limits at y = ±π/2. Crucial for definite integral boundary limits.' },
+                { id: 'arccot', name: 'y = cot⁻¹(x)', baseName: 'arccot (ITF)', domain: 'x ∈ ℝ', range: 'y ∈ (0, π)', note: 'Principal branch of inverse cotangent. Strictly decreasing with horizontal asymptotes at y = 0 and y = π.' },
+                { id: 'arcsec', name: 'y = sec⁻¹(x)', baseName: 'arcsec (ITF)', domain: 'x ∈ (-∞, -1] ∪ [1, ∞)', range: 'y ∈ [0, π] \\ {π/2}', note: 'Inverse secant. Bounded away from (-1, 1). Flat derivative near infinity; vertical slope at x = ±1.' },
+                { id: 'arccsc', name: 'y = csc⁻¹(x)', baseName: 'arccsc (ITF)', domain: 'x ∈ (-∞, -1] ∪ [1, ∞)', range: 'y ∈ [-π/2, π/2] \\ {0}', note: 'Inverse cosecant. Bounded to outer domains. Crucial for advanced substitution integrals.' }
+            ],
+            explog: [
+                { id: 'exponential', name: 'y = e^x', baseName: 'Exp Growth', domain: 'x ∈ ℝ', range: 'y ∈ (0, ∞)', note: 'Strictly increasing growth rate. Horizontal Y-asymptote on the left branch.' },
+                { id: 'exponential-half', name: 'y = (0.5)^x', baseName: 'Exp Decay', domain: 'x ∈ ℝ', range: 'y ∈ (0, ∞)', note: 'Decreasing growth curve since the base constant is less than 1.' },
+                { id: 'logarithmic', name: 'y = ln(x)', baseName: 'Natural Log', domain: 'x ∈ (0, ∞)', range: 'y ∈ ℝ', note: 'Defined only for positive real numbers. Vertical asymptote at x = 0.' },
+                { id: 'logarithmic-half', name: 'y = log_0.5(x)', baseName: 'Log (a < 1)', domain: 'x ∈ (0, ∞)', range: 'y ∈ ℝ', note: 'Decreasing logarithmic curve because base is smaller than unity.' }
+            ],
+            conics: [
+                { id: 'circle', name: 'Circle', baseName: 'Circle', domain: 'Dynamic', range: 'Dynamic', note: 'Symmetric implicit equation. Radius scale R represents the uniform radius parameter.' },
+                { id: 'ellipse', name: 'Ellipse', baseName: 'Ellipse', domain: 'Dynamic', range: 'Dynamic', note: 'Dual-foci implicit conic shape. Standard equation form is relative to Center (h,k).' },
+                { id: 'hyperbola', name: 'Hyperbola', baseName: 'Hyperbola', domain: 'Dynamic', range: 'Dynamic', note: 'Symmetric branches with horizontal/vertical asymptotes sitting at y - k = ±(b/a)(x - h).' }
+            ],
+            parabolaDeep: [
+                { id: 'parabola-deep', name: 'y = ax² + bx + c', baseName: 'Quadratic Solver', domain: 'x ∈ ℝ', range: 'Dynamic', note: 'Dynamic parabolic system mapped coordinates based on direct a, b, c, and discriminant updates.' }
+            ]
+        };
+
+        function bindEvents() {
+            // Category selectors (Tab buttons)
+            document.getElementById('tab-algebraic').addEventListener('click', () => switchCategory('algebraic'));
+            document.getElementById('tab-piecewise').addEventListener('click', () => switchCategory('piecewise'));
+            document.getElementById('tab-trig').addEventListener('click', () => switchCategory('trig'));
+            document.getElementById('tab-explog').addEventListener('click', () => switchCategory('explog'));
+            document.getElementById('tab-conics').addEventListener('click', () => switchCategory('conics'));
+            document.getElementById('tab-parabolaDeep').addEventListener('click', () => switchCategory('parabolaDeep'));
+
+            // Theme Toggle event binding
+            document.getElementById('btn-toggle-theme').addEventListener('click', toggleTheme);
+
+            // Top control utilities
+            document.getElementById('btn-reset-all').addEventListener('click', resetAll);
+
+            // Left panel controls - Transformations
+            document.getElementById('btn-reset-trans').addEventListener('click', resetTransformationsOnly);
+            document.getElementById('toggle-transformations').addEventListener('change', toggleTransformationModule);
+
+            document.getElementById('slider-h').addEventListener('input', updateSliders);
+            document.getElementById('slider-k').addEventListener('input', updateSliders);
+            document.getElementById('slider-a').addEventListener('input', updateSliders);
+            document.getElementById('slider-b').addEventListener('input', updateSliders);
+
+            document.getElementById('chk-abs-out').addEventListener('change', updateToggles);
+            document.getElementById('chk-abs-in').addEventListener('change', updateToggles);
+            document.getElementById('chk-neg-out').addEventListener('change', updateToggles);
+            document.getElementById('chk-neg-in').addEventListener('change', updateToggles);
+
+            // Left panel controls - Parabola Mechanics
+            document.getElementById('btn-reset-parab').addEventListener('click', resetParabolaOnly);
+            document.getElementById('parabola-a').addEventListener('input', () => updateParabola('a'));
+            document.getElementById('parabola-b').addEventListener('input', () => updateParabola('b'));
+            document.getElementById('parabola-c').addEventListener('input', () => updateParabola('c'));
+            document.getElementById('parabola-d').addEventListener('input', () => updateParabola('d'));
+
+            document.getElementById('btn-preset-pos').addEventListener('click', () => setDPreset('positive'));
+            document.getElementById('btn-preset-zero').addEventListener('click', () => setDPreset('zero'));
+            document.getElementById('btn-preset-neg').addEventListener('click', () => setDPreset('negative'));
+
+            // Left panel controls - Conics Mechanics
+            document.getElementById('btn-reset-conic').addEventListener('click', resetConicsOnly);
+            document.getElementById('conic-h').addEventListener('input', updateConicParams);
+            document.getElementById('conic-k').addEventListener('input', updateConicParams);
+            document.getElementById('conic-a').addEventListener('input', updateConicParams);
+            document.getElementById('conic-b').addEventListener('input', updateConicParams);
+
+            // Canvas coordinate utilities
+            document.getElementById('btn-recenter').addEventListener('click', panReset);
+            document.getElementById('btn-zoom-in').addEventListener('click', () => zoomCanvas(1.2));
+            document.getElementById('btn-zoom-out').addEventListener('click', () => zoomCanvas(0.8));
+
+            // Footer options
+            document.getElementById('chk-show-orig').addEventListener('change', triggerRedraw);
+            document.getElementById('chk-show-bounds').addEventListener('change', triggerRedraw);
+        }
+
+        // Screen resize observer & dynamic layout adjustments
+        function resizeCanvas() {
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            drawGraph();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('DOMContentLoaded', () => {
+            initWorkspace();
+            bindEvents();
+            resizeCanvas();
+        });
+
+        // Initialize drag coordinate logic
+        function initWorkspace() {
+            canvas.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.clientX - offsetX;
+                startY = e.clientY - offsetY;
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    offsetX = e.clientX - startX;
+                    offsetY = e.clientY - startY;
+                    drawGraph();
+                }
+                updateCoordinateTrace(e);
+            });
+
+            canvas.addEventListener('mouseup', () => isDragging = false);
+            canvas.addEventListener('mouseleave', () => {
+                isDragging = false;
+                document.getElementById('coord-trace').classList.add('hidden');
+            });
+
+            // Touch interface mappings
+            canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    startX = e.touches[0].clientX - offsetX;
+                    startY = e.touches[0].clientY - offsetY;
+                }
+            });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (isDragging && e.touches.length === 1) {
+                    offsetX = e.touches[0].clientX - startX;
+                    offsetY = e.touches[0].clientY - startY;
+                    drawGraph();
+                }
+            });
+
+            canvas.addEventListener('touchend', () => isDragging = false);
+
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+                zoomCanvas(zoomFactor);
+            }, { passive: false });
+
+            // Initialize standard category
+            switchCategory('algebraic');
+        }
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            const themeText = document.getElementById('theme-text');
+
+            if (isDarkMode) {
+                body.classList.remove('light-theme');
+                themeIcon.className = "fa-solid fa-sun text-amber-400";
+                themeText.textContent = "Light";
+            } else {
+                body.classList.add('light-theme');
+                themeIcon.className = "fa-solid fa-moon text-indigo-400";
+                themeText.textContent = "Dark";
+            }
+            drawGraph();
+        }
+
+        function zoomCanvas(factor) {
+            scale *= factor;
+            scale = Math.max(10, Math.min(scale, 250));
+            drawGraph();
+        }
+
+        function panReset() {
+            offsetX = 0;
+            offsetY = 0;
+            scale = 40;
+            drawGraph();
+        }
+
+        function resetTransformationsOnly() {
+            document.getElementById('slider-h').value = 0;
+            document.getElementById('slider-k').value = 0;
+            document.getElementById('slider-a').value = 1;
+            document.getElementById('slider-b').value = 1;
+            document.getElementById('chk-abs-out').checked = false;
+            document.getElementById('chk-abs-in').checked = false;
+            document.getElementById('chk-neg-out').checked = false;
+            document.getElementById('chk-neg-in').checked = false;
+
+            updateSliders();
+            updateToggles();
+        }
+
+        function resetParabolaOnly() {
+            document.getElementById('parabola-a').value = 1.0;
+            document.getElementById('parabola-b').value = 0.0;
+            document.getElementById('parabola-c').value = 0.0;
+            document.getElementById('parabola-d').value = 0.0;
+            updateParabola('c');
+        }
+
+        function resetConicsOnly() {
+            document.getElementById('conic-h').value = 0.0;
+            document.getElementById('conic-k').value = 0.0;
+            document.getElementById('conic-a').value = 3.0;
+            document.getElementById('conic-b').value = 2.0;
+            updateConicParams();
+        }
+
+        function resetAll() {
+            resetTransformationsOnly();
+            resetParabolaOnly();
+            resetConicsOnly();
+            panReset();
+        }
+
+        function switchCategory(cat) {
+            currentCategory = cat;
+            
+            // Clear prior states automatically to prevent layout spill
+            resetTransformationsOnly();
+
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('bg-indigo-600', 'border-indigo-500', 'text-white', 'shadow-md');
+                tab.classList.add('bg-slate-900', 'border-slate-800/60', 'text-slate-400');
+            });
+            const activeTab = document.getElementById(`tab-${cat}`);
+            if (activeTab) {
+                activeTab.classList.remove('bg-slate-900', 'border-slate-800/60', 'text-slate-400');
+                activeTab.classList.add('bg-indigo-600', 'border-indigo-500', 'text-white', 'shadow-md');
+            }
+
+            // Repopulate curve selection list
+            const listWrapper = document.getElementById('function-selector-list');
+            listWrapper.innerHTML = '';
+            
+            const list = functionDatabase[cat];
+            list.forEach((f, idx) => {
+                const btn = document.createElement('button');
+                btn.id = `btn-${f.id}`;
+                btn.className = `btn-func text-[10px] font-semibold px-2 py-0.5 rounded border transition-all flex items-center gap-1 whitespace-nowrap ${
+                    idx === 0 ? 'bg-indigo-600/30 border-indigo-500 text-slate-100 shadow' : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                }`;
+                
+                btn.addEventListener('click', () => selectFunction(f.id));
+                btn.innerHTML = `<span class="font-bold">${f.baseName}</span> <span class="text-[8px] text-slate-500 font-normal">(${f.name})</span>`;
+                listWrapper.appendChild(btn);
+            });
+
+            selectFunction(list[0].id);
+
+            const paraPanel = document.getElementById('parabola-specific-panel');
+            const transformPanel = document.getElementById('transformation-panel');
+            const conicsPanel = document.getElementById('conics-specific-panel');
+
+            if (cat === 'parabolaDeep') {
+                paraPanel.classList.remove('hidden');
+                transformPanel.classList.add('hidden');
+                conicsPanel.classList.add('hidden');
+            } else if (cat === 'conics') {
+                paraPanel.classList.add('hidden');
+                transformPanel.classList.add('hidden');
+                conicsPanel.classList.remove('hidden');
+            } else {
+                paraPanel.classList.add('hidden');
+                transformPanel.classList.remove('hidden');
+                conicsPanel.classList.add('hidden');
+            }
+        }
+
+        function selectFunction(fid) {
+            currentFunctionId = fid;
+
+            document.querySelectorAll('.btn-func').forEach(btn => {
+                btn.classList.remove('bg-indigo-600/30', 'border-indigo-500', 'text-slate-100', 'shadow');
+                btn.classList.add('bg-slate-950', 'border-slate-800', 'text-slate-400');
+            });
+
+            const activeBtn = document.getElementById(`btn-${fid}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-slate-950', 'border-slate-800', 'text-slate-400');
+                activeBtn.classList.add('bg-indigo-600/30', 'border-indigo-500', 'text-slate-100', 'shadow');
+            }
+
+            const activeFuncData = findFunctionData(fid);
+            if (activeFuncData) {
+                document.getElementById('current-graph-label').textContent = `Plotting: ${activeFuncData.name}`;
+                document.getElementById('educator-note-body').innerHTML = `
+                    <p class="font-semibold text-[10.5px]">${activeFuncData.note}</p>
+                    <p class="text-[8.5px] text-indigo-400 font-bold border-l-2 border-indigo-500 pl-1.5 mt-1">PEDAGOGY RULE: Study discontinuous steps and derivative break limits.</p>
+                `;
+            }
+
+            // If circle conic is selected, hide the b-slider dynamically to avoid math conflict
+            const conicBWrapper = document.getElementById('conic-b-wrapper');
+            const labelConicA = document.getElementById('lbl-conic-a');
+            if (currentCategory === 'conics') {
+                if (fid === 'circle') {
+                    conicBWrapper.classList.add('hidden');
+                    labelConicA.textContent = "Radius (R)";
+                } else {
+                    conicBWrapper.classList.remove('hidden');
+                    labelConicA.textContent = "Semi-Major Axis 'a'";
+                }
+                updateConicParams();
+            }
+
+            // Sync visual components in coordinates view
+            const origLegend = document.getElementById('original-curve-legend');
+            const transLegend = document.getElementById('legend-trans');
+            const domainGlow = document.getElementById('legend-domain-glow');
+            const rangeGlow = document.getElementById('legend-range-glow');
+
+            if (currentCategory === 'conics' || currentCategory === 'parabolaDeep') {
+                origLegend.classList.add('hidden');
+                transLegend.classList.add('hidden');
+                domainGlow.classList.add('hidden');
+                rangeGlow.classList.add('hidden');
+            } else {
+                origLegend.classList.remove('hidden');
+                transLegend.classList.remove('hidden');
+                domainGlow.classList.remove('hidden');
+                rangeGlow.classList.remove('hidden');
+            }
+
+            drawGraph();
+        }
+
+        function findFunctionData(id) {
+            for (let cat in functionDatabase) {
+                const f = functionDatabase[cat].find(item => item.id === id);
+                if (f) return f;
+            }
+            return null;
+        }
+
+        function updateSliders() {
+            paramH = parseFloat(document.getElementById('slider-h').value);
+            paramK = parseFloat(document.getElementById('slider-k').value);
+            paramA = parseFloat(document.getElementById('slider-a').value);
+            paramB = parseFloat(document.getElementById('slider-b').value);
+
+            document.getElementById('val-h').textContent = paramH.toFixed(1);
+            document.getElementById('val-k').textContent = paramK.toFixed(1);
+            document.getElementById('val-a').textContent = paramA.toFixed(1);
+            document.getElementById('val-b').textContent = paramB.toFixed(1);
+
+            updateEquationText();
+            drawGraph();
+        }
+
+        function updateToggles() {
+            absoluteOutput = document.getElementById('chk-abs-out').checked;
+            absoluteInput = document.getElementById('chk-abs-in').checked;
+            negativeOutput = document.getElementById('chk-neg-out').checked;
+            negativeInput = document.getElementById('chk-neg-in').checked;
+
+            updateEquationText();
+            drawGraph();
+        }
+
+        function updateParabola(source) {
+            parabA = parseFloat(document.getElementById('parabola-a').value);
+            parabB = parseFloat(document.getElementById('parabola-b').value);
+            
+            if (parabA === 0) {
+                parabA = 0.1;
+                document.getElementById('parabola-a').value = 0.1;
+            }
+
+            if (source === 'd') {
+                let targetD = parseFloat(document.getElementById('parabola-d').value);
+                parabC = (parabB * parabB - targetD) / (4 * parabA);
+                document.getElementById('parabola-c').value = parabC.toFixed(2);
+            } else {
+                parabC = parseFloat(document.getElementById('parabola-c').value);
+                let currentD = parabB * parabB - 4 * parabA * parabC;
+                document.getElementById('parabola-d').value = currentD.toFixed(2);
+            }
+
+            document.getElementById('parabola-a-val').textContent = parabA.toFixed(1);
+            document.getElementById('parabola-b-val').textContent = parabB.toFixed(1);
+            document.getElementById('parabola-c-val').textContent = parabC.toFixed(1);
+
+            let finalD = parabB * parabB - 4 * parabA * parabC;
+            document.getElementById('parabola-d-val').textContent = finalD.toFixed(1);
+
+            drawGraph();
+        }
+
+        function setDPreset(type) {
+            parabA = parseFloat(document.getElementById('parabola-a').value);
+            parabB = parseFloat(document.getElementById('parabola-b').value);
+            
+            let targetD = 0;
+            if (type === 'positive') targetD = 12;
+            if (type === 'zero') targetD = 0;
+            if (type === 'negative') targetD = -8;
+
+            document.getElementById('parabola-d').value = targetD;
+            updateParabola('d');
+        }
+
+        function updateConicParams() {
+            conicH = parseFloat(document.getElementById('conic-h').value);
+            conicK = parseFloat(document.getElementById('conic-k').value);
+            conicA = parseFloat(document.getElementById('conic-a').value);
+            conicB = parseFloat(document.getElementById('conic-b').value);
+
+            if (conicA <= 0) conicA = 0.1;
+            if (conicB <= 0) conicB = 0.1;
+
+            document.getElementById('conic-h-val').textContent = conicH.toFixed(1);
+            document.getElementById('conic-k-val').textContent = conicK.toFixed(1);
+            document.getElementById('conic-a-val').textContent = conicA.toFixed(1);
+            document.getElementById('conic-b-val').textContent = conicB.toFixed(1);
+
+            solveAndDisplayConic();
+            drawGraph();
+        }
+
+        function solveAndDisplayConic() {
+            const eqBox = document.getElementById('c-eq');
+            const eccBox = document.getElementById('c-ecc');
+            const fociBox = document.getElementById('c-foci');
+            const dirBox = document.getElementById('c-dir');
+            const lrBox = document.getElementById('c-lr');
+
+            const h = conicH;
+            const k = conicK;
+            const a = conicA;
+            const b = conicB;
+
+            if (currentFunctionId === 'circle') {
+                eqBox.textContent = `(x - ${h.toFixed(1)})² + (y - ${k.toFixed(1)})² = ${Math.pow(a,2).toFixed(1)}`;
+                eccBox.textContent = `e = 0.00 (Perfect symmetry)`;
+                fociBox.textContent = `Center focus: (${h.toFixed(1)}, ${k.toFixed(1)})`;
+                dirBox.textContent = `None (Infinity bounds)`;
+                lrBox.textContent = `Diameter = ${(2 * a).toFixed(2)}`;
+            } 
+            else if (currentFunctionId === 'ellipse') {
+                eqBox.textContent = `(x - ${h.toFixed(1)})²/${Math.pow(a,2).toFixed(1)} + (y - ${k.toFixed(1)})²/${Math.pow(b,2).toFixed(1)} = 1`;
+                
+                if (a >= b) {
+                    let e = Math.sqrt(1 - (b*b)/(a*a));
+                    let ae = a * e;
+                    let lru = (2 * b * b) / a;
+                    eccBox.textContent = `e = ${e.toFixed(3)} (Horizontal major)`;
+                    fociBox.textContent = `S1(${ (h + ae).toFixed(1) }, ${k.toFixed(1)}), S2(${ (h - ae).toFixed(1) }, ${k.toFixed(1)})`;
+                    dirBox.textContent = `x = ${(h + a/e).toFixed(1)}, x = ${(h - a/e).toFixed(1)}`;
+                    lrBox.textContent = `${lru.toFixed(2)}`;
+                } else {
+                    let e = Math.sqrt(1 - (a*a)/(b*b));
+                    let be = b * e;
+                    let lru = (2 * a * a) / b;
+                    eccBox.textContent = `e = ${e.toFixed(3)} (Vertical major)`;
+                    fociBox.textContent = `S1(${h.toFixed(1)}, ${ (k + be).toFixed(1) }), S2(${h.toFixed(1)}, ${ (k - be).toFixed(1) })`;
+                    dirBox.textContent = `y = ${(k + b/e).toFixed(1)}, y = ${(k - b/e).toFixed(1)}`;
+                    lrBox.textContent = `${lru.toFixed(2)}`;
+                }
+            } 
+            else if (currentFunctionId === 'hyperbola') {
+                eqBox.textContent = `(x - ${h.toFixed(1)})²/${Math.pow(a,2).toFixed(1)} - (y - ${k.toFixed(1)})²/${Math.pow(b,2).toFixed(1)} = 1`;
+                
+                let e = Math.sqrt(1 + (b*b)/(a*a));
+                let ae = a * e;
+                let lru = (2 * b * b) / a;
+                eccBox.textContent = `e = ${e.toFixed(3)} (Transverse major)`;
+                fociBox.textContent = `S1(${ (h + ae).toFixed(1) }, ${k.toFixed(1)}), S2(${ (h - ae).toFixed(1) }, ${k.toFixed(1)})`;
+                dirBox.textContent = `x = ${(h + a/e).toFixed(1)}, x = ${(h - a/e).toFixed(1)}`;
+                lrBox.textContent = `${lru.toFixed(2)}`;
+            }
+        }
+
+        function toggleTransformationModule() {
+            transformationEnabled = document.getElementById('toggle-transformations').checked;
+            const block = document.getElementById('transformation-controls');
+            if (transformationEnabled) {
+                block.classList.remove('opacity-40', 'pointer-events-none');
+            } else {
+                block.classList.add('opacity-40', 'pointer-events-none');
+            }
+            drawGraph();
+        }
+
+        function triggerRedraw() {
+            drawGraph();
+        }
+
+        function updateEquationText() {
+            if (currentCategory === 'parabolaDeep' || currentCategory === 'conics') return;
+
+            let eqStr = "g(x) = ";
+            if (absoluteOutput) eqStr += "|";
+            if (negativeOutput) eqStr += "-";
+            if (paramA !== 1) eqStr += `${paramA.toFixed(1)} · `;
+            
+            eqStr += "f(";
+            if (negativeInput) eqStr += "-";
+            if (paramB !== 1) eqStr += `${paramB.toFixed(1)}`;
+            
+            let argStr = absoluteInput ? "|x|" : "x";
+
+            if (paramH > 0) {
+                eqStr += `(${argStr} - ${paramH.toFixed(1)})`;
+            } else if (paramH < 0) {
+                eqStr += `(${argStr} + ${Math.abs(paramH).toFixed(1)})`;
+            } else {
+                eqStr += argStr;
+            }
+
+            eqStr += ")";
+            if (absoluteOutput) eqStr += "|";
+
+            if (paramK > 0) {
+                eqStr += ` + ${paramK.toFixed(1)}`;
+            } else if (paramK < 0) {
+                eqStr += ` - ${Math.abs(paramK).toFixed(1)}`;
+            }
+
+            document.getElementById('transformed-eq-text').textContent = eqStr;
+        }
+
+        function evaluateBase(x, id) {
+            switch(id) {
+                case 'linear': return x;
+                case 'quadratic': return x * x;
+                case 'cubic': return Math.pow(x, 3);
+                case 'reciprocal': return x === 0 ? null : 1 / x;
+                case 'reciprocal-sq': return x === 0 ? null : 1 / (x * x);
+                case 'modulus': return Math.abs(x);
+                case 'gif': return Math.floor(x);
+                case 'sif': return Math.ceil(x);
+                case 'fpf': return x - Math.floor(x);
+                case 'signum': return x > 0 ? 1 : (x < 0 ? -1 : 0);
+                case 'sin': return Math.sin(x);
+                case 'cos': return Math.cos(x);
+                case 'tan': 
+                    if (Math.abs(Math.cos(x)) < 1e-4) return null;
+                    return Math.tan(x);
+                case 'cot': 
+                    if (Math.abs(Math.sin(x)) < 1e-4) return null;
+                    return 1 / Math.tan(x);
+                case 'sec': 
+                    if (Math.abs(Math.cos(x)) < 1e-4) return null;
+                    return 1 / Math.cos(x);
+                case 'csc': 
+                    if (Math.abs(Math.sin(x)) < 1e-4) return null;
+                    return 1 / Math.sin(x);
+                case 'arcsin': 
+                    if (x < -1 || x > 1) return null;
+                    return Math.asin(x);
+                case 'arccos': 
+                    if (x < -1 || x > 1) return null;
+                    return Math.acos(x);
+                case 'arctan': return Math.atan(x);
+                case 'arccot': return Math.PI / 2 - Math.atan(x);
+                case 'arcsec': 
+                    if (x > -1 && x < 1) return null;
+                    return Math.acos(1 / x);
+                case 'arccsc': 
+                    if (x > -1 && x < 1) return null;
+                    return Math.asin(1 / x);
+                case 'exponential': return Math.exp(x);
+                case 'exponential-half': return Math.pow(0.5, x);
+                case 'logarithmic': return x <= 0 ? null : Math.log(x);
+                case 'logarithmic-half': return x <= 0 ? null : Math.log(x) / Math.log(0.5);
+                case 'parabola-deep':
+                    return parabA * x * x + parabB * x + parabC;
+                default: return 0;
+            }
+        }
+
+        function evaluateTransformed(x, id) {
+            if (!transformationEnabled || currentCategory === 'parabolaDeep') {
+                return evaluateBase(x, id);
+            }
+
+            let inner = x * paramB;
+            if (negativeInput) {
+                inner = -inner;
+            }
+
+            inner = inner - paramH;
+
+            if (absoluteInput) {
+                inner = Math.abs(inner);
+            }
+
+            let valY = evaluateBase(inner, id);
+            if (valY === null || isNaN(valY)) return null;
+
+            valY = valY * paramA;
+            if (negativeOutput) {
+                valY = -valY;
+            }
+
+            if (absoluteOutput) {
+                valY = Math.abs(valY);
+            }
+
+            valY = valY + paramK;
+            return valY;
+        }
+
+        function toPixel(x, y) {
+            const px = canvas.width / 2 + offsetX + x * scale;
+            const py = canvas.height / 2 + offsetY - y * scale;
+            return { x: px, y: py };
+        }
+
+        function toMath(px, py) {
+            const mx = (px - canvas.width / 2 - offsetX) / scale;
+            const my = (canvas.height / 2 + offsetY - py) / scale;
+            return { x: mx, y: my };
+        }
+
+        function drawGraph() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawGrid();
+
+            if (document.getElementById('chk-show-bounds').checked && currentCategory !== 'parabolaDeep' && currentCategory !== 'conics') {
+                drawDomainRangeOverlays();
+            }
+
+            const showBase = document.getElementById('chk-show-orig').checked;
+            if (showBase && currentCategory !== 'parabolaDeep' && currentCategory !== 'conics') {
+                drawCurve(currentFunctionId, false);
+            }
+
+            if (currentCategory === 'conics') {
+                drawConicSection(currentFunctionId);
+            } else if (currentCategory === 'parabolaDeep') {
+                drawParabolaDeepDive();
+            } else {
+                drawCurve(currentFunctionId, true);
+            }
+
+            updateDiagnosticsDisplay();
+        }
+
+        function drawGrid() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const originX = width / 2 + offsetX;
+            const originY = height / 2 + offsetY;
+
+            // Set grid styling programmatically based on Dark/Light theme
+            ctx.strokeStyle = isDarkMode ? '#111827' : '#f1f5f9';
+            ctx.lineWidth = 1;
+            
+            let step = 1;
+            if (scale < 15) step = 10;
+            else if (scale < 30) step = 5;
+            else if (scale > 150) step = 0.25;
+            else if (scale > 80) step = 0.5;
+
+            let startGridX = Math.floor((-offsetX - width / 2) / (scale * step)) * step;
+            let endGridX = Math.ceil((width / 2 - offsetX) / (scale * step)) * step;
+            for (let x = startGridX; x <= endGridX; x += step) {
+                const px = originX + x * scale;
+                ctx.beginPath();
+                ctx.moveTo(px, 0);
+                ctx.lineTo(px, height);
+                ctx.stroke();
+            }
+
+            let startGridY = Math.floor((offsetY - height / 2) / (scale * step)) * step;
+            let endGridY = Math.ceil((height / 2 + offsetY) / (scale * step)) * step;
+            for (let y = startGridY; y <= endGridY; y += step) {
+                const py = originY - y * scale;
+                ctx.beginPath();
+                ctx.moveTo(0, py);
+                ctx.lineTo(width, py);
+                ctx.stroke();
+            }
+
+            ctx.strokeStyle = isDarkMode ? '#1e293b' : '#cbd5e1';
+            ctx.lineWidth = 1.5;
+
+            ctx.beginPath();
+            ctx.moveTo(0, originY);
+            ctx.lineTo(width, originY);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(originX, 0);
+            ctx.lineTo(originX, height);
+            ctx.stroke();
+
+            ctx.fillStyle = isDarkMode ? '#64748b' : '#334155';
+            ctx.font = '9px "JetBrains Mono"';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+
+            for (let x = startGridX; x <= endGridX; x += step) {
+                if (Math.abs(x) < 1e-10) continue;
+                const px = originX + x * scale;
+                ctx.fillText(x.toString(), px, originY + 4);
+                ctx.beginPath();
+                ctx.moveTo(px, originY - 2);
+                ctx.lineTo(px, originY + 2);
+                ctx.stroke();
+            }
+
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            for (let y = startGridY; y <= endGridY; y += step) {
+                if (Math.abs(y) < 1e-10) continue;
+                const py = originY - y * scale;
+                ctx.fillText(y.toString(), originX - 6, py);
+                ctx.beginPath();
+                ctx.moveTo(originX - 2, py);
+                ctx.lineTo(originX + 2, py);
+                ctx.stroke();
+            }
+        }
+
+        function drawDomainRangeOverlays() {
+            const originX = canvas.width / 2 + offsetX;
+            const originY = canvas.height / 2 + offsetY;
+            
+            const funcData = findFunctionData(currentFunctionId);
+            if (!funcData) return;
+
+            let mathMinX = toMath(0, 0).x;
+            let mathMaxX = toMath(canvas.width, 0).x;
+
+            ctx.fillStyle = isDarkMode ? 'rgba(34, 211, 238, 0.05)' : 'rgba(14, 116, 144, 0.06)'; 
+            ctx.strokeStyle = isDarkMode ? 'rgba(34, 211, 238, 0.35)' : 'rgba(14, 116, 144, 0.5)';
+            ctx.lineWidth = 3;
+
+            let dStart = mathMinX, dEnd = mathMaxX;
+            if (currentFunctionId === 'arcsin' || currentFunctionId === 'arccos') {
+                let leftBound = (-1 + paramH) / paramB;
+                let rightBound = (1 + paramH) / paramB;
+                dStart = Math.min(leftBound, rightBound);
+                dEnd = Math.max(leftBound, rightBound);
+                
+                const leftPx = Math.max(0, toPixel(dStart, 0).x);
+                const rightPx = Math.min(canvas.width, toPixel(dEnd, 0).x);
+                if (leftPx < rightPx) {
+                    ctx.fillRect(leftPx, originY - 6, rightPx - leftPx, 12);
+                    ctx.beginPath(); ctx.moveTo(leftPx, originY); ctx.lineTo(rightPx, originY); ctx.stroke();
+                }
+            } else if (currentFunctionId === 'logarithmic' || currentFunctionId === 'logarithmic-half') {
+                if (paramB > 0) {
+                    dStart = paramH / paramB;
+                } else {
+                    dEnd = paramH / paramB;
+                }
+                const leftPx = Math.max(0, toPixel(dStart, 0).x);
+                const rightPx = Math.min(canvas.width, toPixel(dEnd, 0).x);
+                if (leftPx < rightPx) {
+                    ctx.fillRect(leftPx, originY - 6, rightPx - leftPx, 12);
+                    ctx.beginPath(); ctx.moveTo(leftPx, originY); ctx.lineTo(rightPx, originY); ctx.stroke();
+                }
+            } else if (currentFunctionId === 'arcsec' || currentFunctionId === 'arccsc') {
+                let leftBound = (-1 + paramH) / paramB;
+                let rightBound = (1 + paramH) / paramB;
+                let b1 = Math.min(leftBound, rightBound);
+                let b2 = Math.max(leftBound, rightBound);
+
+                // Left Domain split interval
+                const leftPx1 = 0;
+                const leftPx2 = Math.min(canvas.width, toPixel(b1, 0).x);
+                if (leftPx1 < leftPx2) {
+                    ctx.fillRect(leftPx1, originY - 6, leftPx2 - leftPx1, 12);
+                    ctx.beginPath(); ctx.moveTo(leftPx1, originY); ctx.lineTo(leftPx2, originY); ctx.stroke();
+                }
+
+                // Right Domain split interval
+                const rightPx1 = Math.max(0, toPixel(b2, 0).x);
+                const rightPx2 = canvas.width;
+                if (rightPx1 < rightPx2) {
+                    ctx.fillRect(rightPx1, originY - 6, rightPx2 - rightPx1, 12);
+                    ctx.beginPath(); ctx.moveTo(rightPx1, originY); ctx.lineTo(rightPx2, originY); ctx.stroke();
+                }
+            } else {
+                const leftPx = Math.max(0, toPixel(dStart, 0).x);
+                const rightPx = Math.min(canvas.width, toPixel(dEnd, 0).x);
+                if (leftPx < rightPx) {
+                    ctx.fillRect(leftPx, originY - 6, rightPx - leftPx, 12);
+                    ctx.beginPath(); ctx.moveTo(leftPx, originY); ctx.lineTo(rightPx, originY); ctx.stroke();
+                }
+            }
+
+            ctx.fillStyle = isDarkMode ? 'rgba(52, 211, 153, 0.05)' : 'rgba(4, 120, 87, 0.06)';
+            ctx.strokeStyle = isDarkMode ? 'rgba(52, 211, 153, 0.35)' : 'rgba(4, 120, 87, 0.5)';
+            ctx.lineWidth = 3;
+
+            let rStart = toMath(0, canvas.height).y, rEnd = toMath(0, 0).y;
+
+            if (currentFunctionId === 'sin' || currentFunctionId === 'cos') {
+                let amp = Math.abs(paramA);
+                rStart = -amp + paramK;
+                rEnd = amp + paramK;
+            } else if (currentFunctionId === 'arcsin' || currentFunctionId === 'arccsc') {
+                let rangeHalf = (Math.PI / 2) * Math.abs(paramA);
+                rStart = -rangeHalf + paramK;
+                rEnd = rangeHalf + paramK;
+            } else if (currentFunctionId === 'arccos' || currentFunctionId === 'arccot' || currentFunctionId === 'arcsec') {
+                let rSpan = Math.PI * Math.abs(paramA);
+                rStart = paramK;
+                rEnd = rSpan + paramK;
+            } else if (currentFunctionId === 'quadratic') {
+                rStart = paramK;
+            } else if (currentFunctionId === 'exponential' || currentFunctionId === 'exponential-half') {
+                rStart = paramK;
+            }
+
+            const bottomPx = Math.min(canvas.height, toPixel(0, rStart).y);
+            const topPx = Math.max(0, toPixel(0, rEnd).y);
+
+            if (topPx < bottomPx) {
+                ctx.fillRect(originX - 6, topPx, 12, bottomPx - topPx);
+                ctx.beginPath();
+                ctx.moveTo(originX, topPx);
+                ctx.lineTo(originX, bottomPx);
+                ctx.stroke();
+            }
+        }
+
+        function drawCurve(fid, isTransformed) {
+            ctx.beginPath();
+            ctx.lineWidth = isTransformed ? 3 : 1.2;
+            ctx.strokeStyle = isTransformed ? '#818cf8' : (isDarkMode ? '#334155' : '#475569'); 
+
+            if (!isTransformed) {
+                ctx.setLineDash([3, 3]);
+            } else {
+                ctx.setLineDash([]);
+            }
+
+            const width = canvas.width;
+            let mustMoveTo = true;
+
+            if (fid === 'gif' || fid === 'sif' || fid === 'fpf' || fid === 'signum') {
+                drawPiecewiseCustom(fid, isTransformed);
+                return;
+            }
+
+            // Continuous trace rendering with safe boundary skips
+            for (let px = 0; px < width; px += 1) {
+                const mathCoord = toMath(px, 0);
+                let y = isTransformed ? evaluateTransformed(mathCoord.x, fid) : evaluateBase(mathCoord.x, fid);
+
+                if (y === null || isNaN(y) || !isFinite(y)) {
+                    mustMoveTo = true;
+                    continue;
+                }
+
+                const pixelCoord = toPixel(mathCoord.x, y);
+
+                if (pixelCoord.y >= -200 && pixelCoord.y <= canvas.height + 200) {
+                    if (mustMoveTo) {
+                        ctx.moveTo(pixelCoord.x, pixelCoord.y);
+                        mustMoveTo = false;
+                    } else {
+                        ctx.lineTo(pixelCoord.x, pixelCoord.y);
+                    }
+                } else {
+                    mustMoveTo = true;
+                }
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawPiecewiseCustom(fid, isTransformed) {
+            const width = canvas.width;
+            ctx.lineWidth = isTransformed ? 3 : 1.2;
+            ctx.strokeStyle = isTransformed ? '#818cf8' : (isDarkMode ? '#334155' : '#475569');
+            ctx.fillStyle = isTransformed ? '#818cf8' : (isDarkMode ? '#334155' : '#475569');
+
+            let mathMinX = toMath(0, 0).x;
+            let mathMaxX = toMath(width, 0).x;
+
+            const bgCenterColor = isDarkMode ? '#020617' : '#ffffff';
+
+            if (fid === 'gif' || fid === 'fpf' || fid === 'sif') {
+                let floorMin = Math.floor(mathMinX) - 1;
+                let ceilMax = Math.ceil(mathMaxX) + 1;
+
+                for (let n = floorMin; n <= ceilMax; n++) {
+                    let xStart, xEnd;
+                    let isSif = (fid === 'sif');
+                    
+                    if (isSif) {
+                        xStart = n - 0.995;
+                        xEnd = n;
+                    } else {
+                        xStart = n;
+                        xEnd = n + 0.995;
+                    }
+
+                    let yStart, yEnd;
+                    if (isTransformed) {
+                        yStart = evaluateTransformed(xStart, fid);
+                        yEnd = evaluateTransformed(xEnd, fid);
+                    } else {
+                        yStart = evaluateBase(xStart, fid);
+                        yEnd = evaluateBase(xEnd, fid);
+                    }
+
+                    if (yStart === null || yEnd === null) continue;
+
+                    const pStart = toPixel(xStart, yStart);
+                    const pEnd = toPixel(xEnd + (isSif ? 0 : 0.005), yEnd);
+
+                    ctx.beginPath();
+                    ctx.moveTo(pStart.x, pStart.y);
+                    ctx.lineTo(pEnd.x, pEnd.y);
+                    ctx.stroke();
+
+                    const dotRad = isTransformed ? 3.5 : 2;
+
+                    // Draw Left Circle
+                    ctx.beginPath();
+                    ctx.arc(pStart.x, pStart.y, dotRad, 0, 2 * Math.PI);
+                    if (isSif) {
+                        ctx.fillStyle = bgCenterColor;
+                        ctx.fill();
+                        ctx.strokeStyle = isTransformed ? '#818cf8' : (isDarkMode ? '#334155' : '#475569');
+                        ctx.lineWidth = isTransformed ? 2 : 1;
+                        ctx.stroke();
+                    } else {
+                        ctx.fill();
+                    }
+
+                    // Draw Right Circle
+                    ctx.beginPath();
+                    ctx.arc(pEnd.x, pEnd.y, dotRad, 0, 2 * Math.PI);
+                    if (isSif) {
+                        ctx.fillStyle = isTransformed ? '#818cf8' : (isDarkMode ? '#334155' : '#475569');
+                        ctx.fill();
+                    } else {
+                        ctx.fillStyle = bgCenterColor;
+                        ctx.fill();
+                        ctx.strokeStyle = isTransformed ? '#818cf8' : (isDarkMode ? '#334155' : '#475569');
+                        ctx.lineWidth = isTransformed ? 2 : 1;
+                        ctx.stroke();
+                    }
+                    
+                    ctx.fillStyle = isTransformed ? '#818cf8' : (isDarkMode ? '#334155' : '#475569');
+                }
+            } else if (fid === 'signum') {
+                let segments = [
+                    { x1: mathMinX, x2: -0.01, yVal: -1, openEnd: true, openStart: false },
+                    { x1: 0, x2: 0, yVal: 0, openEnd: false, openStart: false, isPoint: true },
+                    { x1: 0.01, x2: mathMaxX, yVal: 1, openEnd: false, openStart: true }
+                ];
+
+                segments.forEach(seg => {
+                    let y1, y2;
+                    if (isTransformed) {
+                        y1 = evaluateTransformed(seg.x1, fid);
+                        y2 = evaluateTransformed(seg.x2, fid);
+                    } else {
+                        y1 = evaluateBase(seg.x1, fid);
+                        y2 = evaluateBase(seg.x2, fid);
+                    }
+
+                    if (y1 === null || y2 === null) return;
+
+                    if (seg.isPoint) {
+                        const pt = toPixel(0, y1);
+                        ctx.beginPath();
+                        ctx.arc(pt.x, pt.y, isTransformed ? 5 : 3, 0, 2 * Math.PI);
+                        ctx.fill();
+                    } else {
+                        const p1 = toPixel(seg.x1, y1);
+                        const p2 = toPixel(seg.x2, y2);
+
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+
+                        if (seg.openStart && Math.abs(seg.x1) < 0.1) {
+                            const pt = toPixel(0, y1);
+                            ctx.beginPath();
+                            ctx.arc(pt.x, pt.y, isTransformed ? 4 : 2.5, 0, 2 * Math.PI);
+                            ctx.fillStyle = bgCenterColor;
+                            ctx.fill();
+                            ctx.strokeStyle = isTransformed ? '#818cf8' : (isDarkMode ? '#334155' : '#475569');
+                            ctx.lineWidth = isTransformed ? 2 : 1;
+                            ctx.stroke();
+                            ctx.fillStyle = isTransformed ? '#818cf8' : (isDarkMode ? '#334155' : '#475569');
+                        }
+                    }
+                });
+            }
+        }
+
+        function drawConicSection(fid) {
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#c084fc'; 
+            ctx.setLineDash([]);
+
+            const h = conicH;
+            const k = conicK;
+            const a = conicA;
+            const b = conicB;
+
+            ctx.beginPath();
+            if (fid === 'circle') {
+                const center = toPixel(h, k);
+                ctx.arc(center.x, center.y, a * scale, 0, 2 * Math.PI);
+                ctx.stroke();
+
+                // Foci indicator at Center
+                ctx.fillStyle = '#10b981';
+                ctx.beginPath();
+                ctx.arc(center.x, center.y, 4, 0, 2 * Math.PI);
+                ctx.fill();
+            } 
+            else if (fid === 'ellipse') {
+                const center = toPixel(h, k);
+                ctx.ellipse(center.x, center.y, a * scale, b * scale, 0, 0, 2 * Math.PI);
+                ctx.stroke();
+
+                // Render both focus coordinates visually
+                ctx.fillStyle = '#10b981';
+                if (a >= b) {
+                    let e = Math.sqrt(1 - (b*b)/(a*a));
+                    let ae = a * e;
+                    const f1 = toPixel(h + ae, k);
+                    const f2 = toPixel(h - ae, k);
+                    ctx.beginPath(); ctx.arc(f1.x, f1.y, 4, 0, 2*Math.PI); ctx.fill();
+                    ctx.beginPath(); ctx.arc(f2.x, f2.y, 4, 0, 2*Math.PI); ctx.fill();
+                } else {
+                    let e = Math.sqrt(1 - (a*a)/(b*b));
+                    let be = b * e;
+                    const f1 = toPixel(h, k + be);
+                    const f2 = toPixel(h, k - be);
+                    ctx.beginPath(); ctx.arc(f1.x, f1.y, 4, 0, 2*Math.PI); ctx.fill();
+                    ctx.beginPath(); ctx.arc(f2.x, f2.y, 4, 0, 2*Math.PI); ctx.fill();
+                }
+            } 
+            else if (fid === 'hyperbola') {
+                // Plot symmetric left/right hyperbola branches
+                let isFirst = true;
+                ctx.beginPath();
+                for (let t = -2.2; t <= 2.2; t += 0.05) {
+                    let mx = h + a * Math.cosh(t);
+                    let my = k + b * Math.sinh(t);
+                    let px = toPixel(mx, my);
+                    if (px.y >= -50 && px.y <= canvas.height + 50) {
+                        if (isFirst) {
+                            ctx.moveTo(px.x, px.y);
+                            isFirst = false;
+                        } else {
+                            ctx.lineTo(px.x, px.y);
+                        }
+                    }
+                }
+                ctx.stroke();
+
+                isFirst = true;
+                ctx.beginPath();
+                for (let t = -2.2; t <= 2.2; t += 0.05) {
+                    let mx = h - a * Math.cosh(t);
+                    let my = k + b * Math.sinh(t);
+                    let px = toPixel(mx, my);
+                    if (px.y >= -50 && px.y <= canvas.height + 50) {
+                        if (isFirst) {
+                            ctx.moveTo(px.x, px.y);
+                            isFirst = false;
+                        } else {
+                            ctx.lineTo(px.x, px.y);
+                        }
+                    }
+                }
+                ctx.stroke();
+
+                // Foci markers for Hyperbola
+                ctx.fillStyle = '#10b981';
+                let e = Math.sqrt(1 + (b*b)/(a*a));
+                let ae = a * e;
+                const f1 = toPixel(h + ae, k);
+                const f2 = toPixel(h - ae, k);
+                ctx.beginPath(); ctx.arc(f1.x, f1.y, 4, 0, 2*Math.PI); ctx.fill();
+                ctx.beginPath(); ctx.arc(f2.x, f2.y, 4, 0, 2*Math.PI); ctx.fill();
+
+                // Asymptotes visual lines
+                ctx.strokeStyle = isDarkMode ? '#475569' : '#94a3b8';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                
+                const slope = b / a;
+                const p1 = toPixel(h - 10, k - 10 * slope);
+                const p2 = toPixel(h + 10, k + 10 * slope);
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
+
+                const p3 = toPixel(h - 10, k + 10 * slope);
+                const p4 = toPixel(h + 10, k - 10 * slope);
+                ctx.beginPath();
+                ctx.moveTo(p3.x, p3.y);
+                ctx.lineTo(p4.x, p4.y);
+                ctx.stroke();
+
+                ctx.setLineDash([]);
+            }
+        }
+
+        function drawParabolaDeepDive() {
+            const a = parabA;
+            const b = parabB;
+            const c = parabC;
+
+            const dVal = b * b - 4 * a * c;
+            const vertexX = -b / (2 * a);
+            const vertexY = -dVal / (4 * a);
+
+            const focusX = vertexX;
+            const focusY = vertexY + 1 / (4 * a);
+            const directrixY = vertexY - 1 / (4 * a);
+
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#f43f5e'; 
+            ctx.beginPath();
+
+            const width = canvas.width;
+            let isFirst = true;
+
+            for (let px = 0; px < width; px++) {
+                const mx = toMath(px, 0).x;
+                const my = a * mx * mx + b * mx + c;
+                const pixelPt = toPixel(mx, my);
+
+                if (pixelPt.y >= -100 && pixelPt.y <= canvas.height + 100) {
+                    if (isFirst) {
+                        ctx.moveTo(pixelPt.x, pixelPt.y);
+                        isFirst = false;
+                    } else {
+                        ctx.lineTo(pixelPt.x, pixelPt.y);
+                    }
+                }
+            }
+            ctx.stroke();
+
+            // Axis of symmetry
+            ctx.setLineDash([4, 4]);
+            ctx.strokeStyle = '#eab308';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            const axisPx = toPixel(vertexX, 0).x;
+            ctx.moveTo(axisPx, 0);
+            ctx.lineTo(axisPx, canvas.height);
+            ctx.stroke();
+
+            // Directrix line
+            ctx.strokeStyle = '#06b6d4';
+            ctx.beginPath();
+            const dirPy = toPixel(0, directrixY).y;
+            ctx.moveTo(0, dirPy);
+            ctx.lineTo(canvas.width, dirPy);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Plot critical coordinates
+            const pVertex = toPixel(vertexX, vertexY);
+            const pFocus = toPixel(focusX, focusY);
+
+            ctx.fillStyle = '#eab308';
+            ctx.beginPath();
+            ctx.arc(pVertex.x, pVertex.y, 5, 0, 2 * Math.PI);
+            ctx.fill();
+
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(pFocus.x, pFocus.y, 5, 0, 2 * Math.PI);
+            ctx.fill();
+
+            if (dVal >= 0) {
+                const r1 = (-b + Math.sqrt(dVal)) / (2 * a);
+                const r2 = (-b - Math.sqrt(dVal)) / (2 * a);
+                const pr1 = toPixel(r1, 0);
+                const pr2 = toPixel(r2, 0);
+
+                ctx.fillStyle = '#a855f7';
+                ctx.beginPath();
+                ctx.arc(pr1.x, pr1.y, 4, 0, 2 * Math.PI);
+                ctx.arc(pr2.x, pr2.y, 4, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+
+            document.getElementById('p-disc').textContent = dVal.toFixed(2);
+            document.getElementById('p-vertex').textContent = `(${vertexX.toFixed(2)}, ${vertexY.toFixed(2)})`;
+            document.getElementById('p-focus').textContent = `(${focusX.toFixed(2)}, ${focusY.toFixed(2)})`;
+            document.getElementById('p-directrix').textContent = `y = ${directrixY.toFixed(2)}`;
+
+            let rootsText = "No real intersections";
+            if (dVal > 0) {
+                const r1 = (-b + Math.sqrt(dVal)) / (2 * a);
+                const r2 = (-b - Math.sqrt(dVal)) / (2 * a);
+                rootsText = `x = ${r1.toFixed(2)}, ${r2.toFixed(2)}`;
+            } else if (dVal === 0) {
+                const r = -b / (2 * a);
+                rootsText = `Tangent root x = ${r.toFixed(2)}`;
+            }
+            document.getElementById('p-roots').textContent = rootsText;
+        }
+
+        function updateCoordinateTrace(e) {
+            const rect = canvas.getBoundingClientRect();
+            const px = e.clientX - rect.left;
+            const py = e.clientY - rect.top;
+
+            const mathPt = toMath(px, py);
+            const traceBox = document.getElementById('coord-trace');
+
+            if (px < 0 || px > canvas.width || py < 0 || py > canvas.height) {
+                traceBox.classList.add('hidden');
+                return;
+            }
+
+            traceBox.classList.remove('hidden');
+            traceBox.style.left = `${px + 12}px`;
+            traceBox.style.top = `${py + 12}px`;
+
+            document.getElementById('trace-xy').textContent = `X: ${mathPt.x.toFixed(2)} | Y: ${mathPt.y.toFixed(2)}`;
+
+            if (currentCategory === 'conics') {
+                document.getElementById('trace-f-xy').textContent = "Conic Relation Coordinate";
+            } else {
+                let actualY = evaluateTransformed(mathPt.x, currentFunctionId);
+                if (actualY !== null && !isNaN(actualY) && isFinite(actualY)) {
+                    document.getElementById('trace-f-xy').textContent = `g(x) = ${actualY.toFixed(2)}`;
+                } else {
+                    document.getElementById('trace-f-xy').textContent = "g(x) is undefined";
+                }
+            }
+        }
+
+        function updateDiagnosticsDisplay() {
+            const dText = document.getElementById('domain-text');
+            const rText = document.getElementById('range-text');
+            const contText = document.getElementById('continuity-text');
+            const diffText = document.getElementById('differentiability-text');
+
+            if (currentCategory === 'parabolaDeep') {
+                dText.textContent = "x ∈ ℝ";
+                let rangeMin = - (parabB * parabB - 4 * parabA * parabC) / (4 * parabA);
+                if (parabA > 0) {
+                    rText.textContent = `y ∈ [${rangeMin.toFixed(2)}, ∞)`;
+                } else {
+                    rText.textContent = `y ∈ (-∞, ${rangeMin.toFixed(2)}]`;
+                }
+
+                contText.textContent = "Continuous everywhere";
+                contText.className = "text-[10px] font-bold text-emerald-400";
+                diffText.textContent = "Differentiable everywhere";
+                diffText.className = "text-[10px] font-bold text-emerald-400";
+                return;
+            }
+
+            if (currentCategory === 'conics') {
+                const h = conicH;
+                const k = conicK;
+                const a = conicA;
+                const b = conicB;
+
+                if (currentFunctionId === 'circle') {
+                    dText.textContent = `x ∈ [${(h-a).toFixed(1)}, ${(h+a).toFixed(1)}]`;
+                    rText.textContent = `y ∈ [${(k-a).toFixed(1)}, ${(k+a).toFixed(1)}]`;
+                } else if (currentFunctionId === 'ellipse') {
+                    dText.textContent = `x ∈ [${(h-a).toFixed(1)}, ${(h+a).toFixed(1)}]`;
+                    rText.textContent = `y ∈ [${(k-b).toFixed(1)}, ${(k+b).toFixed(1)}]`;
+                } else {
+                    dText.textContent = `x ∈ (-∞, ${(h-a).toFixed(1)}] ∪ [${(h+a).toFixed(1)}, ∞)`;
+                    rText.textContent = "y ∈ ℝ";
+                }
+                contText.textContent = "Closed relation boundaries";
+                contText.className = "text-[10px] font-bold text-purple-400";
+                diffText.textContent = "Smooth derivative paths";
+                diffText.className = "text-[10px] font-bold text-purple-400";
+                return;
+            }
+
+            const fData = findFunctionData(currentFunctionId);
+            if (!fData) return;
+
+            dText.textContent = fData.domain;
+            rText.textContent = fData.range;
+
+            if (currentFunctionId === 'linear' || currentFunctionId === 'quadratic' || currentFunctionId === 'cubic' || currentFunctionId === 'sin' || currentFunctionId === 'cos' || currentFunctionId === 'exponential' || currentFunctionId === 'exponential-half' || currentFunctionId === 'arctan' || currentFunctionId === 'arccot') {
+                contText.textContent = "Continuous everywhere";
+                contText.className = "text-[10px] font-bold text-emerald-400";
+                diffText.textContent = "Differentiable everywhere";
+                diffText.className = "text-[10px] font-bold text-emerald-400";
+            } else if (currentFunctionId === 'modulus') {
+                contText.textContent = "Continuous everywhere";
+                contText.className = "text-[10px] font-bold text-emerald-400";
+                if (transformationEnabled && paramH !== 0) {
+                    diffText.textContent = `Non-diff at x = ${paramH.toFixed(1)}`;
+                } else {
+                    diffText.textContent = "Non-diff at x = 0";
+                }
+                diffText.className = "text-[10px] font-bold text-amber-500";
+            } else if (currentFunctionId === 'gif' || currentFunctionId === 'sif' || currentFunctionId === 'fpf' || currentFunctionId === 'signum') {
+                contText.textContent = "Discontinuous at integer steps";
+                contText.className = "text-[10px] font-bold text-rose-500";
+                diffText.textContent = "Non-diff at jump points";
+                diffText.className = "text-[10px] font-bold text-rose-500";
+            } else if (currentFunctionId === 'reciprocal' || currentFunctionId === 'reciprocal-sq') {
+                contText.textContent = "Continuous on Domain";
+                contText.className = "text-[10px] font-bold text-emerald-400";
+                diffText.textContent = "Differentiable on Domain";
+                diffText.className = "text-[10px] font-bold text-emerald-400";
+            } else if (currentFunctionId === 'tan' || currentFunctionId === 'sec' || currentFunctionId === 'csc' || currentFunctionId === 'cot') {
+                contText.textContent = "Discontinuous at asymptotes";
+                contText.className = "text-[10px] font-bold text-amber-500";
+                diffText.textContent = "Differentiable inside pockets";
+                diffText.className = "text-[10px] font-bold text-amber-500";
+            } else if (currentFunctionId === 'arcsin' || currentFunctionId === 'arccos') {
+                contText.textContent = "Continuous on Domain [-1, 1]";
+                contText.className = "text-[10px] font-bold text-emerald-400";
+                diffText.textContent = "Non-diff at boundaries (x = ±1)";
+                diffText.className = "text-[10px] font-bold text-amber-500";
+            } else if (currentFunctionId === 'arcsec' || currentFunctionId === 'arccsc') {
+                contText.textContent = "Continuous on split domains";
+                contText.className = "text-[10px] font-bold text-emerald-400";
+                diffText.textContent = "Non-diff at boundaries (x = ±1)";
+                diffText.className = "text-[10px] font-bold text-amber-500";
+            } else {
+                contText.textContent = "Continuous on Domain";
+                contText.className = "text-[10px] font-bold text-emerald-400";
+                diffText.textContent = "Differentiable on Domain";
+                diffText.className = "text-[10px] font-bold text-emerald-400";
+            }
+        }
+    </script>
+</body>
+</html>
