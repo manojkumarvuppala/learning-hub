@@ -8,7 +8,7 @@
   <!-- Google Fonts for ultra-modern science look -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   
@@ -63,8 +63,8 @@
 <body class="bg-slate-950 text-slate-300 min-h-screen overflow-x-hidden flex flex-col selection:bg-blue-900 selection:text-white">
 
   <!-- Calmed Background Ambient Lights (Glare-free) -->
-  <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-950/5 blur-[100px] pointer-events-none"></div>
-  <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-950/5 blur-[100px] pointer-events-none"></div>
+  <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-950/5 blur-[120px] pointer-events-none"></div>
+  <div class="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-950/5 blur-[120px] pointer-events-none"></div>
 
   <!-- Sound Toggle & Toast Notification Overlay -->
   <div id="toast-container" class="fixed top-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
@@ -94,7 +94,7 @@
         </div>
         <div class="h-6 w-px bg-slate-850"></div>
         <div class="text-center px-2">
-          <div class="text-[9px] text-slate-500 font-semibold tracking-widest uppercase font-mono">Streak</div>
+          <div class="text-[9px] text-slate-500 font-semibold tracking-widest uppercase">Streak</div>
           <div id="streak-panel" class="text-base font-bold text-indigo-400 flex items-center gap-1">
             <span id="streak" class="mono">0</span>
             <i data-lucide="zap" class="w-3.5 h-3.5 fill-indigo-500 text-indigo-400"></i>
@@ -618,7 +618,7 @@
 
     // Unplaced card style mapping (Desaturated, eye-friendly borders)
     const categoryStyles = {
-      "nonmetal": "bg-slate-950/40 border-cyan-900/60 text-cyan-400/90 hover:border-cyan-500 hover:text-cyan-300",
+      "nonmetal": "bg-slate-950/40 border-sky-900/60 text-sky-400/90 hover:border-sky-500 hover:text-sky-300",
       "alkali": "bg-slate-950/40 border-rose-900/60 text-rose-400/90 hover:border-rose-500 hover:text-rose-300",
       "alkaline": "bg-slate-950/40 border-amber-900/60 text-amber-400/90 hover:border-amber-500 hover:text-amber-300",
       "transition": "bg-slate-950/40 border-yellow-900/60 text-yellow-400/90 hover:border-yellow-500 hover:text-yellow-300",
@@ -701,10 +701,15 @@
             const grpNum = parseInt(subGroup.replace('g', ''));
             return elem.col === grpNum && elem.number !== 2; // Exclude He
           }
-          // Block D grouping
+          // Block D grouping (Support for groups and periods)
           if (targetBlock === 'd') {
-            const grpNum = parseInt(subGroup.replace('g', ''));
-            return elem.col === grpNum;
+            if (subGroup.startsWith('period')) {
+              const periodNum = parseInt(subGroup.replace('period', ''));
+              return elem.row === periodNum;
+            } else {
+              const grpNum = parseInt(subGroup.replace('g', ''));
+              return elem.col === grpNum;
+            }
           }
           // Block F grouping
           if (targetBlock === 'f') {
@@ -780,12 +785,33 @@
           subSelect.appendChild(opt);
         });
       } else if (targetBlock === 'd') {
+        // Add optgroup for periods
+        const periodsGroup = document.createElement('optgroup');
+        periodsGroup.label = "By Period (Transition Series)";
+        const periodList = [
+          { val: 'period4', text: 'Period 4 (3d Series - Sc to Zn)' },
+          { val: 'period5', text: 'Period 5 (4d Series - Y to Cd)' },
+          { val: 'period6', text: 'Period 6 (5d Series - Hf to Hg)' },
+          { val: 'period7', text: 'Period 7 (6d Series - Rf to Cn)' }
+        ];
+        periodList.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.val;
+          opt.textContent = p.text;
+          periodsGroup.appendChild(opt);
+        });
+        subSelect.appendChild(periodsGroup);
+
+        // Add optgroup for groups
+        const groupsGroup = document.createElement('optgroup');
+        groupsGroup.label = "By Group";
         for (let i = 3; i <= 12; i++) {
           const opt = document.createElement('option');
           opt.value = `g${i}`;
-          opt.textContent = `Group ${i} (Transition Series)`;
-          subSelect.appendChild(opt);
+          opt.textContent = `Group ${i}`;
+          groupsGroup.appendChild(opt);
         }
+        subSelect.appendChild(groupsGroup);
       } else if (targetBlock === 'f') {
         const groups = [
           { val: 'lanthanides', text: 'Lanthanides (Elements 57-71)' },
@@ -925,7 +951,7 @@
           if ((r === 9 || r === 10) && c < 4) {
             if (c === 3) {
               const spacerLabel = document.createElement('div');
-              spacerLabel.className = "col-span-1 flex items-center justify-center text-[8px] sm:text-[9px] font-bold text-slate-600 select-none border border-slate-900 rounded-lg bg-slate-950/20 w-full aspect-square";
+              spacerLabel.className = "col-span-1 flex items-center justify-center text-[8px] sm:text-[9px] font-bold text-slate-650 select-none border border-slate-900 rounded-lg bg-slate-950/20 w-full aspect-square";
               spacerLabel.textContent = r === 9 ? "57-71" : "89-103";
               elements.grid.appendChild(spacerLabel);
             } else {
@@ -990,7 +1016,7 @@
                 <div class="text-[5px] sm:text-[6.5px] font-bold tracking-tight truncate text-center leading-none mt-auto select-none opacity-90">${element.name}</div>
               `;
             } else if (isTarget) {
-              cell.className += ` border-slate-900 hover:border-slate-800 bg-slate-950/40 text-slate-500 hover:text-slate-350 flex items-center justify-center shadow-inner hover:bg-slate-900/30 duration-200`;
+              cell.className += ` border-slate-900 hover:border-slate-800 bg-slate-950/40 text-slate-500 hover:text-slate-355 flex items-center justify-center shadow-inner hover:bg-slate-900/30 duration-200`;
               cell.innerHTML = `
                 <div class="text-[9px] sm:text-xs font-bold mono select-none leading-none">${element.number}</div>
               `;
